@@ -1,0 +1,45 @@
+.cabecera__acciones { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+
+.ficha {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-5);
+  align-items: start;
+}
+.ficha__columna { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
+
+.ficha__campos { display: flex; flex-direction: column; gap: var(--s-4); }
+
+.ficha__datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s-4);
+  margin: 0;
+}
+
+.ficha__lista {
+  margin: 0;
+  padding-left: var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.ficha__nota { font-size: 13px; color: var(--ink-muted); max-width: 55ch; }
+.ficha__error { margin-top: var(--s-3); font-size: 13px; color: var(--danger); }
+.ficha__estado { margin-top: var(--s-3); font-size: 12px; color: var(--ink-subtle); min-height: 1em; }
+
+.ficha__pie {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+
+@media (max-width: 900px) {
+  .ficha { grid-template-columns: minmax(0, 1fr); }
+}

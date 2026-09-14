@@ -165,3 +165,66 @@ export const onboardingService = {
   completar: () =>
     post<EstadoDelAlta & { published: boolean }>("/reseller/onboarding/complete", {}),
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LAS EMPRESAS DEL SOCIO (fase 8)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** Lo que el socio ve de SU empresa. Sólo comercial: ni facturación de
+ *  CGuardPro, ni Stripe, ni prueba, ni nada operativo. */
+export interface Empresa {
+  id: string;
+  name: string | null;
+  businessTitle: string | null;
+  email: string | null;
+  phone: string | null;
+  country: string | null;
+  city: string | null;
+  address: string | null;
+  timezone: string | null;
+  taxNumber: string | null;
+  /** Administrativa, de la plataforma. Se LEE; no se puede cambiar desde aquí. */
+  suspendedAt: string | null;
+  onboardingCompleted: boolean;
+  createdAt: string | null;
+}
+
+export interface Cupo {
+  used: number;
+  /** `null` = sin límite. Nunca 0 por «ilimitado»: eso sería mentir. */
+  max: number | null;
+  remaining: number | null;
+  unlimited: boolean;
+  canCreate: boolean;
+}
+
+/** Lo que el formulario manda. Lista explícita: el servidor ignora el resto. */
+export interface AltaDeEmpresa {
+  name: string;
+  businessTitle?: string;
+  email?: string;
+  phone?: string;
+  country?: string;
+  city?: string;
+  address?: string;
+  timezone?: string;
+  taxNumber?: string;
+  owner: { email: string; firstName?: string; lastName?: string };
+}
+
+export type FichaDeEmpresa = Omit<AltaDeEmpresa, "owner" | "name"> & { name?: string };
+
+export const companiesService = {
+  list: (params: { page?: number; limit?: number; search?: string } = {}) =>
+    get<{ rows: Empresa[]; count: number; quota: Cupo }>("/reseller/companies", params),
+  detail: (tenantId: string) => get<Empresa>(`/reseller/companies/${tenantId}`),
+  create: (data: AltaDeEmpresa) =>
+    post<{ company: Empresa; quota: { used: number; max: number | null };
+           ownerInvited: boolean; ignoredFields: string[] }>(
+      "/reseller/companies", data,
+    ),
+  update: (tenantId: string, data: FichaDeEmpresa) =>
+    patch<{ company: Empresa; changed: string[]; ignoredFields: string[] }>(
+      `/reseller/companies/${tenantId}`, data,
+    ),
+};

@@ -5,6 +5,9 @@ import AuthLayout from "@/layouts/AuthLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Branding from "@/pages/Branding";
+import Companies from "@/pages/Companies";
+import CompanyCreate from "@/pages/CompanyCreate";
+import CompanyDetail from "@/pages/CompanyDetail";
 import Wizard from "@/pages/onboarding/Wizard";
 import NotFound from "@/pages/NotFound";
 
@@ -49,6 +52,11 @@ export default function App() {
         }
       />
       <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
+      {/* «new» antes que «:tenantId»: si no, la ruta con parámetro se queda con
+          el alta y busca una empresa que se llame así. */}
+      <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
+      <Route path="/companies/new" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
+      <Route path="/companies/:tenantId" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
       {/* El asistente va SIN el armazón: durante el alta no hay barra lateral
           que enseñar, porque todavía no hay nada a lo que navegar. */}
       <Route path="/onboarding" element={<ProtectedRoute sinArmazon><Wizard /></ProtectedRoute>} />
