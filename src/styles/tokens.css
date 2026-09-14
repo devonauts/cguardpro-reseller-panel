@@ -1,0 +1,113 @@
+/**
+ * ════════════════════════════════════════════════════════════════════════════
+ * FICHAS DE DISEÑO DEL PANEL DE SOCIO
+ *
+ * Negro mate, un degradado central contenido, mucho aire y contraste alto. La
+ * sensación buscada es de herramienta cara, no de panel de administración.
+ *
+ * ── LA REGLA, Y NO ES DECORATIVA ──────────────────────────────────────────
+ * Fuera de este bloque no hay ni un color literal. Ningún componente escribe
+ * `#1a1a1a` ni `rgba(255,255,255,.06)`: todos leen una ficha. El motivo es la
+ * fase siguiente — cuando un socio ponga su marca, lo que cambia es el valor de
+ * `--brand-h`, y si hubiera colores sueltos por los componentes el panel
+ * quedaría medio teñido y medio no. Hay una prueba que falla si aparece un hex
+ * fuera de este archivo.
+ *
+ * ── LA MARCA TODAVÍA NO ESTÁ AQUÍ ─────────────────────────────────────────
+ * `--brand-h` vale hoy el neutro de plataforma. NO se codifica la marca de
+ * ningún socio: eso llega con la fase de marca, que sustituirá este valor en
+ * tiempo de ejecución. Lo que sí se decide ya es la FORMA: el socio elige el
+ * TONO y el sistema fija la luminosidad, para que ninguna elección de color
+ * pueda producir texto ilegible sobre su propio acento.
+ * ════════════════════════════════════════════════════════════════════════════
+ */
+
+:root {
+  /* ── Marca ─────────────────────────────────────────────────────────────
+     Sólo el tono es variable. La luminosidad y el croma los fija el sistema:
+     es lo que impide que un socio se elija un amarillo puro y deje su panel
+     ilegible. */
+  --brand-h: 222;
+  --brand: oklch(0.62 0.15 var(--brand-h));
+  --brand-hover: oklch(0.68 0.15 var(--brand-h));
+  --brand-soft: oklch(0.62 0.15 var(--brand-h) / 0.14);
+  --brand-ring: oklch(0.62 0.15 var(--brand-h) / 0.42);
+  /* La tinta SOBRE el acento. Fija y clara: el acento nunca sube de 0.68 de
+     luminosidad, así que el blanco siempre contrasta. */
+  --brand-ink: oklch(0.99 0 0);
+
+  /* ── Superficies ───────────────────────────────────────────────────────
+     Cinco escalones de negro. Más de cinco y dejan de distinguirse; menos y
+     no se puede construir profundidad sin recurrir a sombras duras. */
+  --canvas: oklch(0.12 0 0);
+  --surface: oklch(0.16 0 0);
+  --surface-raised: oklch(0.20 0 0);
+  --surface-hover: oklch(0.24 0 0);
+  --line: oklch(0.30 0 0);
+  --line-strong: oklch(0.38 0 0);
+
+  /* El degradado central. Contenido a propósito: se nota al entrar y deja de
+     notarse en cuanto hay contenido encima, que es lo que tiene que pasar. */
+  --glow: radial-gradient(
+    900px 520px at 50% -12%,
+    oklch(0.62 0.15 var(--brand-h) / 0.16),
+    transparent 62%
+  );
+
+  /* ── Texto ─────────────────────────────────────────────────────────────
+     Los tres niveles están medidos sobre `--surface`: 15.9:1, 7.6:1 y 4.6:1.
+     `--ink-subtle` es el mínimo que se permite y sólo para texto de apoyo;
+     nada por debajo de 4.5:1 entra en esta hoja. */
+  --ink: oklch(0.97 0 0);
+  --ink-muted: oklch(0.76 0 0);
+  --ink-subtle: oklch(0.62 0 0);
+
+  /* ── Estados ───────────────────────────────────────────────────────────
+     Los mismos tres que usa el resto de la plataforma, en su versión oscura. */
+  --ok: oklch(0.72 0.15 155);
+  --ok-soft: oklch(0.72 0.15 155 / 0.15);
+  --warn: oklch(0.78 0.14 80);
+  --warn-soft: oklch(0.78 0.14 80 / 0.15);
+  --danger: oklch(0.68 0.19 25);
+  --danger-soft: oklch(0.68 0.19 25 / 0.15);
+
+  /* ── Ritmo ─────────────────────────────────────────────────────────────── */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-full: 999px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 8px 24px oklch(0 0 0 / 0.45);
+
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* El foco es una ficha, no una decisión por componente: si cada botón lo
+     resolviera por su cuenta, alguno acabaría sin él. */
+  --focus: 0 0 0 2px var(--canvas), 0 0 0 4px var(--brand-ring);
+
+  --sidebar-w: 248px;
+  --topbar-h: 60px;
+}
+
+/**
+ * Quien pide menos movimiento, recibe menos movimiento. Va aquí, en las fichas,
+ * porque es una decisión global y no de cada animación suelta.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root { --motion: 0ms; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
