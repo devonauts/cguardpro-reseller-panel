@@ -28,10 +28,18 @@
      es lo que impide que un socio se elija un amarillo puro y deje su panel
      ilegible. */
   --brand-h: 222;
-  --brand: oklch(0.62 0.15 var(--brand-h));
-  --brand-hover: oklch(0.68 0.15 var(--brand-h));
-  --brand-soft: oklch(0.62 0.15 var(--brand-h) / 0.14);
-  --brand-ring: oklch(0.62 0.15 var(--brand-h) / 0.42);
+  /* La luminosidad y el croma viven AQUÍ y en ningún otro sitio.
+     La vista previa de la marca compone sus colores con estas mismas fichas
+     en vez de repetir los números: si se repitieran, el día que aquí cambie la
+     luminosidad la vista previa seguiría enseñando la de antes — y una vista
+     previa que miente es peor que no tenerla. */
+  --brand-l: 0.62;
+  --brand-l-hover: 0.68;
+  --brand-c: 0.15;
+  --brand: oklch(var(--brand-l) var(--brand-c) var(--brand-h));
+  --brand-hover: oklch(var(--brand-l-hover) var(--brand-c) var(--brand-h));
+  --brand-soft: oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.14);
+  --brand-ring: oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.42);
   /* La tinta SOBRE el acento. Fija y clara: el acento nunca sube de 0.68 de
      luminosidad, así que el blanco siempre contrasta. */
   --brand-ink: oklch(0.99 0 0);
@@ -50,7 +58,7 @@
      notarse en cuanto hay contenido encima, que es lo que tiene que pasar. */
   --glow: radial-gradient(
     900px 520px at 50% -12%,
-    oklch(0.62 0.15 var(--brand-h) / 0.16),
+    oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.16),
     transparent 62%
   );
 

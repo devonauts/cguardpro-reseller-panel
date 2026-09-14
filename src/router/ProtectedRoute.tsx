@@ -14,7 +14,13 @@ import AuthLayout from "@/layouts/AuthLayout";
  * cuenta. Se le dice qué pasa y se le manda a entrar como socio. Cualquier
  * atajo aquí desharía la separación de canales que sostiene el backend.
  */
-export function ProtectedRoute({ children }: { children: ReactNode }) {
+export function ProtectedRoute({
+  children,
+  /** El asistente de alta se pinta sin barra lateral: durante el alta todavía
+   *  no hay nada a lo que navegar, y enseñar un menú de secciones que aún no
+   *  existen sólo invita a salirse del asistente a medias. */
+  sinArmazon,
+}: { children: ReactNode; sinArmazon?: boolean }) {
   const { cargando, autenticado, motivo, mensaje } = useResellerAuth();
   const location = useLocation();
 
@@ -46,6 +52,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
     return <Navigate to="/login" replace state={{ desde: location.pathname }} />;
   }
 
+  if (sinArmazon) return <>{children}</>;
   return <AppLayout>{children}</AppLayout>;
 }
 

@@ -1,4 +1,4 @@
-import { get, post } from "@/services/api";
+import { get, patch, post, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -78,3 +78,90 @@ export const resellerService = {
 };
 
 export default resellerService;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LA MARCA
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface Marca {
+  state: "draft" | "published";
+  platformName: string | null;
+  brandHue: number | null;
+  brandChroma: number | null;
+  loginTagline: string | null;
+  supportEmail: string | null;
+  supportUrl: string | null;
+  supportPhone: string | null;
+  logoFileId: string | null;
+  faviconFileId: string | null;
+  emailLogoFileId: string | null;
+  publishedAt: string | null;
+  updatedAt: string | null;
+}
+
+export type RanuraDeImagen = "logo" | "favicon" | "emailLogo";
+
+/** Lo editable. Sin CSS, sin JS, sin HTML: esos campos no existen. */
+export interface MarcaEditable {
+  platformName?: string | null;
+  brandHue?: number | null;
+  brandChroma?: number | null;
+  loginTagline?: string | null;
+  supportEmail?: string | null;
+  supportUrl?: string | null;
+  supportPhone?: string | null;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EL ALTA
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export type PasoDelAlta =
+  | "welcome" | "identity" | "subdomain" | "platform_name" | "logo"
+  | "favicon" | "appearance" | "support" | "review" | "publish";
+
+export interface EstadoDelAlta {
+  step: PasoDelAlta | "completed";
+  stepIndex: number;
+  totalSteps: number;
+  completed: boolean;
+  completedAt: string | null;
+  steps: Array<{
+    id: PasoDelAlta; index: number; done: boolean; current: boolean; fields: string[];
+  }>;
+  branding: Marca;
+  platformHostname: string | null;
+  platformHostnameActive: boolean;
+  identity: {
+    legalName: string | null;
+    displayName: string | null;
+    publicId: string | null;
+    country: string | null;
+  };
+  requirement: string | null;
+}
+
+export const brandingService = {
+  obtener: () => get<{ draft: Marca; published: Marca | null }>("/reseller/branding"),
+  guardar: (data: MarcaEditable) => patch<Marca>("/reseller/branding", data),
+  publicar: () => post<Marca>("/reseller/branding/publish", {}),
+  /** Sube una imagen. El servidor la decodifica y la vuelve a escribir: lo que
+   *  acabe sirviéndose no son nunca los bytes que salen de este navegador. */
+  subirImagen: (ranura: RanuraDeImagen, archivo: File) =>
+    subirArchivo<{ slot: RanuraDeImagen; fileId: string; draft: Marca }>(
+      `/reseller/branding/assets/${ranura}`,
+      archivo,
+    ),
+};
+
+export const onboardingService = {
+  estado: () => get<EstadoDelAlta>("/reseller/onboarding"),
+  /** `step` es «de qué paso vengo», no «a dónde quiero ir»: el servidor lo
+   *  contrasta con lo guardado antes de mover nada. */
+  avanzar: (step: PasoDelAlta, datos: MarcaEditable = {}) =>
+    post<EstadoDelAlta>("/reseller/onboarding/advance", { step, ...datos }),
+  atras: (step: PasoDelAlta) =>
+    post<EstadoDelAlta>("/reseller/onboarding/back", { step }),
+  completar: () =>
+    post<EstadoDelAlta & { published: boolean }>("/reseller/onboarding/complete", {}),
+};

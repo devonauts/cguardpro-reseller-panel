@@ -28,9 +28,9 @@ interface Entrada {
 
 const NAV: Entrada[] = [
   { a: "/dashboard", texto: "Resumen" },
+  { a: "/branding", texto: "Tu marca" },
   { a: "/companies", texto: "Empresas", proximamente: true },
   { a: "/billing", texto: "Facturación", proximamente: true },
-  { a: "/branding", texto: "Marca", proximamente: true },
   { a: "/team", texto: "Equipo", proximamente: true },
 ];
 

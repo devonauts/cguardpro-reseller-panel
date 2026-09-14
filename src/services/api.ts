@@ -128,4 +128,23 @@ export async function post<T>(url: string, body?: any): Promise<T> {
   return desenvolver<T>(r.data);
 }
 
+export async function patch<T>(url: string, body?: any): Promise<T> {
+  const r = await api.patch(url, body);
+  return desenvolver<T>(r.data);
+}
+
+/**
+ * Sube UN archivo como multipart.
+ *
+ * No se pone `Content-Type` a mano: el navegador tiene que componerlo él para
+ * incluir la frontera del multipart, y escribirlo aquí produce una petición que
+ * el servidor no sabe despiezar. Se borra el de por defecto para que lo haga.
+ */
+export async function subirArchivo<T>(url: string, archivo: File): Promise<T> {
+  const fd = new FormData();
+  fd.append("file", archivo);
+  const r = await api.post(url, fd, { headers: { "Content-Type": undefined } as any });
+  return desenvolver<T>(r.data);
+}
+
 export default api;
