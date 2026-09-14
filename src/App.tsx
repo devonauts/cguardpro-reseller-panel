@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import Branding from "@/pages/Branding";
 import Companies from "@/pages/Companies";
 import Usage from "@/pages/Usage";
+import Billing from "@/pages/Billing";
 import CompanyCreate from "@/pages/CompanyCreate";
 import CompanyDetail from "@/pages/CompanyDetail";
 import Wizard from "@/pages/onboarding/Wizard";
@@ -57,6 +58,7 @@ export default function App() {
           el alta y busca una empresa que se llame así. */}
       <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
       <Route path="/usage" element={<ProtectedRoute><Usage /></ProtectedRoute>} />
+      <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       <Route path="/companies/new" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
       <Route path="/companies/:tenantId" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
       {/* El asistente va SIN el armazón: durante el alta no hay barra lateral

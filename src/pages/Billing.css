@@ -1,0 +1,159 @@
+.facturacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
+
+.facturacion__cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--s-4);
+}
+
+.facturacion__nota {
+  font-size: 13px;
+  color: var(--ink-subtle);
+  max-width: 70ch;
+}
+
+/* ── Los términos vigentes ─────────────────────────────────────────────── */
+
+.terminos {
+  list-style: none;
+  margin: var(--s-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.terminos li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  font-size: 14px;
+}
+.terminos li span { color: var(--ink-muted); }
+.terminos__nota {
+  margin-top: var(--s-3);
+  font-size: 12px;
+  color: var(--ink-subtle);
+  max-width: 62ch;
+}
+
+/* ── La lista de facturas ──────────────────────────────────────────────── */
+
+.facturacion__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.factura-fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 0.9fr) auto;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) var(--s-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+.factura-fila:hover { background: var(--surface-hover); }
+.factura-fila--abierta { border-color: var(--brand); }
+/* El foco SE VE: nadie navega esta pantalla sólo con el ratón. */
+.factura-fila:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.factura-fila__numero { font-weight: 600; }
+.factura-fila__periodo { color: var(--ink-muted); font-size: 14px; }
+.factura-fila__total { font-weight: 600; text-align: right; }
+
+/* ── El detalle ────────────────────────────────────────────────────────── */
+
+.factura__anulada {
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  font-size: 13px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-radius: var(--r-sm);
+}
+
+.lineas {
+  list-style: none;
+  margin: var(--s-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.linea:last-child { border-bottom: 0; }
+
+.linea__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.linea__concepto { font-size: 14px; font-weight: 500; }
+.linea__detalle { font-size: 12px; color: var(--ink-muted); }
+.linea__origen { font-size: 12px; color: var(--ink-subtle); }
+.linea__origen a { color: inherit; }
+
+.linea__importe { font-weight: 600; white-space: nowrap; }
+.linea__importe--credito { color: var(--ok); }
+
+.totales {
+  margin-top: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  align-items: flex-end;
+}
+.totales__fila {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-5);
+  width: 100%;
+  max-width: 280px;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.totales__fila--fuerte {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  padding-top: var(--s-2);
+  border-top: 1px solid var(--line);
+}
+
+.factura__acciones {
+  margin-top: var(--s-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+.factura__acciones .btn { text-decoration: none; display: inline-flex; align-items: center; }
+
+/* ── En un teléfono la fila se apila en vez de comprimirse ─────────────── */
+
+@media (max-width: 640px) {
+  .factura-fila {
+    grid-template-columns: 1fr auto;
+    row-gap: var(--s-1);
+  }
+  .factura-fila__total { text-align: left; }
+  .linea { flex-direction: column; gap: var(--s-1); }
+  .linea__importe { align-self: flex-end; }
+  .totales__fila { max-width: none; }
+}

@@ -277,3 +277,92 @@ export const usageService = {
       "/reseller/usage", params,
     ),
 };
+
+/* ── Fase 10 · facturación (SÓLO LECTURA) ─────────────────────────────────
+   Aquí no hay ni una función que escriba, y es deliberado: una factura es una
+   reclamación de CGuardPro sobre el socio, y la parte a la que se le reclama no
+   puede editarla — si pudiera, el documento no serviría de respaldo. Ajustar,
+   cerrar, anular y marcar cobrada viven sólo en el panel de superadmin. */
+
+export interface LineaDeFactura {
+  id: string;
+  kind: "setup_fee" | "monthly_subscription" | "royalty" | "adjustment" | "credit" | "tax";
+  description: string | null;
+  quantity: number;
+  unitAmountCents: number;
+  amountCents: number;
+  tenantId: string | null;
+  /** El enlace al recuento del que salió el importe. */
+  snapshotId: string | null;
+  tenantNameAtSnapshot: string | null;
+  seatPolicy: string | null;
+  methodVersion: string | null;
+  excluded: Record<string, number> | null;
+  sourceMemberships: number | null;
+  isAdjustment: boolean;
+}
+
+export interface FacturaEnLista {
+  id: string;
+  number: string;
+  status: string;
+  currency: string;
+  periodLabel: string | null;
+  subtotalCents: number;
+  adjustmentsCents: number;
+  totalCents: number;
+  amountPaidCents: number;
+  issuedAt: string | null;
+  dueAt: string | null;
+  paidAt: string | null;
+  finalizedAt: string | null;
+  immutable: boolean;
+}
+
+export interface FacturaDetallada extends FacturaEnLista {
+  period: { start: string; end: string; label: string } | null;
+  contract: {
+    id: string; version: number; currency: string;
+    setupFeeCents: number; setupFeeWaived: boolean;
+    monthlyFeeCents: number; royaltyPerUserCents: number; seatPolicy: string;
+  } | null;
+  lines: LineaDeFactura[];
+  computedTotalCents: number;
+  totalsMatch: boolean;
+}
+
+export interface TerminosVigentes {
+  version: number;
+  currency: string;
+  monthlyFeeCents: number;
+  royaltyPerUserCents: number;
+  seatPolicy: string;
+  setupFeeCents: number;
+  setupFeeWaived: boolean;
+  effectiveFrom: string;
+}
+
+export interface TotalPorMoneda {
+  currency: string;
+  invoiceCount: number;
+  billedCents: number;
+  paidCents: number;
+  outstandingCents: number;
+}
+
+export const billingService = {
+  list: (params: { limit?: number } = {}) =>
+    get<{
+      contract: TerminosVigentes | null;
+      invoices: FacturaEnLista[];
+      /** Por moneda. Nunca una sola cifra: no hay conversión de divisa. */
+      totalsByCurrency: TotalPorMoneda[];
+    }>("/reseller/billing", params),
+
+  detail: (invoiceId: string) =>
+    get<FacturaDetallada>(`/reseller/billing/invoices/${invoiceId}`),
+
+  /** La dirección del PDF. Se abre; no se descarga por JavaScript. */
+  pdfUrl: (invoiceId: string) =>
+    `/api/reseller/billing/invoices/${invoiceId}/pdf`,
+};
