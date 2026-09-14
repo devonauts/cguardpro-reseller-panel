@@ -30,6 +30,7 @@ const NAV: Entrada[] = [
   { a: "/dashboard", texto: "Resumen" },
   { a: "/branding", texto: "Tu marca" },
   { a: "/companies", texto: "Empresas" },
+  { a: "/usage", texto: "Consumo" },
   { a: "/billing", texto: "Facturación", proximamente: true },
   { a: "/team", texto: "Equipo", proximamente: true },
 ];

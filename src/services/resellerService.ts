@@ -228,3 +228,52 @@ export const companiesService = {
       `/reseller/companies/${tenantId}`, data,
     ),
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   EL CONSUMO CONTADO (fase 9)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/** Por qué el número es menor que la lista de usuarios de la empresa. */
+export interface Exclusiones {
+  invited?: number;
+  pending?: number;
+  archived?: number;
+  deletedMembership?: number;
+  orphanUser?: number;
+  demoSeed?: number;
+  policy?: number;
+  [otro: string]: number | undefined;
+}
+
+export interface UsoDeEmpresa {
+  tenantId: string;
+  /** El nombre CONGELADO al cerrar: sobrevive al renombrado y al borrado. */
+  tenantName: string | null;
+  royaltySeats: number;
+  sourceMemberships: number | null;
+  excluded: Exclusiones;
+  excludedTotal: number;
+  seatPolicy: string;
+  methodVersion: string;
+  countedAt: string | null;
+}
+
+export interface PeriodoDeUso {
+  periodId: string;
+  period: { start: string; end: string; label: string };
+  status: string;
+  currency: string;
+  seatPolicy: string;
+  contractId: string;
+  snapshotTakenAt: string | null;
+  totalRoyaltySeats: number;
+  tenants: UsoDeEmpresa[];
+}
+
+export const usageService = {
+  /** Sólo periodos CERRADOS. No hay estimación del mes en curso. */
+  list: (params: { period?: string; limit?: number } = {}) =>
+    get<{ source: "snapshot"; currency: string | null; periods: PeriodoDeUso[] }>(
+      "/reseller/usage", params,
+    ),
+};
