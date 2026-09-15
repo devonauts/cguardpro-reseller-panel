@@ -1,0 +1,59 @@
+# Verificación automática del panel de socio antes de fusionar.
+#
+# El panel sirve a OTRO cliente —los distribuidores— desde su propia
+# aplicación, así que tiene su propia puerta. Dos comprobaciones son suyas y de
+# nadie más:
+#
+#   · el cortafuegos de importaciones, que falla si el panel cruza código con
+#     el CRM o con el panel de superadmin;
+#   · la comprobación del paquete construido, que mira lo mismo en el
+#     resultado y no en las fuentes.
+#
+# Las dos corren dentro de `npm run build`, así que el gate de construcción ya
+# las incluye; se dejan explícitas en un paso propio para que, cuando fallen,
+# el registro diga cuál de las dos fue.
+#
+# Node 22 para igualar el servidor de producción (v22.22.2).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck + pruebas + build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` respeta el lockfile exactamente y falla si está desincronizado
+      # con package.json — que es justo lo que conviene saber.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Cortafuegos de importaciones
+        run: npm run check:firewall
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Pruebas
+        run: npm test
+
+      # Construye con `base: /panel/` y, al terminar, comprueba el paquete.
+      - name: Compilar
+        run: npm run build

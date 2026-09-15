@@ -182,9 +182,24 @@ function Deslizador({
 /* ── Subida ──────────────────────────────────────────────────────────────── */
 
 const ETIQUETA_RANURA: Record<RanuraDeImagen, { titulo: string; nota: string }> = {
-  logo: { titulo: "Logotipo", nota: "PNG, JPEG o WebP. Se ajusta a 512 px." },
+  logo: {
+    titulo: "Logotipo — fondo claro",
+    nota: "El completo, y el que se usa por defecto. PNG, JPEG o WebP, hasta 512 px.",
+  },
+  logoDark: {
+    titulo: "Logotipo — fondo oscuro",
+    nota: "Para barras y fondos oscuros. Sin él se usa el claro tal cual: nunca se invierte.",
+  },
+  mark: {
+    titulo: "Marca compacta — fondo claro",
+    nota: "Cuadrada. Para la barra plegada, avatares y el icono del navegador.",
+  },
+  markDark: {
+    titulo: "Marca compacta — fondo oscuro",
+    nota: "La compacta sobre fondo oscuro.",
+  },
   favicon: { titulo: "Icono", nota: "El de la pestaña del navegador. Se ajusta a 180 px." },
-  emailLogo: { titulo: "Logotipo para correos", nota: "Se ajusta a 512 px." },
+  emailLogo: { titulo: "Logotipo para correos", nota: "Se ajusta a 512 px. Los correos se leen en claro." },
 };
 
 function SubidaDeImagen({

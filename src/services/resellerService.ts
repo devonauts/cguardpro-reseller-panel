@@ -1,4 +1,4 @@
-import { get, patch, post, subirArchivo } from "@/services/api";
+import { del, get, patch, post, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -27,6 +27,15 @@ export interface ResellerMe {
   /** Permisos EFECTIVOS. Sirven para esconder, nunca para autorizar: cada ruta
    *  del servidor vuelve a comprobarlos. */
   permissions: string[];
+  /**
+   * La marca PUBLICADA del socio, para que el panel se vista solo.
+   *
+   * Viene en `/me` y no en `/branding` por dos razones: `/branding` exige el
+   * permiso de gestionarla —y ver el panel con tu propia marca no es
+   * administrarla—, y `/me` ya se pide antes de pintar nada, así que no hay un
+   * primer fotograma con la identidad equivocada.
+   */
+  branding?: MarcaParaPintar | null;
 }
 
 export interface ResellerDashboard {
@@ -93,13 +102,57 @@ export interface Marca {
   supportUrl: string | null;
   supportPhone: string | null;
   logoFileId: string | null;
+  logoDarkFileId: string | null;
+  markFileId: string | null;
+  markDarkFileId: string | null;
   faviconFileId: string | null;
   emailLogoFileId: string | null;
   publishedAt: string | null;
   updatedAt: string | null;
+  /** Cada ranura con su enlace ya firmado por el servidor, listo para un `<img>`. */
+  assets?: Record<RanuraDeImagen, { fileId: string | null; url: string | null }>;
 }
 
-export type RanuraDeImagen = "logo" | "favicon" | "emailLogo";
+/**
+ * Las seis ranuras del juego de marca.
+ *
+ * Eran tres —logotipo, icono y logotipo de correo— y no alcanzaban: el producto
+ * se sirve en claro y en oscuro, y un logotipo con letra oscura no se lee sobre
+ * una barra negra. Invertirlo por CSS no es una solución: rota toda la paleta y
+ * convierte un rojo corporativo en cian. Y faltaba la marca COMPACTA, que es lo
+ * que necesita una barra plegada, un avatar o una pestaña del navegador —
+ * encoger el logotipo completo a 32 px da una mancha.
+ *
+ * Tiene que coincidir con `RANURAS` del backend.
+ */
+export const RANURAS_DE_IMAGEN = [
+  "logo", "logoDark", "mark", "markDark", "favicon", "emailLogo",
+] as const;
+export type RanuraDeImagen = (typeof RANURAS_DE_IMAGEN)[number];
+
+/** Lo que se PINTA, ya elegido por el servidor con su jerarquía de respaldo. */
+export interface ActivosResueltos {
+  fullLight: string | null;
+  fullDark: string | null;
+  markLight: string | null;
+  markDark: string | null;
+  favicon: string | null;
+  email: string | null;
+}
+
+/** La marca publicada tal y como llega en `/me`, lista para vestir el panel. */
+export interface MarcaParaPintar {
+  platformName: string | null;
+  loginTagline: string | null;
+  brandHue: number | null;
+  brandChroma: number | null;
+  supportEmail: string | null;
+  supportUrl: string | null;
+  supportPhone: string | null;
+  publishedAt: string | null;
+  /** Enlaces ya resueltos. `null` = esa superficie no tiene imagen. */
+  assets: ActivosResueltos;
+}
 
 /** Lo editable. Sin CSS, sin JS, sin HTML: esos campos no existen. */
 export interface MarcaEditable {
@@ -141,8 +194,19 @@ export interface EstadoDelAlta {
   requirement: string | null;
 }
 
+export interface RespuestaDeMarca {
+  draft: Marca;
+  published: Marca | null;
+  hasUnpublishedChanges: boolean;
+  slots: RanuraDeImagen[];
+  limits: Record<RanuraDeImagen, { w: number; h: number }>;
+  maxBytes: number;
+  resolvedDraft: Record<string, string | null>;
+  resolvedPublished: Record<string, string | null>;
+}
+
 export const brandingService = {
-  obtener: () => get<{ draft: Marca; published: Marca | null }>("/reseller/branding"),
+  obtener: () => get<RespuestaDeMarca>("/reseller/branding"),
   guardar: (data: MarcaEditable) => patch<Marca>("/reseller/branding", data),
   publicar: () => post<Marca>("/reseller/branding/publish", {}),
   /** Sube una imagen. El servidor la decodifica y la vuelve a escribir: lo que
@@ -151,6 +215,11 @@ export const brandingService = {
     subirArchivo<{ slot: RanuraDeImagen; fileId: string; draft: Marca }>(
       `/reseller/branding/assets/${ranura}`,
       archivo,
+    ),
+  /** Quita la imagen del BORRADOR. Lo publicado no cambia hasta publicar. */
+  quitarImagen: (ranura: RanuraDeImagen) =>
+    del<{ slot: RanuraDeImagen; draft: Marca }>(
+      `/reseller/branding/assets/${ranura}`,
     ),
 };
 

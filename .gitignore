@@ -2,3 +2,10 @@ node_modules
 dist
 .DS_Store
 *.local
+
+# Nada de entorno ni credenciales, nunca.
+.env
+.env.*
+!.env.example
+*.pem
+*.key

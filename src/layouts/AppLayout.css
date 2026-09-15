@@ -132,3 +132,13 @@
   .superior__hamburguesa { display: inline-flex; }
   .contenido { padding: var(--s-5) var(--s-4); }
 }
+
+/* El logotipo del socio en la cabecera de la barra lateral.
+   `max-height` y `object-fit: contain` y nada más: un logotipo no se recorta ni
+   se deforma. Lo que no cabe se reduce conservando su proporción. */
+.lateral__logo {
+  display: block;
+  max-width: 100%;
+  max-height: 34px;
+  object-fit: contain;
+}

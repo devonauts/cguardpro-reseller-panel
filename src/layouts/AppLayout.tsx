@@ -2,6 +2,8 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import StatusPill from "@/components/StatusPill";
+import { logoDeCabecera } from "@/branding/marcaDelSocio";
+import useModoOscuro from "@/branding/useModoOscuro";
 import { Boton } from "@/components/ui/kit";
 import "./AppLayout.css";
 
@@ -59,7 +61,18 @@ export function AppLayout({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("keydown", alPulsar);
   }, []);
 
-  const nombre = me?.reseller.displayName || me?.reseller.legalName || "Panel de socio";
+  /* El nombre PUBLICADO manda sobre el comercial: es el que el socio eligió
+     enseñar. Si no ha publicado ninguno, su razón comercial; y de último, el
+     rótulo neutro. Nunca «CGuard Pro». */
+  const nombre = me?.branding?.platformName
+    || me?.reseller.displayName
+    || me?.reseller.legalName
+    || "Panel de socio";
+
+  /* Qué logotipo toca lo decidió el servidor; aquí sólo se elige claro u
+     oscuro según el modo del sistema. `null` = no hay imagen, y entonces se
+     enseña el nombre en texto: jamás el logotipo de la plataforma. */
+  const logo = logoDeCabecera(me?.branding, useModoOscuro());
   const persona = me?.user.fullName
     || [me?.user.firstName, me?.user.lastName].filter(Boolean).join(" ")
     || me?.user.email
@@ -75,7 +88,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
         aria-label="Secciones del panel"
       >
         <div className="lateral__marca">
-          <span className="lateral__nombre">{nombre}</span>
+          {logo
+            ? <img className="lateral__logo" src={logo} alt={nombre} />
+            : <span className="lateral__nombre">{nombre}</span>}
           {me?.reseller.publicId && (
             <span className="lateral__codigo">{me.reseller.publicId}</span>
           )}

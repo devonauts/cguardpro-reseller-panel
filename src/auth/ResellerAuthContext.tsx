@@ -5,6 +5,7 @@ import {
   clearAuthToken, getAuthToken, onSessionLost, setAuthToken,
 } from "@/services/api";
 import { resellerService, type ResellerMe } from "@/services/resellerService";
+import { aplicarMarca, limpiarMarca } from "@/branding/marcaDelSocio";
 
 /**
  * La sesión del panel.
@@ -54,6 +55,10 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
     setEstado((s) => ({ ...s, cargando: true }));
     try {
       const me = await resellerService.me();
+      /* En cuanto se sabe de quién es este panel, se viste. Va aquí y no en un
+         efecto de la pantalla para que no haya un fotograma con el título
+         neutro ya pintado. */
+      aplicarMarca(me?.branding ?? null);
       setEstado({ cargando: false, me, motivo: null, mensaje: null });
     } catch (e: any) {
       const status = e?.status;
@@ -70,6 +75,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
          ya no vale). Se descarta SIN intentar reaprovecharla. */
       if (status === 403) {
         clearAuthToken();
+        limpiarMarca();
         setEstado({
           cargando: false, me: null, motivo: "canal-incorrecto",
           mensaje: "Esta sesión no pertenece a un panel de socio. Vuelve a entrar.",
@@ -114,6 +120,11 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
 
   const salir = useCallback(() => {
     clearAuthToken();
+    /* Al salir el panel deja de ser de nadie: título, icono y color vuelven a
+       los neutros. Si no, la pantalla de entrada se quedaría con la marca del
+       último que entró — y en un equipo compartido eso le dice al siguiente de
+       quién es la sesión anterior. */
+    limpiarMarca();
     setEstado({ cargando: false, me: null, motivo: "sin-sesion", mensaje: null });
   }, []);
 

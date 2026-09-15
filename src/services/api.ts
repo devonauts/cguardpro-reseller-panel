@@ -140,6 +140,11 @@ export async function patch<T>(url: string, body?: any): Promise<T> {
  * incluir la frontera del multipart, y escribirlo aquí produce una petición que
  * el servidor no sabe despiezar. Se borra el de por defecto para que lo haga.
  */
+export async function del<T>(url: string, params?: any): Promise<T> {
+  const res = await api.delete<T>(url, { params });
+  return res.data;
+}
+
 export async function subirArchivo<T>(url: string, archivo: File): Promise<T> {
   const fd = new FormData();
   fd.append("file", archivo);
