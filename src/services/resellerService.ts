@@ -223,6 +223,95 @@ export const brandingService = {
     ),
 };
 
+/* ══════════════════════════════════════════════════════════════════════════
+   EL PORTAL — CONTRATO, DERECHOS, ACTIVIDAD Y CUENTA
+   Las cuatro son de LECTURA. Ninguna manda un `resellerId`: el socio de la
+   sesión lo resuelve el servidor desde el token firmado.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface ContratoDelSocio {
+  version: number;
+  effectiveFrom: string | null;
+  effectiveTo: string | null;
+  currency: string;
+  /** CENTAVOS ENTEROS. Se formatean para leer; nunca se reconstruyen. */
+  setupFeeCents: number;
+  setupFeeWaived: boolean;
+  monthlyFeeCents: number;
+  billingInterval: string;
+  royaltyPerUserCents: number;
+  royaltySeatPolicy: string | null;
+}
+
+export interface FeatureDef {
+  key: string;
+  label: string;
+  description: string;
+}
+
+export interface DerechosDelSocio {
+  /** `true` = sin recorte: puede revender todo el catálogo. */
+  grantedAll: boolean;
+  /** Claves concedidas. Se comparan contra `catalog[].key`, NUNCA con el objeto. */
+  granted: string[] | null;
+  catalog: FeatureDef[];
+  quota: {
+    used: number;
+    max: number | null;
+    remaining: number | null;
+    unlimited: boolean;
+    canCreate: boolean;
+  };
+  showPlatformAttribution: boolean;
+}
+
+export interface LineaDeActividad {
+  id: string;
+  action: string;
+  at: string | null;
+  actorEmail: string | null;
+  actorRole: string | null;
+  targetType: string | null;
+  statusCode: number | null;
+  details: Record<string, unknown> | null;
+}
+
+export interface ActividadDelSocio {
+  rows: LineaDeActividad[];
+  count: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface CuentaDelSocio {
+  account: {
+    publicId: string | null;
+    legalName: string | null;
+    displayName: string | null;
+    country: string | null;
+    status: string | null;
+    slug: string | null;
+  };
+  billing: { billingEmail: string | null };
+  session: {
+    email: string | null;
+    fullName: string | null;
+    role: string | null;
+    membershipStatus: string | null;
+  };
+  editableElsewhere: Array<{ field: string; screen: string }>;
+  platformControlled: string[];
+}
+
+export const portalService = {
+  contrato: () => get<{ contract: ContratoDelSocio | null }>("/reseller/contract"),
+  derechos: () => get<DerechosDelSocio>("/reseller/entitlements"),
+  actividad: (page = 0, limit = 25) =>
+    get<ActividadDelSocio>("/reseller/activity", { page, limit }),
+  cuenta: () => get<CuentaDelSocio>("/reseller/settings"),
+};
+
 export const onboardingService = {
   estado: () => get<EstadoDelAlta>("/reseller/onboarding"),
   /** `step` es «de qué paso vengo», no «a dónde quiero ir»: el servidor lo

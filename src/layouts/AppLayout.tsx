@@ -34,6 +34,13 @@ const NAV: Entrada[] = [
   { a: "/companies", texto: "Empresas" },
   { a: "/usage", texto: "Consumo" },
   { a: "/billing", texto: "Facturación" },
+  /* El bloque de «tu acuerdo con CGuardPro»: qué se pactó, qué incluye y qué
+     ha pasado. Va después de lo operativo-comercial porque se consulta de
+     tanto en tanto, no a diario. */
+  { a: "/contract", texto: "Tu contrato" },
+  { a: "/entitlements", texto: "Plan y derechos" },
+  { a: "/activity", texto: "Actividad" },
+  { a: "/account", texto: "Tu cuenta" },
   { a: "/team", texto: "Equipo", proximamente: true },
 ];
 
