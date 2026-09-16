@@ -304,6 +304,50 @@ export interface CuentaDelSocio {
   platformControlled: string[];
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   EL EQUIPO
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface MiembroDelEquipo {
+  id: string;
+  email: string | null;
+  fullName: string | null;
+  role: string | null;
+  roleLabel: string | null;
+  status: "active" | "invited" | "archived" | null;
+  invitedAt: string | null;
+  updatedAt: string | null;
+  /** Si ya puso contraseña. Un booleano: nunca el estado del testigo. */
+  hasPassword: boolean;
+}
+
+export interface EquipoDelSocio {
+  members: MiembroDelEquipo[];
+  /** Quién mira, para poder marcar «tú». La decisión sigue siendo del servidor. */
+  me: { userId: string; role: string | null };
+}
+
+export interface RolDeSocio {
+  id: string;
+  label: string;
+  description: string;
+  /** Los permisos EFECTIVOS del rol, tal como los define el servidor. */
+  permissions: string[];
+}
+
+export const teamService = {
+  listar: () => get<EquipoDelSocio>("/reseller/team"),
+  roles: () => get<{ roles: RolDeSocio[] }>("/reseller/team/roles"),
+  invitar: (data: { email: string; role: string; firstName?: string; lastName?: string }) =>
+    post<{ member: MiembroDelEquipo; needsPasswordSetup: boolean }>("/reseller/team", data),
+  cambiarRol: (membershipId: string, role: string) =>
+    patch<{ member: MiembroDelEquipo }>(`/reseller/team/${membershipId}/role`, { role }),
+  darDeBaja: (membershipId: string) =>
+    post<{ member: MiembroDelEquipo }>(`/reseller/team/${membershipId}/deactivate`, {}),
+  volverAInvitar: (membershipId: string) =>
+    post<{ member: MiembroDelEquipo }>(`/reseller/team/${membershipId}/reinvite`, {}),
+};
+
 export const portalService = {
   contrato: () => get<{ contract: ContratoDelSocio | null }>("/reseller/contract"),
   derechos: () => get<DerechosDelSocio>("/reseller/entitlements"),

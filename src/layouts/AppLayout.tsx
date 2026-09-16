@@ -41,7 +41,7 @@ const NAV: Entrada[] = [
   { a: "/entitlements", texto: "Plan y derechos" },
   { a: "/activity", texto: "Actividad" },
   { a: "/account", texto: "Tu cuenta" },
-  { a: "/team", texto: "Equipo", proximamente: true },
+  { a: "/team", texto: "Equipo" },
 ];
 
 export function AppLayout({ children }: { children: ReactNode }) {
