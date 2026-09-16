@@ -3,6 +3,7 @@ import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import Contrato from "@/pages/Contrato";
 import Derechos from "@/pages/Derechos";
+import Dominios from "@/pages/Dominios";
 import Actividad from "@/pages/Actividad";
 import Cuenta from "@/pages/Cuenta";
 import Equipo from "@/pages/Equipo";
@@ -67,6 +68,9 @@ export default function App() {
       {/* Las cuatro de la etapa D.1. Todas de lectura. */}
       <Route path="/contract" element={<ProtectedRoute><Contrato /></ProtectedRoute>} />
       <Route path="/entitlements" element={<ProtectedRoute><Derechos /></ProtectedRoute>} />
+      {/* FASE 16 · la dirección por la que entra su gente: la que da CGuard
+          Pro y, si la trae, la suya. */}
+      <Route path="/domains" element={<ProtectedRoute><Dominios /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Actividad /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><Equipo /></ProtectedRoute>} />

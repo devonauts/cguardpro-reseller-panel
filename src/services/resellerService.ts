@@ -568,3 +568,54 @@ export const billingService = {
   pdfUrl: (invoiceId: string) =>
     `/api/reseller/billing/invoices/${invoiceId}/pdf`,
 };
+
+/* ── FASE 16 · DOMINIOS ─────────────────────────────────────────────────── */
+
+export interface InstruccionDeDns {
+  tipo: "CNAME" | "TXT";
+  nombre: string;
+  valor: string;
+  proposito: "enrutado" | "titularidad";
+}
+
+export type EstadoDeDominio =
+  | "pendiente_dns" | "verificando" | "pendiente_tls"
+  | "activo" | "mal_configurado" | "desactivado";
+
+export interface DominioDelSocio {
+  id: string;
+  hostname: string | null;
+  type: "platform_subdomain" | "custom" | null;
+  isPrimary: boolean;
+  isActive: boolean;
+  verificationStatus: string | null;
+  sslStatus: string | null;
+  verifiedAt: string | null;
+  lastCheckedAt: string | null;
+  activatedAt: string | null;
+  deactivatedAt: string | null;
+  failureCount: number;
+  lastFailureReason: string | null;
+  estado: EstadoDeDominio;
+  /** Sólo en el detalle: el registro que el socio tiene que crear. */
+  instrucciones?: InstruccionDeDns[];
+}
+
+export interface DominiosDelSocio {
+  dominios: DominioDelSocio[];
+  destinoDeDns: string;
+  proveedorListo: boolean;
+  motivoProveedor: string | null;
+  tope: number;
+}
+
+export const domainsService = {
+  listar: () => get<DominiosDelSocio>("/reseller/domains"),
+  ver: (id: string) => get<DominioDelSocio>(`/reseller/domains/${id}`),
+  agregar: (hostname: string) =>
+    post<DominioDelSocio>("/reseller/domains", { hostname }),
+  comprobar: (id: string) => post<DominioDelSocio>(`/reseller/domains/${id}/check`, {}),
+  hacerPrincipal: (id: string) => post<DominioDelSocio>(`/reseller/domains/${id}/primary`, {}),
+  desactivar: (id: string) => post<DominioDelSocio>(`/reseller/domains/${id}/disable`, {}),
+  quitar: (id: string) => del<{ removed: boolean; hostname: string }>(`/reseller/domains/${id}`),
+};

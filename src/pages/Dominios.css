@@ -1,0 +1,64 @@
+/* La pantalla de direcciones. Mismas medidas y tonos que el resto del panel:
+   no hay nada aquí que justifique un lenguaje visual propio. */
+.dominios { display: flex; flex-direction: column; gap: 1rem; }
+.dominios__titulo { font-size: 1rem; font-weight: 600; margin: 0 0 .35rem; }
+.dominios__nota { margin: 0 0 1rem; color: var(--texto-tenue); font-size: .875rem; }
+.dominios__vacio { color: var(--texto-tenue); font-size: .875rem; margin: .5rem 0 0; }
+.dominios__aviso {
+  margin: 0; padding: .7rem .9rem; border-radius: .5rem;
+  background: var(--aviso-fondo, rgba(120,140,255,.12)); font-size: .875rem;
+}
+.dominios__bloqueo {
+  margin: 0 0 1rem; padding: .7rem .9rem; border-radius: .5rem;
+  background: rgba(200,150,40,.14); font-size: .875rem;
+}
+.dominios__fila, .dominio__cabecera {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+}
+.dominios__host {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .95rem; overflow-wrap: anywhere;
+}
+
+.dominio {
+  border-top: 1px solid var(--borde); padding-top: 1rem; margin-top: 1rem;
+  display: flex; flex-direction: column; gap: .5rem;
+}
+.dominio__ayuda { margin: 0; font-size: .875rem; color: var(--texto-tenue); }
+.dominio__fallo {
+  margin: 0; font-size: .85rem; color: var(--malo, #c0564a);
+  overflow-wrap: anywhere;
+}
+.dominio__meta {
+  display: flex; flex-wrap: wrap; gap: .75rem;
+  font-size: .8rem; color: var(--texto-tenue);
+}
+.dominio__acciones { display: flex; flex-wrap: wrap; gap: .5rem; }
+.dominio__acciones > * { min-height: 44px; }
+
+.dns {
+  margin-top: .5rem; padding: .9rem; border-radius: .6rem;
+  background: var(--fondo-hundido, rgba(0,0,0,.14));
+  display: flex; flex-direction: column; gap: .75rem;
+}
+.dns__intro, .dns__pie { margin: 0; font-size: .85rem; color: var(--texto-tenue); }
+.dns__fila {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: .6rem;
+}
+.dns__campo { display: flex; flex-direction: column; gap: .2rem; min-width: 0; }
+.dns__campo--ancho { flex: 1 1 16rem; }
+.dns__etiqueta {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--texto-tenue);
+}
+.dns__valor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .85rem; padding: .35rem .5rem; border-radius: .35rem;
+  background: var(--fondo, rgba(255,255,255,.06)); overflow-wrap: anywhere;
+}
+.dns__valor--largo { display: block; }
+
+@media (max-width: 560px) {
+  .dns__fila { flex-direction: column; align-items: stretch; }
+  .dominio__acciones > * { flex: 1 1 auto; }
+}
