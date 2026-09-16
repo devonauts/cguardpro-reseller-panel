@@ -5,6 +5,7 @@ import Contrato from "@/pages/Contrato";
 import Derechos from "@/pages/Derechos";
 import Actividad from "@/pages/Actividad";
 import Cuenta from "@/pages/Cuenta";
+import Equipo from "@/pages/Equipo";
 import AuthLayout from "@/layouts/AuthLayout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -68,6 +69,7 @@ export default function App() {
       <Route path="/entitlements" element={<ProtectedRoute><Derechos /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Actividad /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
+      <Route path="/team" element={<ProtectedRoute><Equipo /></ProtectedRoute>} />
       <Route path="/companies/new" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
       <Route path="/companies/:tenantId" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
       {/* El asistente va SIN el armazón: durante el alta no hay barra lateral
