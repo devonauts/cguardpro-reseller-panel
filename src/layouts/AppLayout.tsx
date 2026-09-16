@@ -40,6 +40,7 @@ const NAV: Entrada[] = [
   { a: "/contract", texto: "Tu contrato" },
   { a: "/entitlements", texto: "Plan y derechos" },
   { a: "/activity", texto: "Actividad" },
+  { a: "/domains", texto: "Tu dirección" },
   { a: "/account", texto: "Tu cuenta" },
   { a: "/team", texto: "Equipo" },
 ];
