@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/kit";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
+import { ESTADO_DE_MIEMBRO as ESTADO } from "@/lib/estadoDeMiembro";
 import {
   teamService, type EquipoDelSocio, type MiembroDelEquipo, type RolDeSocio,
 } from "@/services/resellerService";
@@ -30,11 +31,6 @@ import "./Equipo.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-const ESTADO: Record<string, { texto: string; tono: "ok" | "aviso" | "neutro" }> = {
-  active: { texto: "Activo", tono: "ok" },
-  invited: { texto: "Invitado", tono: "aviso" },
-  archived: { texto: "Desactivado", tono: "neutro" },
-};
 
 export function Equipo() {
   const { puede, me } = useResellerAuth();

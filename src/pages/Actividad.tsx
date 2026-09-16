@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora } from "@/components/ui/kit";
+import { textoDeEstado } from "@/lib/estadoDeMiembro";
 import { fechaYHora } from "@/lib/dinero";
 import { portalService, type ActividadDelSocio, type LineaDeActividad } from "@/services/resellerService";
 import "./Actividad.css";
@@ -40,12 +41,53 @@ const ACCION: Record<string, string> = {
   "reseller.status.restore": "Cuenta restablecida",
   "reseller.status.suspend": "Cuenta suspendida",
   "reseller.status.reinstate": "Cuenta reactivada",
+  /* Equipo. Sin estas cuatro, invitar a un compañero dejaba en la pantalla del
+     socio una línea que decía «team.invite» — el identificador crudo, que es
+     justo lo que el repliegue de abajo hace cuando no sabe un nombre. */
+  "team.invite": "Invitación enviada",
+  "team.role_change": "Rol cambiado",
+  "team.deactivate": "Acceso retirado",
+  "team.reinvite": "Invitación reenviada",
+};
+
+/**
+ * Las claves de `details` también son identificadores. El servidor sólo deja
+ * pasar una lista corta y cerrada; aquí se nombra la que tiene cada acción.
+ */
+const CLAVE: Record<string, string> = {
+  status: "Estado",
+  role: "Rol",
+  fields: "Campos",
+  from: "Desde",
+  to: "Hasta",
+  version: "Versión",
+  reason: "Motivo",
+  slot: "Ranura",
+  quota: "Cupo",
+  decision: "Decisión",
+  tenantName: "Empresa",
+  ownerInvited: "Se invitó al titular",
 };
 
 /** Un identificador sin traducir se enseña tal cual: mejor crudo que inventado. */
 const nombreDeAccion = (a: string) => ACCION[a] || a;
 
-function Detalles({ d }: { d: Record<string, unknown> | null }) {
+/**
+ * El valor de `status` se traduce SEGÚN LA ACCIÓN, no siempre. `archived` sólo
+ * existe en el vocabulario de un miembro del equipo; el `status` de una cuenta
+ * de socio (`past_due`, `restricted`…) es otro juego de palabras distinto. Leer
+ * uno con el diccionario del otro es cómo se acaba enseñando un estado que no
+ * es. Por eso la traducción se limita a las acciones `team.*`.
+ */
+function valorDeDetalle(accion: string, clave: string, v: unknown): string {
+  if (Array.isArray(v)) return v.join(", ");
+  if (accion.startsWith("team.") && clave === "status" && typeof v === "string") {
+    return textoDeEstado(v);
+  }
+  return String(v);
+}
+
+function Detalles({ accion, d }: { accion: string; d: Record<string, unknown> | null }) {
   if (!d) return null;
   const pares = Object.entries(d);
   if (!pares.length) return null;
@@ -53,12 +95,12 @@ function Detalles({ d }: { d: Record<string, unknown> | null }) {
     <ul className="actividad__detalles">
       {pares.map(([k, v]) => (
         <li key={k}>
-          <span className="actividad__clave">{k}</span>
+          <span className="actividad__clave">{CLAVE[k] ?? k}</span>
           {/* Siempre texto. El servidor ya recorta a valores simples, pero
               pintar una variable sin convertirla es exactamente cómo se cuela
               un objeto en un hijo de React. */}
           <span className="actividad__valor">
-            {Array.isArray(v) ? v.join(", ") : String(v)}
+            {valorDeDetalle(accion, k, v)}
           </span>
         </li>
       ))}
@@ -126,7 +168,7 @@ export function Actividad() {
                   {f.actorEmail && <span>· {f.actorEmail}</span>}
                   {f.targetType && <span>· {f.targetType}</span>}
                 </div>
-                <Detalles d={f.details} />
+                <Detalles accion={f.action} d={f.details} />
               </li>
             ))}
           </ul>
