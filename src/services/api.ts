@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
+import { almacenDeCredenciales } from "@/plataforma";
+
 import { t } from "@/i18n/idioma";
 
 /**
@@ -21,25 +23,34 @@ import { t } from "@/i18n/idioma";
  */
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) || "/api";
-const TOKEN_KEY = "cguard_reseller_token";
 
+/**
+ * EL TOKEN EN MEMORIA, Y SU COPIA EN EL ALMACÉN.
+ *
+ * Quien firma las peticiones necesita el token AHORA —un interceptor de axios
+ * no puede esperar a una promesa—, así que vive en memoria. Persistirlo es otra
+ * cosa y pasa por `almacenDeCredenciales`, que en web es `localStorage` y en
+ * nativo tiene su propia frontera (ver ese fichero).
+ *
+ * Las escrituras no se esperan a propósito: guardar el token no puede retrasar
+ * la primera petición después de entrar. Si el almacén falla, la sesión sigue
+ * viva en memoria y sólo se pierde al cerrar la aplicación — que es exactamente
+ * lo que pasaba antes en modo privado.
+ */
 let _token: string | null = null;
-try {
-  _token = localStorage.getItem(TOKEN_KEY);
-} catch {
-  /* modo privado o almacenamiento bloqueado: se trabaja sin persistir */
-}
 
 export const getAuthToken = () => _token;
 
+/** Lo llama el arranque: rellena la memoria desde el almacén. */
+export async function restaurarSesion(): Promise<string | null> {
+  _token = await almacenDeCredenciales.leer();
+  return _token;
+}
+
 export function setAuthToken(token: string | null) {
   _token = token;
-  try {
-    if (token) localStorage.setItem(TOKEN_KEY, token);
-    else localStorage.removeItem(TOKEN_KEY);
-  } catch {
-    /* la sesión sigue viva en memoria aunque no se pueda guardar */
-  }
+  if (token) void almacenDeCredenciales.guardar(token);
+  else void almacenDeCredenciales.borrar();
 }
 
 export const clearAuthToken = () => setAuthToken(null);

@@ -77,4 +77,43 @@ if (conPrefijo.length) {
   process.exit(1);
 }
 
+/* ── Y QUE LA WEB NO PAGUE LA APP NATIVA ──────────────────────────────────
+   §42: la web sigue siendo un producto de primera. Todo lo nativo se carga
+   con `import()` dentro de un `if (esNativo)`, así que en el navegador vive
+   en trozos aparte que nunca se piden — o no existe en absoluto.
+
+   Esto se comprobó a mano una vez y salió mal: importar `@capacitor/core`
+   sólo para preguntar «¿estoy en nativo?» costaba 32 kB al paquete de la web
+   a cambio de una respuesta que en web siempre es «no». Se quitó (la
+   plataforma se detecta leyendo el global que Capacitor inyecta), y esto es
+   lo que impide que vuelva.
+
+   Se mira el trozo de ENTRADA, no todos: los trozos dinámicos SÍ pueden —y
+   deben— contener plugins; lo que no puede es que estén en lo que el
+   navegador se descarga para pintar la primera pantalla. */
+const entrada = /<script[^>]+src="(\/assets\/[^"]+\.js)"/.exec(html)?.[1];
+if (!entrada) {
+  console.error("✗ no se encontró el script de entrada en index.html");
+  process.exit(1);
+}
+
+const jsEntrada = fs.readFileSync(path.join(DIST, entrada.slice(1)), "utf8");
+/* Nombres de los plugins tal y como sobreviven al minificador. `Network` y
+   `Keyboard` a secas NO valen: axios trae «Network Error» y cualquier
+   biblioteca puede decir «Keyboard». Se busca el especificador del paquete,
+   que es lo único que de verdad delata una importación estática. */
+const NATIVO = [
+  "@capacitor/core", "@capacitor/app", "@capacitor/status-bar",
+  "@capacitor/splash-screen", "@capacitor/keyboard", "@capacitor/network",
+  "@capacitor/haptics", "@capacitor/preferences", "@capacitor/browser",
+  "capacitor-plugin", "registerPlugin",
+];
+const colados = NATIVO.filter((n) => jsEntrada.includes(n));
+if (colados.length) {
+  console.error(`✗ ${path.basename(entrada)} arrastra código nativo a la web:`);
+  for (const c of colados) console.error(`  · ${c}`);
+  console.error("  lo nativo se carga con import() detrás de `esNativo`.");
+  process.exit(1);
+}
+
 console.log("✓ paquete limpio y servido desde la raíz de su anfitrión");

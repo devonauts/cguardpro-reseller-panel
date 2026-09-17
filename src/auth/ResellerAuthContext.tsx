@@ -2,7 +2,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode,
 } from "react";
 import {
-  clearAuthToken, getAuthToken, onSessionLost, setAuthToken,
+  clearAuthToken, onSessionLost, restaurarSesion, setAuthToken,
 } from "@/services/api";
 import { resellerService, type ResellerMe } from "@/services/resellerService";
 import { aplicarMarca, limpiarMarca } from "@/branding/marcaDelSocio";
@@ -44,10 +44,22 @@ interface Contexto extends Estado {
 const Ctx = createContext<Contexto | null>(null);
 
 export function ResellerAuthProvider({ children }: { children: ReactNode }) {
+  /**
+   * Arranca SIEMPRE cargando.
+   *
+   * Antes se preguntaba `getAuthToken()` en el primer render para decidir si
+   * había sesión que restaurar. Ya no se puede: el token vive en un almacén que
+   * en nativo es asíncrono (Keychain/Keystore no responden en el mismo tic),
+   * así que en el primer render todavía no se sabe.
+   *
+   * «Cargando» es la única respuesta honesta mientras no se sepa. Empezar en
+   * «sin sesión» pintaría la pantalla de entrada durante un fotograma a quien
+   * ya estaba dentro — y en un teléfono ese parpadeo se ve perfectamente.
+   */
   const [estado, setEstado] = useState<Estado>({
-    cargando: !!getAuthToken(),
+    cargando: true,
     me: null,
-    motivo: getAuthToken() ? null : "sin-sesion",
+    motivo: null,
     mensaje: null,
   });
 
@@ -94,11 +106,18 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Restauración al arrancar: si hay token guardado, se valida contra el
-  // servidor antes de enseñar nada. Un token caducado no debe llegar a pintar
-  // media pantalla y desaparecer después.
+  // Restauración al arrancar: se lee el almacén y, si había token, se valida
+  // contra el servidor antes de enseñar nada. Un token caducado no debe llegar
+  // a pintar media pantalla y desaparecer después.
   useEffect(() => {
-    if (getAuthToken()) cargarMe();
+    let vivo = true;
+    void (async () => {
+      const guardado = await restaurarSesion();
+      if (!vivo) return;
+      if (guardado) await cargarMe();
+      else setEstado({ cargando: false, me: null, motivo: "sin-sesion", mensaje: null });
+    })();
+    return () => { vivo = false; };
   }, [cargarMe]);
 
   // Un 401 en cualquier petición posterior cierra la sesión aquí también, para
