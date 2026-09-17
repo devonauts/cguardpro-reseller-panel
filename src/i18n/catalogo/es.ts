@@ -44,7 +44,7 @@ export const es: Record<Clave, string> = {
   "tablero.saludoTarde": "Buenas tardes, {nombre}",
   "tablero.saludoNoche": "Buenas noches, {nombre}",
   "tablero.sub": "Esto es lo que pasa en tu cuenta de socio.",
-  "tablero.planoDeControl": "Plano de control de socios",
+  "tablero.planoDeControl": "Panel de control de socios",
   "tablero.usuarios": "Usuarios",
   "tablero.usuariosNota": "contados el último mes cerrado",
   "tablero.sinPeriodo": "ningún mes cerrado todavía",
@@ -101,7 +101,7 @@ export const es: Record<Clave, string> = {
   "armazon.tituloNeutro": "Panel de socio",
 
   "login.titulo": "Panel de socio",
-  "login.sub": "Entra a tu plano de control de socio.",
+  "login.sub": "Entra a tu panel de control de socio.",
   "login.correo": "Correo",
   "login.contrasena": "Contraseña",
   "login.entrar": "Entrar",
