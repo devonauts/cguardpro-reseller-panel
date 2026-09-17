@@ -15,8 +15,37 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: clamp(var(--s-4), 3.5vw, var(--s-7));
   overflow: hidden;
+
+  /* ── EL HUECO, Y LO QUE SE QUEDA EL TELÉFONO ────────────────────────────
+     El margen normal, MÁS lo que ocupan la barra de estado y el indicador de
+     inicio cuando esto corre como app instalada. Sin los `env()`, en un
+     iPhone el selector de idioma queda debajo de la hora y el pie de la
+     tarjeta debajo de la raya blanca.
+
+     En un navegador los cuatro `env()` valen 0 y la regla queda exactamente
+     igual que antes —comprobado contra producción: 48 px a 2560, los mismos
+     que ahora—. No hay dos reglas ni una rama por plataforma, sólo una suma
+     que en web no suma nada. El cero explícito de respaldo importa: sin él,
+     donde `env()` no se conozca la declaración entera se cae y la entrada se
+     queda sin ningún margen.
+
+     ── POR QUÉ UNA FICHA Y NO UN VALOR DIRECTO ──
+     El margen lo estrechan dos consultas de medios más abajo. Escritas como
+     `padding: var(--s-4)` PISABAN esta declaración entera y con ella las
+     cuatro zonas seguras — justo a los anchos de un teléfono, que es donde
+     existen. Se hizo así primero y el fallo no se ve en un navegador: sólo
+     en el aparato, con el rótulo debajo de la hora.
+
+     Ahora las consultas cambian la FICHA y el `padding` se escribe una sola
+     vez. Quien estreche el margen mañana no puede llevarse las zonas seguras
+     por delante sin darse cuenta. */
+  --margen: clamp(var(--s-4), 3.5vw, var(--s-7));
+  padding:
+    calc(var(--margen) + env(safe-area-inset-top, 0px))
+    calc(var(--margen) + env(safe-area-inset-right, 0px))
+    calc(var(--margen) + env(safe-area-inset-bottom, 0px))
+    calc(var(--margen) + env(safe-area-inset-left, 0px));
 }
 
 .entrada > *:not(.espacio) { position: relative; z-index: 1; }
@@ -117,12 +146,14 @@
 }
 
 @include r.hasta(movil) {
-  .entrada { padding: var(--s-4); }
+  /* La FICHA, no el `padding`: así el margen se estrecha sin tirar las zonas
+     seguras que la regla de arriba suma. */
+  .entrada { --margen: var(--s-4); }
   .entrada__rejilla { gap: var(--s-4); }
 }
 
 @include r.hasta(movil-pequeno) {
   /* A 320 px el respiro exterior baja al mínimo: cada píxel de ancho que se
      le quita al marco se lo gana el campo de dentro. */
-  .entrada { padding: var(--s-3); }
+  .entrada { --margen: var(--s-3); }
 }

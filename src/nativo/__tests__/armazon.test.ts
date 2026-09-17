@@ -98,6 +98,34 @@ describe("el armazón de la app instalada", () => {
     expect(barra).toMatch(/safe-area-inset-bottom/);
   });
 
+  it("una consulta de medios no puede llevarse por delante las zonas seguras", () => {
+    /* La entrada suma las cuatro zonas seguras a su margen. Dos consultas de
+       medios estrechan ese margen en teléfono, y escritas como
+       `padding: var(--s-4)` PISABAN la declaración entera —y con ella las
+       zonas seguras— justo a los anchos donde existen. No se ve en un
+       navegador: sólo en el aparato, con el rótulo debajo de la hora.
+
+       La forma correcta es cambiar la FICHA `--margen` y dejar el `padding`
+       escrito una sola vez. Esto lo comprueba sobre el SCSS: dentro de un
+       bloque `hasta(...)`, `.entrada` no vuelve a declarar `padding`. */
+    const src = fs.readFileSync(path.join(SRC, "layouts/AuthLayout.scss"), "utf8");
+
+    const raiz = /\.entrada\s*\{[^}]*\}/.exec(soloCodigo(src))?.[0] ?? "";
+    for (const lado of ["top", "right", "bottom", "left"]) {
+      expect(raiz, `la entrada no reserva la zona segura ${lado}`)
+        .toContain(`env(safe-area-inset-${lado}, 0px)`);
+    }
+
+    /* Y ninguna consulta de medios redeclara el `padding` de `.entrada`. */
+    const dentroDeMedios = soloCodigo(src)
+      .split(/@include\s+r\.hasta\(/)
+      .slice(1)
+      .filter((tramo) => /\.entrada\s*\{[^}]*\bpadding\s*:/.test(tramo));
+    expect(dentroDeMedios.length,
+      "una consulta de medios redeclara `padding` en .entrada y tira las zonas seguras")
+      .toBe(0);
+  });
+
   it("Ionic no trae su tipografía ni sus resets: el aspecto es nuestro", () => {
     /* `typography.css` y `normalize.css` pisarían la letra y los márgenes que
        ya decide el sistema de diseño. Ionic aquí pone el comportamiento. */
