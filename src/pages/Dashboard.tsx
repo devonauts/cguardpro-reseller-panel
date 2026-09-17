@@ -5,6 +5,9 @@ import {
   Cifra, Dato, EstadoDeDatos, Tarjeta, TarjetaCabecera, TodaviaNo,
 } from "@/components/ui/kit";
 import { resellerService, type ResellerDashboard } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import { fechaCorta } from "@/lib/dinero";
+import { etiquetaIntl } from "@/i18n/idioma";
 import "./Dashboard.css";
 
 /**
@@ -25,22 +28,15 @@ import "./Dashboard.css";
 
 /** Centavos enteros → «$1,234.56». El servidor manda centavos; aquí sólo se pinta. */
 function usd(cents: number | null | undefined): string {
-  return ((cents || 0) / 100).toLocaleString("en-US", {
+  return ((cents || 0) / 100).toLocaleString(etiquetaIntl(), {
     style: "currency",
     currency: "USD",
   });
 }
 
-function fecha(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric" });
-}
-
 export function Dashboard() {
   const { me } = useResellerAuth();
+  const t = useT();
   const [datos, setDatos] = useState<ResellerDashboard | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,12 +53,12 @@ export function Dashboard() {
       if (e?.status === 403 && e?.resellerStatus) {
         setBloqueadoPorEstado(e.resellerStatus);
       } else {
-        setError(e?.message || "No se pudo cargar el resumen.");
+        setError(e?.message || t("resumen.noCargo"));
       }
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -72,12 +68,12 @@ export function Dashboard() {
         <Cabecera />
         <Tarjeta>
           <TarjetaCabecera
-            titulo={`Tu cuenta está ${etiquetaDeEstado(bloqueadoPorEstado).toLowerCase()}`}
+            titulo={t("resumen.bloqueada", {
+              estado: etiquetaDeEstado(bloqueadoPorEstado).toLowerCase(),
+            })}
           />
           <p style={{ fontSize: 13, color: "var(--ink-muted)", maxWidth: "60ch" }}>
-            {me?.reseller.statusReason
-              || "Mientras tanto no se puede ver esta sección. Tus empresas siguen "
-               + "funcionando con normalidad: esto sólo afecta a tu panel."}
+            {me?.reseller.statusReason || t("resumen.bloqueadaNota")}
           </p>
         </Tarjeta>
       </>
@@ -89,22 +85,22 @@ export function Dashboard() {
       <Cabecera />
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         <div className="cifras">
-          <Cifra etiqueta="Empresas" valor={datos?.companies.total ?? 0} />
+          <Cifra etiqueta={t("resumen.empresas")} valor={datos?.companies.total ?? 0} />
           <Cifra
-            etiqueta="Activas"
+            etiqueta={t("resumen.activas")}
             valor={datos?.companies.active ?? 0}
-            nota="No suspendidas administrativamente"
+            nota={t("resumen.activasNota")}
           />
           <Cifra
-            etiqueta="Las facturas tú"
+            etiqueta={t("resumen.facturasTu")}
             valor={datos?.companies.resellerBilled ?? 0}
-            nota="El resto las factura la plataforma"
+            nota={t("resumen.facturasTuNota")}
           />
           <Cifra
-            etiqueta="Cupo disponible"
+            etiqueta={t("resumen.cupo")}
             valor={
               datos?.companies.remainingQuota === null
-                ? "Sin límite"
+                ? t("comun.sinLimite")
                 : datos?.companies.remainingQuota ?? 0
             }
           />
@@ -113,46 +109,40 @@ export function Dashboard() {
         <div className="columnas">
           <Tarjeta>
             <TarjetaCabecera
-              titulo="Consumo del periodo"
-              nota="Lo que se factura por los usuarios de tus empresas."
+              titulo={t("resumen.consumoTitulo")}
+              nota={t("resumen.consumoNota")}
             />
             {datos?.usage.notYetCalculated ? (
               /* EL HUECO DECLARADO. Aquí es donde sería fácil —y equivocado—
                  poner un cero para que la tarjeta no se vea vacía. */
-              <TodaviaNo>
-                Todavía no hay ningún periodo cerrado, así que no hay consumo
-                calculado. En cuanto se cierre el primero verás aquí los usuarios
-                contabilizados y el importe. No se muestra una estimación:
-                preferimos no darte una cifra que luego no cuadre con tu factura.
-              </TodaviaNo>
+              <TodaviaNo>{t("resumen.sinPeriodo")}</TodaviaNo>
             ) : (
               <dl className="datos">
-                <Dato etiqueta="Desde" valor={fecha(datos?.usage.periodStart)} />
-                <Dato etiqueta="Hasta" valor={fecha(datos?.usage.periodEnd)} />
+                <Dato etiqueta={t("resumen.desde")} valor={fechaCorta(datos?.usage.periodStart)} />
+                <Dato etiqueta={t("resumen.hasta")} valor={fechaCorta(datos?.usage.periodEnd)} />
               </dl>
             )}
           </Tarjeta>
 
           <Tarjeta>
             <TarjetaCabecera
-              titulo="Tu contrato"
-              nota={datos?.contract ? `Versión ${datos.contract.version} en vigor` : undefined}
+              titulo={t("resumen.contratoTitulo")}
+              nota={datos?.contract
+                ? t("resumen.versionEnVigor", { v: datos.contract.version })
+                : undefined}
             />
             {datos?.contract ? (
               <dl className="datos">
-                <Dato etiqueta="Vigente desde" valor={fecha(datos.contract.effectiveFrom)} />
-                <Dato etiqueta="Mensualidad" valor={usd(datos.contract.monthlyFeeCents)} />
+                <Dato etiqueta={t("resumen.vigenteDesde")} valor={fechaCorta(datos.contract.effectiveFrom)} />
+                <Dato etiqueta={t("resumen.mensualidad")} valor={usd(datos.contract.monthlyFeeCents)} />
                 <Dato
-                  etiqueta="Por usuario"
+                  etiqueta={t("resumen.porUsuario")}
                   valor={usd(datos.contract.royaltyPerUserCents)}
                 />
-                <Dato etiqueta="Moneda" valor={datos.contract.currency} />
+                <Dato etiqueta={t("resumen.moneda")} valor={datos.contract.currency} />
               </dl>
             ) : (
-              <TodaviaNo>
-                No hay un contrato en vigor registrado. Habla con tu contacto en
-                la plataforma.
-              </TodaviaNo>
+              <TodaviaNo>{t("resumen.sinContrato")}</TodaviaNo>
             )}
           </Tarjeta>
         </div>
@@ -163,12 +153,13 @@ export function Dashboard() {
 
 function Cabecera() {
   const { me } = useResellerAuth();
+  const t = useT();
   return (
     <header className="cabecera">
       <div>
-        <h1 className="cabecera__titulo">Resumen</h1>
+        <h1 className="cabecera__titulo">{t("resumen.titulo")}</h1>
         <p className="cabecera__sub">
-          {me?.reseller.displayName || me?.reseller.legalName || "Tu cuenta"}
+          {me?.reseller.displayName || me?.reseller.legalName || t("resumen.tuCuenta")}
         </p>
       </div>
       <StatusPill status={me?.reseller.status} />

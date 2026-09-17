@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/ui/kit";
 import { portalService, type CuentaDelSocio } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
+import { nombreDeRol } from "@/lib/rolDeSocio";
 import "./Cuenta.css";
 
 /**
@@ -25,27 +28,19 @@ import "./Cuenta.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-const ESTADO: Record<string, { texto: string; tono: "ok" | "aviso" | "peligro" | "neutro" }> = {
-  pending: { texto: "Pendiente", tono: "neutro" },
-  onboarding: { texto: "En alta", tono: "neutro" },
-  active: { texto: "Activa", tono: "ok" },
-  past_due: { texto: "Pago vencido", tono: "aviso" },
-  restricted: { texto: "Restringida", tono: "aviso" },
-  suspended: { texto: "Suspendida", tono: "peligro" },
-  terminated_pending_resolution: { texto: "En cierre", tono: "peligro" },
-  terminated: { texto: "Cerrada", tono: "peligro" },
-};
-
-const ROL: Record<string, string> = {
-  "reseller:owner": "Propietario",
-  "reseller:admin": "Administrador",
-  "reseller:billing": "Facturación",
-  "reseller:account_manager": "Gestor de cuentas",
-  "reseller:support": "Soporte",
-  "reseller:readonly": "Sólo lectura",
+const ESTADO: Record<string, { texto: Clave; tono: "ok" | "aviso" | "peligro" | "neutro" }> = {
+  pending: { texto: "cuenta.estadoPending", tono: "neutro" },
+  onboarding: { texto: "cuenta.estadoOnboarding", tono: "neutro" },
+  active: { texto: "cuenta.estadoActive", tono: "ok" },
+  past_due: { texto: "cuenta.estadoPastDue", tono: "aviso" },
+  restricted: { texto: "cuenta.estadoRestricted", tono: "aviso" },
+  suspended: { texto: "cuenta.estadoSuspended", tono: "peligro" },
+  terminated_pending_resolution: { texto: "cuenta.estadoTerminatedPending", tono: "peligro" },
+  terminated: { texto: "cuenta.estadoTerminated", tono: "peligro" },
 };
 
 export function Cuenta() {
+  const t = useT();
   const [c, setC] = useState<CuentaDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,11 +51,11 @@ export function Cuenta() {
     try {
       setC(await portalService.cuenta());
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu cuenta.");
+      setError(e?.message || t("cuenta.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -69,76 +64,72 @@ export function Cuenta() {
   return (
     <section className="pagina">
       <header className="pagina__cabecera">
-        <h1>Tu cuenta</h1>
-        <p className="pagina__nota">
-          Los datos de tu empresa como distribuidor. Lo editable vive en las
-          pantallas que se indican abajo.
-        </p>
+        <h1>{t("cuenta.titulo")}</h1>
+        <p className="pagina__nota">{t("cuenta.nota")}</p>
       </header>
 
       <EstadoDeDatos
         cargando={cargando}
         error={error}
         vacio={!cargando && !error && !c}
-        etiquetaVacio="No se pudo leer tu cuenta."
+        etiquetaVacio={t("cuenta.vacio")}
         onReintentar={cargar}
       >
         {c && (
           <>
             <Tarjeta>
               <TarjetaCabecera
-                titulo="Identidad"
-                nota={estado ? <Pildora tono={estado.tono}>{estado.texto}</Pildora> : undefined}
+                titulo={t("cuenta.identidad")}
+                nota={estado ? <Pildora tono={estado.tono}>{t(estado.texto)}</Pildora> : undefined}
               />
               <div className="cuenta__rejilla">
-                <Dato etiqueta="Código" valor={c.account.publicId || "—"} />
-                <Dato etiqueta="Nombre comercial" valor={c.account.displayName || "—"} />
-                <Dato etiqueta="Razón social" valor={c.account.legalName || "—"} />
-                <Dato etiqueta="País" valor={c.account.country || "—"} />
+                <Dato etiqueta={t("cuenta.codigo")} valor={c.account.publicId || "—"} />
+                <Dato etiqueta={t("cuenta.nombreComercial")} valor={c.account.displayName || "—"} />
+                <Dato etiqueta={t("cuenta.razonSocial")} valor={c.account.legalName || "—"} />
+                <Dato etiqueta={t("cuenta.pais")} valor={c.account.country || "—"} />
               </div>
-              <p className="cuenta__nota">
-                Estos datos los fija CGuard Pro. Si alguno no es correcto, escríbenos.
-              </p>
+              <p className="cuenta__nota">{t("cuenta.notaIdentidad")}</p>
             </Tarjeta>
 
             <Tarjeta>
-              <TarjetaCabecera titulo="Facturación" />
+              <TarjetaCabecera titulo={t("cuenta.facturacionTitulo")} />
               <div className="cuenta__rejilla">
-                <Dato etiqueta="Correo de facturación" valor={c.billing.billingEmail || "—"} />
+                <Dato etiqueta={t("cuenta.correoFacturacion")} valor={c.billing.billingEmail || "—"} />
               </div>
-              <p className="cuenta__nota">
-                Es la dirección a la que CGuard Pro te envía tus facturas.
-              </p>
+              <p className="cuenta__nota">{t("cuenta.notaFacturacion")}</p>
             </Tarjeta>
 
             <Tarjeta>
-              <TarjetaCabecera titulo="Tu sesión" />
+              <TarjetaCabecera titulo={t("cuenta.tuSesion")} />
               <div className="cuenta__rejilla">
-                <Dato etiqueta="Persona" valor={c.session.fullName || c.session.email || "—"} />
-                <Dato etiqueta="Correo" valor={c.session.email || "—"} />
                 <Dato
-                  etiqueta="Rol"
-                  valor={c.session.role ? (ROL[c.session.role] || c.session.role) : "—"}
+                  etiqueta={t("cuenta.persona")}
+                  valor={c.session.fullName || c.session.email || "—"}
+                />
+                <Dato etiqueta={t("cuenta.correo")} valor={c.session.email || "—"} />
+                <Dato
+                  etiqueta={t("cuenta.rol")}
+                  /* El MISMO nombre que en Equipo: esta pantalla tenía su
+                     propia tabla, y una de las dos iba a quedarse vieja. */
+                  valor={c.session.role ? nombreDeRol(c.session.role) : "—"}
                 />
               </div>
             </Tarjeta>
 
             <Tarjeta>
-              <TarjetaCabecera titulo="Dónde se cambia cada cosa" />
+              <TarjetaCabecera titulo={t("cuenta.dondeSeCambia")} />
               <ul className="cuenta__enlaces">
                 <li>
-                  <Link to="/branding">Tu marca</Link>
-                  <span>
-                    Logotipos, color, nombre de plataforma, lema y datos de soporte.
-                  </span>
+                  <Link to="/branding">{t("nav.marca")}</Link>
+                  <span>{t("cuenta.enlaceMarca")}</span>
                 </li>
                 <li>
-                  <Link to="/contract">Tu contrato</Link>
-                  <span>Las condiciones comerciales. Las fija CGuard Pro.</span>
+                  <Link to="/contract">{t("nav.contrato")}</Link>
+                  <span>{t("cuenta.enlaceContrato")}</span>
                 </li>
                 <li>
-                  <Link to="/entitlements">Plan y derechos</Link>
-                  <span>Módulos incluidos y límite de empresas. Los licencia CGuard Pro.</span>
+                  <Link to="/entitlements">{t("nav.derechos")}</Link>
+                  <span>{t("cuenta.enlaceDerechos")}</span>
                 </li>
               </ul>
             </Tarjeta>

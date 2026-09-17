@@ -5,7 +5,9 @@ import {
 } from "@/components/ui/kit";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
-import { ESTADO_DE_MIEMBRO as ESTADO } from "@/lib/estadoDeMiembro";
+import { estadoDeMiembro } from "@/lib/estadoDeMiembro";
+import { descripcionDeRol, nombreDeRol } from "@/lib/rolDeSocio";
+import { useT } from "@/i18n/IdiomaProvider";
 import {
   teamService, type EquipoDelSocio, type MiembroDelEquipo, type RolDeSocio,
 } from "@/services/resellerService";
@@ -34,6 +36,7 @@ import "./Equipo.css";
 
 export function Equipo() {
   const { puede, me } = useResellerAuth();
+  const t = useT();
   const [datos, setDatos] = useState<EquipoDelSocio | null>(null);
   const [roles, setRoles] = useState<RolDeSocio[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -58,7 +61,7 @@ export function Equipo() {
       setRoles(rl.roles);
       if (!rol && rl.roles.length) setRol("reseller:readonly");
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu equipo.");
+      setError(e?.message || t("equipo.noCargo"));
     } finally {
       setCargando(false);
     }
@@ -80,7 +83,7 @@ export function Equipo() {
       /* El servidor explica por qué («tu cuenta quedaría sin ningún
          propietario activo»). Sustituirlo por un genérico dejaría a la persona
          sin saber qué hacer. */
-      setError(e?.message || "No se pudo completar la acción.");
+      setError(e?.message || t("comun.noSePudoAccion"));
     } finally {
       setOcupado(null);
     }
@@ -93,16 +96,15 @@ export function Equipo() {
     setError(null);
     try {
       const r = await teamService.invitar({ email: email.trim(), role: rol });
-      setAviso(
-        r.needsPasswordSetup
-          ? `Invitación creada. ${email.trim()} tendrá que crear su contraseña la primera vez que entre al panel.`
-          : `Invitación creada. ${email.trim()} ya tiene contraseña y puede entrar directamente.`,
-      );
+      setAviso(t(
+        r.needsPasswordSetup ? "equipo.invitadoSinContrasena" : "equipo.invitadoConContrasena",
+        { correo: email.trim() },
+      ));
       setEmail("");
       setAbierto(false);
       await cargar();
     } catch (e: any) {
-      setError(e?.message || "No se pudo invitar.");
+      setError(e?.message || t("equipo.noInvito"));
     } finally {
       setEnviando(false);
     }
@@ -115,12 +117,11 @@ export function Equipo() {
   return (
     <section className="pagina">
       <header className="pagina__cabecera">
-        <h1>Equipo</h1>
+        <h1>{t("equipo.titulo")}</h1>
         <p className="pagina__nota">
-          Quién puede entrar a este panel y qué puede hacer. El acceso al panel
-          <strong> no </strong>da acceso a la operación de tus empresas —rondas,
-          incidentes o datos de sus clientes—: eso requiere una cuenta propia en
-          cada empresa.
+          {t("equipo.nota1")}
+          <strong> {t("equipo.notaFuerte")} </strong>
+          {t("equipo.nota2")}
         </p>
       </header>
 
@@ -130,17 +131,17 @@ export function Equipo() {
       {gestiona && (
         <Tarjeta>
           <TarjetaCabecera
-            titulo="Invitar a alguien"
+            titulo={t("equipo.invitarTitulo")}
             nota={
               <Boton variante="suave" onClick={() => setAbierto((v) => !v)}>
-                {abierto ? "Cancelar" : "Invitar"}
+                {t(abierto ? "comun.cancelar" : "equipo.invitar")}
               </Boton>
             }
           />
           {abierto && (
             <form className="equipo__form" onSubmit={invitar}>
               <Campo
-                etiqueta="Correo"
+                etiqueta={t("equipo.correo")}
                 type="email"
                 required
                 value={email}
@@ -148,30 +149,34 @@ export function Equipo() {
                 placeholder="persona@empresa.com"
               />
               <label className="equipo__campo">
-                <span className="equipo__etiqueta">Rol</span>
+                <span className="equipo__etiqueta">{t("equipo.rol")}</span>
                 <select
                   className="equipo__select"
                   value={rol}
                   onChange={(e) => setRol(e.target.value)}
                 >
                   {roles.map((r) => (
-                    /* La etiqueta viene del servidor, igual que los permisos:
-                       el panel no define autoridad ni la describe por su cuenta. */
-                    <option key={r.id} value={r.id}>{r.label}</option>
+                    /* El rol que se manda es `r.id` —la autoridad es suya—; lo
+                       que cambia es cómo se escribe. Ver `lib/rolDeSocio`. */
+                    <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
                   ))}
                 </select>
               </label>
               {rolActual && (
                 <p className="equipo__explicacion">
-                  {rolActual.description}
+                  {descripcionDeRol(rolActual.id, rolActual.description)}
                   <span className="equipo__permisos">
-                    {rolActual.permissions.length} permiso
-                    {rolActual.permissions.length === 1 ? "" : "s"}
+                    {t(
+                      rolActual.permissions.length === 1
+                        ? "equipo.permisoUno"
+                        : "equipo.permisosVarios",
+                      { n: rolActual.permissions.length },
+                    )}
                   </span>
                 </p>
               )}
               <Boton type="submit" cargando={enviando} disabled={!email.trim() || !rol}>
-                Enviar invitación
+                {t("equipo.enviarInvitacion")}
               </Boton>
             </form>
           )}
@@ -180,19 +185,19 @@ export function Equipo() {
 
       <Tarjeta>
         <TarjetaCabecera
-          titulo="Miembros"
+          titulo={t("equipo.miembros")}
           nota={datos ? `${datos.members.length}` : undefined}
         />
         <EstadoDeDatos
           cargando={cargando}
           error={cargando ? null : (datos ? null : error)}
           vacio={!cargando && !!datos && datos.members.length === 0}
-          etiquetaVacio="Todavía no hay nadie más en tu equipo."
+          etiquetaVacio={t("equipo.vacio")}
           onReintentar={cargar}
         >
           <ul className="equipo__lista">
             {(datos?.members ?? []).map((m) => {
-              const est = m.status ? ESTADO[m.status] : null;
+              const est = estadoDeMiembro(m.status);
               const yo = soyYo(m);
               const activo = m.status !== "archived";
               return (
@@ -200,34 +205,34 @@ export function Equipo() {
                   <div className="equipo__quien">
                     <span className="equipo__nombre">
                       {m.fullName || m.email || "—"}
-                      {yo && <span className="equipo__tu">tú</span>}
+                      {yo && <span className="equipo__tu">{t("equipo.tu")}</span>}
                     </span>
                     {/* El correo se parte: uno largo no puede estirar la fila. */}
                     <span className="equipo__correo">{m.email}</span>
                   </div>
 
                   <div className="equipo__estado">
-                    <Pildora tono="neutro">{m.roleLabel || m.role}</Pildora>
+                    <Pildora tono="neutro">{nombreDeRol(m.role, m.roleLabel)}</Pildora>
                     {est && <Pildora tono={est.tono}>{est.texto}</Pildora>}
                     {m.status === "invited" && !m.hasPassword && (
-                      <span className="equipo__pista">sin contraseña aún</span>
+                      <span className="equipo__pista">{t("equipo.sinContrasenaAun")}</span>
                     )}
                   </div>
 
                   {gestiona && (
                     <div className="equipo__acciones">
                       <label className="equipo__rol-inline">
-                        <span className="sr-only">Rol de {m.email}</span>
+                        <span className="sr-only">{t("equipo.rolDe", { correo: m.email ?? "" })}</span>
                         <select
                           className="equipo__select equipo__select--mini"
                           value={m.role ?? ""}
                           disabled={ocupado === m.id || !activo}
                           onChange={(e) =>
                             accion(m.id, () => teamService.cambiarRol(m.id, e.target.value),
-                              "Rol actualizado.")}
+                              t("equipo.rolActualizado"))}
                         >
                           {roles.map((r) => (
-                            <option key={r.id} value={r.id}>{r.label}</option>
+                            <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
                           ))}
                         </select>
                       </label>
@@ -237,9 +242,9 @@ export function Equipo() {
                           variante="suave"
                           cargando={ocupado === m.id}
                           onClick={() => accion(m.id, () => teamService.volverAInvitar(m.id),
-                            "Invitación renovada. Recibirá el enlace al intentar entrar.")}
+                            t("equipo.invitacionRenovada"))}
                         >
-                          Reinvitar
+                          {t("equipo.reinvitar")}
                         </Boton>
                       )}
 
@@ -248,9 +253,9 @@ export function Equipo() {
                           variante="peligro"
                           cargando={ocupado === m.id}
                           onClick={() => accion(m.id, () => teamService.darDeBaja(m.id),
-                            "Miembro desactivado.")}
+                            t("equipo.miembroDesactivado"))}
                         >
-                          Desactivar
+                          {t("equipo.desactivar")}
                         </Boton>
                       )}
                     </div>
@@ -266,18 +271,18 @@ export function Equipo() {
 
       {roles.length > 0 && (
         <Tarjeta>
-          <TarjetaCabecera titulo="Qué puede hacer cada rol" />
+          <TarjetaCabecera titulo={t("equipo.rolesTitulo")} />
           <ul className="equipo__roles">
             {roles.map((r) => (
               <li key={r.id}>
-                <span className="equipo__rol-nombre">{r.label}</span>
-                <span className="equipo__rol-desc">{r.description}</span>
+                <span className="equipo__rol-nombre">{nombreDeRol(r.id, r.label)}</span>
+                <span className="equipo__rol-desc">
+                  {descripcionDeRol(r.id, r.description)}
+                </span>
               </li>
             ))}
           </ul>
-          <p className="equipo__nota-operacion">
-            Ninguno de estos roles da acceso a la operación de tus empresas.
-          </p>
+          <p className="equipo__nota-operacion">{t("equipo.notaOperacion")}</p>
         </Tarjeta>
       )}
     </section>

@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
+import { t } from "@/i18n/idioma";
+
 /**
  * El cliente HTTP del panel de socio.
  *
@@ -89,7 +91,7 @@ function normalizar(error: AxiosError): ApiError {
     (data && (data.message || data.error)) ||
     (typeof data === "string" ? data : "") ||
     error.message ||
-    "No se pudo completar la operación";
+    t("comun.noSePudo");
   return {
     status,
     message,

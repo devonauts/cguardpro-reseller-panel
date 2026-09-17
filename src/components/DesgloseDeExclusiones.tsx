@@ -1,4 +1,6 @@
 import type { Exclusiones } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./DesgloseDeExclusiones.css";
 
 /**
@@ -14,25 +16,25 @@ import "./DesgloseDeExclusiones.css";
  */
 
 /** Cada motivo, dicho como lo diría una persona. */
-const ETIQUETA: Record<string, string> = {
-  invited: "Invitados sin aceptar",
-  pending: "Pendientes de activar",
-  archived: "Dados de baja o inactivos",
-  deletedMembership: "Eliminados",
-  orphanUser: "Sin cuenta asociada",
-  demoSeed: "Datos de ejemplo de la plataforma",
-  policy: "Fuera de lo que cubre tu contrato",
+const ETIQUETA: Record<string, Clave> = {
+  invited: "desglose.motivoInvited",
+  pending: "desglose.motivoPending",
+  archived: "desglose.motivoArchived",
+  deletedMembership: "desglose.motivoDeletedMembership",
+  orphanUser: "desglose.motivoOrphanUser",
+  demoSeed: "desglose.motivoDemoSeed",
+  policy: "desglose.motivoPolicy",
 };
 
 /** Lo que significa cada uno, para quien pregunte. */
-const EXPLICACION: Record<string, string> = {
-  invited: "Se les envió la invitación pero todavía no han entrado.",
-  pending: "Su alta está a medias.",
-  archived: "Ya no trabajan en la empresa o están desactivados.",
-  deletedMembership: "Se les borró de la empresa.",
-  orphanUser: "La cuenta de la persona ya no existe.",
-  demoSeed: "Los creó CGuard Pro como ejemplo al abrir la empresa. No se cobran.",
-  policy: "Su puesto no entra en la modalidad que tienes contratada.",
+const EXPLICACION: Record<string, Clave> = {
+  invited: "desglose.explInvited",
+  pending: "desglose.explPending",
+  archived: "desglose.explArchived",
+  deletedMembership: "desglose.explDeletedMembership",
+  orphanUser: "desglose.explOrphanUser",
+  demoSeed: "desglose.explDemoSeed",
+  policy: "desglose.explPolicy",
 };
 
 export function DesgloseDeExclusiones({
@@ -44,6 +46,7 @@ export function DesgloseDeExclusiones({
   sourceMemberships: number | null;
   royaltySeats: number;
 }) {
+  const t = useT();
   const motivos = Object.entries(excluded)
     .filter(([, n]) => typeof n === "number" && n > 0)
     .sort((a, b) => (b[1] as number) - (a[1] as number));
@@ -52,8 +55,8 @@ export function DesgloseDeExclusiones({
     return (
       <p className="desglose__nada">
         {sourceMemberships !== null
-          ? `Las ${sourceMemberships} cuentas de la empresa se contabilizaron.`
-          : "No hubo exclusiones."}
+          ? t("desglose.todasContadas", { n: sourceMemberships })
+          : t("desglose.sinExclusiones")}
       </p>
     );
   }
@@ -62,8 +65,8 @@ export function DesgloseDeExclusiones({
     <div className="desglose">
       {sourceMemberships !== null && (
         <p className="desglose__suma">
-          <strong>{sourceMemberships}</strong> cuentas en la empresa →{" "}
-          <strong>{royaltySeats}</strong> contabilizadas
+          <strong>{sourceMemberships}</strong> {t("desglose.cuentasEnLaEmpresa")}{" "}
+          <strong>{royaltySeats}</strong> {t("desglose.contabilizadas")}
         </p>
       )}
 
@@ -72,9 +75,9 @@ export function DesgloseDeExclusiones({
           <li key={clave} className="desglose__fila">
             <span className="desglose__n">{n}</span>
             <span className="desglose__texto">
-              <span className="desglose__motivo">{ETIQUETA[clave] ?? clave}</span>
+              <span className="desglose__motivo">{ETIQUETA[clave] ? t(ETIQUETA[clave]) : clave}</span>
               {EXPLICACION[clave] && (
-                <span className="desglose__ayuda">{EXPLICACION[clave]}</span>
+                <span className="desglose__ayuda">{t(EXPLICACION[clave])}</span>
               )}
             </span>
           </li>

@@ -6,6 +6,9 @@ import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/ui/kit";
 import {
   onboardingService, type EstadoDelAlta, type MarcaEditable, type PasoDelAlta,
 } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
+import type { Clave } from "@/i18n/idioma";
 import "./Wizard.css";
 
 /**
@@ -26,21 +29,22 @@ import "./Wizard.css";
  * tiene ninguna de las dos cosas, y es exactamente cuando hace esto.
  */
 
-const TITULO: Record<PasoDelAlta, string> = {
-  welcome: "Bienvenido",
-  identity: "Tus datos",
-  subdomain: "Tu dirección",
-  platform_name: "Tu nombre",
-  logo: "Tu logotipo",
-  favicon: "Tu icono",
-  appearance: "Tus colores",
-  support: "Tu soporte",
-  review: "Revisión",
-  publish: "Publicar",
+const TITULO: Record<PasoDelAlta, Clave> = {
+  welcome: "alta.pasoWelcome",
+  identity: "alta.pasoIdentity",
+  subdomain: "alta.pasoSubdomain",
+  platform_name: "alta.pasoPlatformName",
+  logo: "alta.pasoLogo",
+  favicon: "alta.pasoFavicon",
+  appearance: "alta.pasoAppearance",
+  support: "alta.pasoSupport",
+  review: "alta.pasoReview",
+  publish: "alta.pasoPublish",
 };
 
 export function Wizard() {
   const navigate = useNavigate();
+  const t = useT();
   const [est, setEst] = useState<EstadoDelAlta | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,11 +60,11 @@ export function Wizard() {
       setBorrador({});
       if (r.completed) navigate("/dashboard", { replace: true });
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu alta.");
+      setError(e?.message || t("alta.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, [navigate]);
+  }, [navigate, t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -82,7 +86,7 @@ export function Wizard() {
       setEst(r);
       setBorrador({});
     } catch (e: any) {
-      setError(e?.message || "No se pudo continuar.");
+      setError(e?.message || t("alta.noContinuar"));
     } finally {
       setEnviando(false);
     }
@@ -98,7 +102,7 @@ export function Wizard() {
       setEst(r);
       setBorrador({});
     } catch (e: any) {
-      setError(e?.message || "No se pudo volver.");
+      setError(e?.message || t("alta.noVolver"));
     } finally {
       setEnviando(false);
     }
@@ -106,15 +110,20 @@ export function Wizard() {
 
   return (
     <main className="alta">
+      {/* Durante el alta no hay armazón, así que el idioma vive aquí: quien se
+          está dando de alta también tiene que poder cambiarlo. */}
+      <div className="alta__idioma">
+        <SelectorDeIdioma compacto />
+      </div>
       <div className="alta__caja">
         <EstadoDeDatos cargando={cargando} error={!est ? error : null} onReintentar={cargar}>
           {est && paso && paso !== "completed" && marca && (
             <>
               <header className="alta__cabecera">
                 <p className="alta__contador">
-                  Paso {est.stepIndex + 1} de {est.totalSteps}
+                  {t("alta.contador", { a: est.stepIndex + 1, b: est.totalSteps })}
                 </p>
-                <h1 className="alta__titulo">{TITULO[paso]}</h1>
+                <h1 className="alta__titulo">{t(TITULO[paso])}</h1>
                 {/* La barra es decorativa; el contador de arriba es lo que se
                     lee. Por eso lleva `aria-hidden` y no `progressbar`. */}
                 <div className="alta__barra" aria-hidden="true">
@@ -143,10 +152,10 @@ export function Wizard() {
                   onClick={atras}
                   disabled={est.stepIndex === 0 || enviando}
                 >
-                  Atrás
+                  {t("alta.atras")}
                 </Boton>
                 <Boton onClick={continuar} cargando={enviando}>
-                  {paso === "publish" ? "Publicar y terminar" : "Continuar"}
+                  {t(paso === "publish" ? "alta.publicarYTerminar" : "alta.continuar")}
                 </Boton>
               </footer>
             </>
@@ -168,33 +177,25 @@ function Contenido({
   onCambio: (p: MarcaEditable) => void;
   onImagenSubida: (m: any) => void;
 }) {
+  const t = useT();
   switch (paso) {
     case "welcome":
       return (
         <div className="alta__texto">
-          <p>
-            Vamos a dejar tu plataforma con tu marca. Son unos minutos y puedes
-            parar cuando quieras: se guarda lo que lleves hecho.
-          </p>
-          <p className="alta__apunte">
-            No hace falta que tengas empresas dadas de alta todavía, ni un
-            dominio propio.
-          </p>
+          <p>{t("alta.welcome1")}</p>
+          <p className="alta__apunte">{t("alta.welcome2")}</p>
         </div>
       );
 
     case "identity":
       return (
         <>
-          <p className="alta__texto">
-            Esto es lo que tenemos registrado. Si algo no cuadra, escríbenos
-            antes de seguir.
-          </p>
+          <p className="alta__texto">{t("alta.identity1")}</p>
           <dl className="alta__datos">
-            <Dato etiqueta="Razón social" valor={est.identity.legalName} />
-            <Dato etiqueta="Nombre comercial" valor={est.identity.displayName} />
-            <Dato etiqueta="Código" valor={est.identity.publicId} />
-            <Dato etiqueta="País" valor={est.identity.country} />
+            <Dato etiqueta={t("alta.identityRazonSocial")} valor={est.identity.legalName} />
+            <Dato etiqueta={t("alta.identityNombreComercial")} valor={est.identity.displayName} />
+            <Dato etiqueta={t("alta.identityCodigo")} valor={est.identity.publicId} />
+            <Dato etiqueta={t("alta.identityPais")} valor={est.identity.country} />
           </dl>
         </>
       );
@@ -202,27 +203,18 @@ function Contenido({
     case "subdomain":
       return est.platformHostname ? (
         <>
-          <p className="alta__texto">Tu dirección reservada:</p>
+          <p className="alta__texto">{t("alta.subdomain1")}</p>
           <p className="alta__host">{est.platformHostname}</p>
-          <p className="alta__apunte">
-            Está reservada a tu nombre, pero todavía no está en servicio: la
-            activamos nosotros más adelante. Mientras tanto puedes seguir con el
-            resto del alta — no tienes que hacer nada aquí.
-          </p>
+          <p className="alta__apunte">{t("alta.subdomain2")}</p>
         </>
       ) : (
-        <TodaviaNo>
-          Todavía no hay una dirección reservada para ti. No bloquea nada del
-          alta; lo revisamos por nuestra parte.
-        </TodaviaNo>
+        <TodaviaNo>{t("alta.subdomainVacio")}</TodaviaNo>
       );
 
     case "platform_name":
       return (
         <>
-          <p className="alta__texto">
-            El nombre que verán tus clientes al entrar. El nuestro no aparece.
-          </p>
+          <p className="alta__texto">{t("alta.platformName1")}</p>
           <BrandingForm marca={marca} campos={["platformName"]} onCambio={onCambio} />
         </>
       );
@@ -231,14 +223,8 @@ function Contenido({
     case "favicon":
       return (
         <>
-          <p className="alta__texto">
-            {paso === "logo"
-              ? "Tu logotipo, para su pantalla de entrada."
-              : "El icono pequeño de la pestaña del navegador."}
-          </p>
-          <p className="alta__apunte">
-            Puedes saltarte este paso y subirlo más tarde desde «Tu marca».
-          </p>
+          <p className="alta__texto">{t(paso === "logo" ? "alta.logo1" : "alta.favicon1")}</p>
+          <p className="alta__apunte">{t("alta.logoApunte")}</p>
           <BrandingForm
             marca={marca}
             campos={[]}
@@ -257,17 +243,14 @@ function Contenido({
             campos={["brandHue", "brandChroma"]}
             onCambio={onCambio}
           />
-          <BrandingPreview marca={marca} titulo="Así se verá" />
+          <BrandingPreview marca={marca} titulo={t("alta.asiSeVera")} />
         </div>
       );
 
     case "support":
       return (
         <>
-          <p className="alta__texto">
-            A dónde acuden tus clientes cuando necesitan ayuda. Estos datos los
-            verán ellos.
-          </p>
+          <p className="alta__texto">{t("alta.support1")}</p>
           <BrandingForm
             marca={marca}
             campos={["supportEmail", "supportPhone", "supportUrl", "loginTagline"]}
@@ -280,26 +263,29 @@ function Contenido({
       return (
         <div className="alta__doble">
           <dl className="alta__datos">
-            <Dato etiqueta="Nombre" valor={marca.platformName} />
-            <Dato etiqueta="Frase" valor={marca.loginTagline} />
-            <Dato etiqueta="Correo de soporte" valor={marca.supportEmail} />
-            <Dato etiqueta="Teléfono" valor={marca.supportPhone} />
-            <Dato etiqueta="Web de soporte" valor={marca.supportUrl} />
-            <Dato etiqueta="Logotipo" valor={marca.logoFileId ? "Cargado" : "Sin subir"} />
-            <Dato etiqueta="Icono" valor={marca.faviconFileId ? "Cargado" : "Sin subir"} />
+            <Dato etiqueta={t("alta.reviewNombre")} valor={marca.platformName} />
+            <Dato etiqueta={t("alta.reviewFrase")} valor={marca.loginTagline} />
+            <Dato etiqueta={t("alta.reviewCorreoSoporte")} valor={marca.supportEmail} />
+            <Dato etiqueta={t("alta.reviewTelefono")} valor={marca.supportPhone} />
+            <Dato etiqueta={t("alta.reviewWebSoporte")} valor={marca.supportUrl} />
+            <Dato
+              etiqueta={t("alta.reviewLogotipo")}
+              valor={t(marca.logoFileId ? "alta.reviewCargado" : "alta.reviewSinSubir")}
+            />
+            <Dato
+              etiqueta={t("alta.reviewIcono")}
+              valor={t(marca.faviconFileId ? "alta.reviewCargado" : "alta.reviewSinSubir")}
+            />
           </dl>
-          <BrandingPreview marca={marca} titulo="Así lo verán" />
+          <BrandingPreview marca={marca} titulo={t("alta.asiLoVeran")} />
         </div>
       );
 
     case "publish":
       return (
         <div className="alta__texto">
-          <p>Todo listo. Al publicar, tus clientes empezarán a ver tu marca.</p>
-          <p className="alta__apunte">
-            Podrás cambiarla cuando quieras desde «Tu marca»: se edita en un
-            borrador y no se aplica hasta que vuelvas a publicar.
-          </p>
+          <p>{t("alta.publish1")}</p>
+          <p className="alta__apunte">{t("alta.publish2")}</p>
         </div>
       );
 

@@ -6,10 +6,20 @@
 }
 .auth__caja {
   width: 100%;
-  max-width: 400px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   padding: var(--s-6);
   box-shadow: var(--shadow-md);
 }
+
+/* La columna: el idioma pegado a la caja que modifica, no suelto por la pantalla. */
+.auth__columna {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+}
+

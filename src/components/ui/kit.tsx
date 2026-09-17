@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, forwardRef } from "react";
+import { useT } from "@/i18n/IdiomaProvider";
 import "./kit.css";
 
 /**
@@ -137,7 +138,7 @@ export function Pildora({ tono = "neutro", children }: { tono?: Tono; children: 
  * pantalla se entera de que está esperando, en vez de encontrarse un silencio.
  */
 export function EstadoDeDatos({
-  cargando, error, vacio, etiquetaVacio = "No hay nada que mostrar todavía.",
+  cargando, error, vacio, etiquetaVacio,
   onReintentar, children,
 }: {
   cargando?: boolean;
@@ -147,11 +148,12 @@ export function EstadoDeDatos({
   onReintentar?: () => void;
   children: ReactNode;
 }) {
+  const t = useT();
   if (cargando) {
     return (
       <div className="estado" role="status" aria-live="polite">
         <span className="estado__spinner" aria-hidden="true" />
-        <p className="estado__texto">Cargando…</p>
+        <p className="estado__texto">{t("comun.cargando")}</p>
       </div>
     );
   }
@@ -160,7 +162,7 @@ export function EstadoDeDatos({
       <div className="estado" role="alert">
         <p className="estado__texto estado__texto--error">{error}</p>
         {onReintentar && (
-          <Boton variante="suave" onClick={onReintentar}>Reintentar</Boton>
+          <Boton variante="suave" onClick={onReintentar}>{t("comun.reintentar")}</Boton>
         )}
       </div>
     );
@@ -168,7 +170,7 @@ export function EstadoDeDatos({
   if (vacio) {
     return (
       <div className="estado">
-        <p className="estado__texto">{etiquetaVacio}</p>
+        <p className="estado__texto">{etiquetaVacio ?? t("comun.vacio")}</p>
       </div>
     );
   }

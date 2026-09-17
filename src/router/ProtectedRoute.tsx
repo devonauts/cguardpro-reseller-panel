@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
+import { useT } from "@/i18n/IdiomaProvider";
 
 /**
  * La puerta de las rutas del panel.
@@ -23,6 +24,7 @@ export function ProtectedRoute({
 }: { children: ReactNode; sinArmazon?: boolean }) {
   const { cargando, autenticado, motivo, mensaje } = useResellerAuth();
   const location = useLocation();
+  const t = useT();
 
   // Mientras se valida la sesión guardada no se enseña ni el armazón: pintar
   // media pantalla y quitarla después es peor que esperar un momento.
@@ -30,7 +32,7 @@ export function ProtectedRoute({
     return (
       <AuthLayout>
         <div role="status" aria-live="polite" style={{ textAlign: "center" }}>
-          Comprobando tu sesión…
+          {t("sesion.comprobando")}
         </div>
       </AuthLayout>
     );
@@ -43,7 +45,7 @@ export function ProtectedRoute({
       return (
         <AuthLayout>
           <div role="alert" style={{ textAlign: "center" }}>
-            <h1 style={{ fontSize: 18, marginBottom: "var(--s-2)" }}>No disponible</h1>
+            <h1 style={{ fontSize: 18, marginBottom: "var(--s-2)" }}>{t("sesion.noDisponible")}</h1>
             <p style={{ fontSize: 13, color: "var(--ink-subtle)" }}>{mensaje}</p>
           </div>
         </AuthLayout>

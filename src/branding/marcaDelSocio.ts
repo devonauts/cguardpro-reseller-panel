@@ -23,9 +23,16 @@
  * ════════════════════════════════════════════════════════════════════════════
  */
 import type { MarcaParaPintar } from "@/services/resellerService";
+import { t } from "@/i18n/idioma";
 
-/** El título y el icono de partida, para poder devolverlos al cerrar sesión. */
-const TITULO_NEUTRO = "Panel de socio";
+/**
+ * El título de partida de la pestaña, para poder devolverlo al cerrar sesión.
+ *
+ * Es una función y no una constante: una constante de módulo se quedaría con el
+ * idioma que hubiera al cargar el fichero, y la pestaña seguiría diciendo
+ * «Panel de socio» después de pasar el panel a inglés.
+ */
+const tituloNeutro = () => t("armazon.tituloNeutro");
 
 /**
  * Aplica el color de marca a las fichas de diseño.
@@ -46,7 +53,7 @@ export function aplicarColor(hue: number | null, chroma: number | null): void {
 
 /** Pone el título de la pestaña. */
 export function aplicarTitulo(nombre: string | null | undefined): void {
-  document.title = (nombre && nombre.trim()) || TITULO_NEUTRO;
+  document.title = (nombre && nombre.trim()) || tituloNeutro();
 }
 
 /**
