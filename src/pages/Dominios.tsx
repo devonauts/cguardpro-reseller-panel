@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Boton, Campo, CampoCopiable, EstadoDeDatos, Estado, Panel, Pildora,
 } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
 import {
@@ -191,12 +192,7 @@ export function Dominios() {
   const dePlataforma = (datos?.dominios ?? []).filter((d) => d.type !== "custom");
 
   return (
-    <div className="dominios">
-      <header className="dominios__cabecera">
-        <h1 className="dominios__h1">{t("dominios.titulo")}</h1>
-        <p className="dominios__sub">{t("dominios.sub")}</p>
-      </header>
-
+    <Pagina titulo={t("dominios.titulo")} nota={t("dominios.sub")}>
       {aviso && <p className="dominios__aviso">{aviso}</p>}
 
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
@@ -360,7 +356,7 @@ export function Dominios() {
           })}
         </Panel>
       </EstadoDeDatos>
-    </div>
+    </Pagina>
   );
 }
 

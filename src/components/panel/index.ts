@@ -6,6 +6,7 @@
  * son de este producto y no del sistema visual. Consumen el material; no lo
  * redefinen.
  */
+export { Pagina } from "./Pagina";
 export { Rail } from "./Rail";
 export { BarraSuperior } from "./BarraSuperior";
 export { TarjetaDeMetrica } from "./TarjetaDeMetrica";

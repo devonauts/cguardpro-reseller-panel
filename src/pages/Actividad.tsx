@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { textoDeEstado } from "@/lib/estadoDeMiembro";
 import { fechaYHora } from "@/lib/dinero";
 import { portalService, type ActividadDelSocio, type LineaDeActividad } from "@/services/resellerService";
@@ -136,11 +137,7 @@ export function Actividad() {
   const total = datos?.totalPages ?? 1;
 
   return (
-    <section className="pagina">
-      <header className="pagina__cabecera">
-        <h1>{t("actividad.titulo")}</h1>
-        <p className="pagina__nota">{t("actividad.nota")}</p>
-      </header>
+    <Pagina titulo={t("actividad.titulo")} nota={t("actividad.nota")}>
 
       <Tarjeta>
         <TarjetaCabecera
@@ -199,7 +196,7 @@ export function Actividad() {
           )}
         </EstadoDeDatos>
       </Tarjeta>
-    </section>
+    </Pagina>
   );
 }
 
