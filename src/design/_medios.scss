@@ -1,0 +1,26 @@
+////
+/// Los cortes de pantalla, en UN sitio.
+///
+/// Se nombran por lo que les pasa, no por su ancho: `@include hasta(movil)` se
+/// lee y `@media (max-width: 640px)` repartido por doce hojas no. Cambiar un
+/// corte deja de ser un barrido por todo el repositorio.
+////
+
+$cortes: (
+  movil-pequeno: 375px,
+  movil: 640px,
+  tableta: 900px,
+  portatil: 1280px,
+);
+
+@mixin hasta($nombre) {
+  $v: map-get($cortes, $nombre);
+  @if $v == null { @error "corte desconocido: #{$nombre}"; }
+  @media (max-width: $v) { @content; }
+}
+
+@mixin desde($nombre) {
+  $v: map-get($cortes, $nombre);
+  @if $v == null { @error "corte desconocido: #{$nombre}"; }
+  @media (min-width: $v + 1px) { @content; }
+}

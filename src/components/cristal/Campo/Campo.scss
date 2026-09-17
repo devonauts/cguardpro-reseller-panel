@@ -1,0 +1,43 @@
+@use "../../../design/material" as m;
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.campo__etiqueta {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-secondary);
+}
+
+.campo__control {
+  @include m.hundido;
+  /* 44 px: se usa con el dedo. */
+  min-height: 44px;
+  width: 100%;
+  padding: 0 var(--s-3);
+  color: var(--text-primary);
+  font: inherit;
+  transition: border-color var(--motion) var(--ease), background-color var(--motion) var(--ease);
+
+  &::placeholder { color: var(--text-muted); }
+  &:hover { border-color: var(--glass-border-highlight); }
+
+  /* El foco NO es un anillo de color gigante: el borde se aclara y el realce
+     interior sube. El anillo del sistema sigue estando en `:focus-visible`. */
+  &:focus {
+    outline: none;
+    border-color: oklch(1 0 0 / 0.34);
+    background: var(--glass-sunken);
+    box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.34), 0 0 0 3px oklch(1 0 0 / 0.07);
+  }
+
+  &--error { border-color: var(--danger); }
+}
+
+.campo__ayuda { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.campo__error { font-size: 12px; color: var(--danger); }

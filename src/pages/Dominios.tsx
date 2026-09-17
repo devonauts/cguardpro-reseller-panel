@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  Boton, Campo, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera,
-} from "@/components/ui/kit";
+  Boton, Campo, CampoCopiable, EstadoDeDatos, Estado, Panel, Pildora,
+} from "@/components/cristal";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
 import {
@@ -11,7 +11,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-import "./Dominios.css";
+import "./Dominios.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
@@ -59,42 +59,66 @@ const ESTADO: Record<string, { texto: Clave; tono: Tono; ayuda: Clave }> = {
   },
 };
 
-function Instruccion({ paso }: { paso: InstruccionDeDns }) {
+/** Un registro: su tipo, su nombre y su valor, en un bloque hundido. */
+function Registro({ paso }: { paso: InstruccionDeDns }) {
   const t = useT();
-  const [copiado, setCopiado] = useState(false);
+  const esCname = paso.tipo === "CNAME";
+  return (
+    <div className="dns__registro">
+      <span className="dns__tipo">{paso.tipo}</span>
+      <div className="dns__campos">
+        <CampoCopiable etiqueta={t("dominios.dnsNombre")} valor={paso.nombre} />
+        <CampoCopiable
+          etiqueta={t(esCname ? "dominios.dnsDestino" : "dominios.dnsValor")}
+          valor={paso.valor}
+        />
+      </div>
+    </div>
+  );
+}
 
-  const copiar = async () => {
-    try {
-      await navigator.clipboard.writeText(paso.valor);
-      setCopiado(true);
-      setTimeout(() => setCopiado(false), 1600);
-    } catch {
-      /* Sin permiso de portapapeles el valor sigue a la vista para copiarlo a
-         mano: no se bloquea nada por esto. */
-    }
-  };
+/**
+ * Los registros AGRUPADOS POR PARA QUÉ SIRVEN.
+ *
+ * Tres registros seguidos, sin decir cuál hace qué, se leen como una lista de
+ * cosas que copiar y ya. Agrupados —enrutado, titularidad, certificado— quien
+ * los pega sabe qué está haciendo, y cuando uno falle sabrá cuál mirar.
+ *
+ * El orden lo fija el servidor y aquí NO se reordena: si algún día manda un
+ * cuarto propósito que no conocemos, cae en su propio grupo con un rótulo
+ * genérico en vez de desaparecer.
+ */
+const SECCION: Record<string, Clave> = {
+  enrutado: "dominios.seccionEnrutado",
+  titularidad: "dominios.seccionTitularidad",
+  certificado: "dominios.seccionCertificado",
+};
+
+function Instrucciones({ pasos }: { pasos: InstruccionDeDns[] }) {
+  const t = useT();
+  const grupos: Array<{ proposito: string; pasos: InstruccionDeDns[] }> = [];
+  for (const paso of pasos) {
+    const ultimo = grupos[grupos.length - 1];
+    if (ultimo && ultimo.proposito === paso.proposito) ultimo.pasos.push(paso);
+    else grupos.push({ proposito: String(paso.proposito), pasos: [paso] });
+  }
 
   return (
-    <div className="dns__fila">
-      <div className="dns__campo">
-        <span className="dns__etiqueta">{t("dominios.dnsTipo")}</span>
-        <code className="dns__valor">{paso.tipo}</code>
-      </div>
-      <div className="dns__campo">
-        <span className="dns__etiqueta">{t("dominios.dnsNombre")}</span>
-        <code className="dns__valor">{paso.nombre}</code>
-      </div>
-      <div className="dns__campo dns__campo--ancho">
-        <span className="dns__etiqueta">
-          {t(paso.proposito === "titularidad"
-            ? "dominios.dnsValorTitularidad"
-            : "dominios.dnsValor")}
-        </span>
-        <code className="dns__valor dns__valor--largo">{paso.valor}</code>
-      </div>
-      <Boton variante="suave" onClick={copiar} type="button">
-        {t(copiado ? "comun.copiado" : "comun.copiar")}
-      </Boton>
+    <div className="dns">
+      <p className="dns__intro">
+        {t(pasos.length === 1 ? "dominios.dnsIntroUno" : "dominios.dnsIntroVarios")}
+      </p>
+      {grupos.map((g, i) => (
+        <section key={`${g.proposito}-${i}`} className="dns__seccion">
+          <h4 className="dns__seccion-titulo">
+            {t(SECCION[g.proposito] ?? "dominios.seccionOtro")}
+          </h4>
+          {g.pasos.map((paso, j) => (
+            <Registro key={`${paso.tipo}-${j}`} paso={paso} />
+          ))}
+        </section>
+      ))}
+      <p className="dns__pie">{t("dominios.dnsPie")}</p>
     </div>
   );
 }
@@ -168,18 +192,16 @@ export function Dominios() {
 
   return (
     <div className="dominios">
-      <TarjetaCabecera
-        titulo={t("dominios.titulo")}
-        nota={t("dominios.sub")}
-      />
+      <header className="dominios__cabecera">
+        <h1 className="dominios__h1">{t("dominios.titulo")}</h1>
+        <p className="dominios__sub">{t("dominios.sub")}</p>
+      </header>
 
       {aviso && <p className="dominios__aviso">{aviso}</p>}
 
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         {/* ── La que da CGuard Pro ─────────────────────────────────────── */}
-        <Tarjeta>
-          <h2 className="dominios__titulo">{t("dominios.plataformaTitulo")}</h2>
-          <p className="dominios__nota">{t("dominios.plataformaNota")}</p>
+        <Panel titulo={t("dominios.plataformaTitulo")} nota={t("dominios.plataformaNota")}>
           {dePlataforma.length === 0 && (
             <p className="dominios__vacio">{t("dominios.sinAsignada")}</p>
           )}
@@ -192,15 +214,18 @@ export function Dominios() {
               {d.isPrimary && <Pildora tono="ok">{t("dominios.principal")}</Pildora>}
             </div>
           ))}
-        </Tarjeta>
+        </Panel>
 
         {/* ── Los suyos ────────────────────────────────────────────────── */}
-        <Tarjeta>
-          <h2 className="dominios__titulo">{t("dominios.propioTitulo")}</h2>
-          <p className="dominios__nota">
-            {t("dominios.propioNota1")} <code>{t("dominios.ejemplo")}</code>
-            {t("dominios.propioNota2")}
-          </p>
+        <Panel
+          titulo={t("dominios.propioTitulo")}
+          nota={
+            <>
+              {t("dominios.propioNota1")} <code>{t("dominios.ejemplo")}</code>
+              {t("dominios.propioNota2")}
+            </>
+          }
+        >
 
           {datos && !datos.proveedorListo && (
             <p className="dominios__bloqueo">
@@ -238,12 +263,22 @@ export function Dominios() {
             return (
               <div key={d.id} className="dominio">
                 <div className="dominio__cabecera">
+                  <span className="dominio__rotulo">{t("dominios.dominioPropio")}</span>
                   <span className="dominios__host">{d.hostname}</span>
-                  <Pildora tono={est.tono}>{t(est.texto)}</Pildora>
-                  {d.isPrimary && <Pildora tono="ok">{t("dominios.principal")}</Pildora>}
                 </div>
 
-                <p className="dominio__ayuda">{t(est.ayuda)}</p>
+                {/* El estado NO es sólo una píldora de color: lleva su rótulo
+                    y, debajo, qué significa y qué toca hacer. Un color solo
+                    obliga a aprenderse la convención. */}
+                <Estado
+                  etiqueta={t("dominios.estadoEtiqueta")}
+                  tono={est.tono}
+                  texto={t(est.texto)}
+                  explicacion={t(est.ayuda)}
+                  extra={d.isPrimary
+                    ? <Pildora tono="ok">{t("dominios.principal")}</Pildora>
+                    : undefined}
+                />
 
                 {d.lastFailureReason && (
                   <p className="dominio__fallo">{d.lastFailureReason}</p>
@@ -318,22 +353,12 @@ export function Dominios() {
                 )}
 
                 {abierto && detalle[d.id]?.instrucciones && (
-                  <div className="dns">
-                    <p className="dns__intro">
-                      {t(detalle[d.id].instrucciones!.length === 1
-                        ? "dominios.dnsIntroUno"
-                        : "dominios.dnsIntroVarios")}
-                    </p>
-                    {detalle[d.id].instrucciones!.map((paso, i) => (
-                      <Instruccion key={`${paso.tipo}-${i}`} paso={paso} />
-                    ))}
-                    <p className="dns__pie">{t("dominios.dnsPie")}</p>
-                  </div>
+                  <Instrucciones pasos={detalle[d.id].instrucciones!} />
                 )}
               </div>
             );
           })}
-        </Tarjeta>
+        </Panel>
       </EstadoDeDatos>
     </div>
   );

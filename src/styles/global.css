@@ -6,6 +6,17 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/**
+ * `color-scheme: dark` — y no es cosmético.
+ *
+ * Es lo que le dice al navegador que pinte EN OSCURO lo que dibuja él y no
+ * nosotros: la lista desplegable de un `<select>`, el calendario de una fecha,
+ * el autorrelleno, las barras de desplazamiento. Sin esto, tocar un desplegable
+ * en un panel negro abre una lista blanca — el único rectángulo claro de la
+ * pantalla, y justo encima del cristal.
+ */
+html { color-scheme: dark; }
+
 html, body, #root { height: 100%; }
 
 body {
@@ -15,10 +26,40 @@ body {
   line-height: 1.55;
   color: var(--ink);
   background-color: var(--canvas);
-  background-image: var(--glow);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
+}
+
+/**
+ * ════════════════════════════════════════════════════════════════════════════
+ * EL AMBIENTE: UNA CAPA FIJA, NO UN FONDO `fixed`
+ *
+ * El gradiente negro mate y la retícula fina van en una capa propia, fija al
+ * viewport y detrás de todo.
+ *
+ * ── POR QUÉ NO `background-attachment: fixed` ─────────────────────────────
+ * Se hizo así primero y el navegador dejó de poder dibujar la página: capturar
+ * un fotograma pasó a agotar treinta segundos mientras el JavaScript seguía
+ * respondiendo — la señal exacta de que quien está atascado es el compositor.
+ *
+ * `fixed` obliga a rasterizar el fondo contra el DOCUMENTO entero y a rehacerlo
+ * en cada desplazamiento. Con una retícula que se repite cada 22 px y cristales
+ * con `backdrop-filter` encima, eso es una superficie enorme recalculándose sin
+ * parar. Una capa `position: fixed` se rasteriza UNA vez y al tamaño de la
+ * ventana, que es todo lo que hace falta para que el ambiente no se mueva.
+ *
+ * La textura va DELANTE del gradiente: detrás quedaría tapada, y está
+ * precisamente para dar al desenfoque algo fino que deshacer.
+ * ════════════════════════════════════════════════════════════════════════════
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--textura), var(--ambiente);
+  background-size: var(--textura-paso), cover;
+  background-repeat: repeat, no-repeat;
+  pointer-events: none;
 }
 
 h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
@@ -64,10 +105,26 @@ p { margin: 0; }
   border: 0;
 }
 
-a { color: var(--brand); text-decoration: none; }
-a:hover { color: var(--brand-hover); text-decoration: underline; }
+/**
+ * Los enlaces se distinguen por el SUBRAYADO, no por el color.
+ *
+ * Eran del acento. Dos problemas: sobre negro el acento de plataforma los
+ * pintaba azules —y el azul del entorno es justo lo que este diseño no
+ * quiere—, y peor, el acento es del SOCIO: puede elegir un tono que sobre
+ * negro apenas se vea, y entonces sus enlaces dejan de parecer enlaces. Un
+ * subrayado funciona con cualquier marca y también para quien no distingue
+ * bien los colores.
+ */
+a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-decoration-color: oklch(1 0 0 / 0.32);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--motion) var(--ease);
+}
+a:hover { text-decoration-color: var(--text-primary); }
 
-::selection { background: var(--brand-soft); color: var(--ink); }
+::selection { background: oklch(1 0 0 / 0.18); color: var(--ink); }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb {

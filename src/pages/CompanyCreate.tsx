@@ -1,9 +1,9 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Boton, Campo, Tarjeta, TarjetaCabecera } from "@/components/ui/kit";
+import { Boton, Campo, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { companiesService, type AltaDeEmpresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
-import "./CompanyForm.css";
+import "./CompanyForm.scss";
 
 /**
  * Dar de alta una empresa.

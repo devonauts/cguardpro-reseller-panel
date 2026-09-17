@@ -1,0 +1,61 @@
+@use "../design/material" as m;
+@use "../design/medios" as r;
+
+/**
+ * La pantalla de entrada: negro mate y UNA lámina de cristal flotando.
+ *
+ * Aquí no hay contenido que compita, así que es donde el cristal se puede ver
+ * de verdad — y donde se decide qué clase de producto parece esto en los dos
+ * primeros segundos. Por eso la caja es de nivel 3 (el cristal más marcado) y
+ * no de nivel 2: es la única pieza de la pantalla.
+ */
+
+.auth {
+  position: relative;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-5);
+  overflow: hidden;
+}
+
+/**
+ * La luz de la entrada.
+ *
+ * Es la MISMA idea que el ambiente del panel —blanco neutro, nada de tono de
+ * marca— pero más marcada, porque aquí no hay tarjetas que den profundidad y
+ * el cristal necesita algo que refractar. Va en un pseudoelemento y no en el
+ * fondo del `body` para poder concentrarla detrás de la caja.
+ */
+.auth::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(760px 480px at 50% 22%, oklch(1 0 0 / 0.07), transparent 62%),
+    radial-gradient(520px 380px at 22% 88%, oklch(1 0 0 / 0.035), transparent 60%);
+  pointer-events: none;
+}
+
+.auth__columna {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.auth__caja {
+  @include m.cristal(elevado);
+  @include m.sin-cristal(var(--surface-raised));
+  width: 100%;
+  border-radius: var(--r-xl);
+  padding: clamp(var(--s-5), 5vw, var(--s-6));
+}
+
+@media (max-width: 480px) {
+  .auth { padding: var(--s-4); }
+  .auth__caja { padding: var(--s-5); }
+}

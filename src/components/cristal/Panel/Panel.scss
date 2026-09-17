@@ -1,0 +1,41 @@
+@use "../../../design/medios" as r;
+
+.panel {
+  padding: clamp(var(--s-4), 3.4vw, var(--s-6));
+  border-radius: var(--r-xl);
+}
+
+.panel__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--s-5);
+}
+
+.panel__texto { min-width: 0; }
+
+.panel__titulo {
+  font-size: clamp(16px, 2.2vw, 18px);
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.panel__nota {
+  margin-top: var(--s-2);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  max-width: 68ch;
+}
+
+.panel__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+@include r.hasta(movil) {
+  /* Las acciones pasan a ocupar el ancho: en un teléfono un botón de 90 px
+     alineado a la derecha es un objetivo que se falla. */
+  .panel__cabecera { flex-direction: column; gap: var(--s-3); }
+  .panel__acciones { width: 100%; }
+  .panel__acciones > * { flex: 1 1 auto; }
+}

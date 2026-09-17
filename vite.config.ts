@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -49,6 +50,23 @@ export default defineConfig({
       },
     },
   },
+  /**
+   * Las pruebas de COMPORTAMIENTO necesitan un DOM.
+   *
+   * El proyecto sólo tenía pruebas que afirman sobre el CÓDIGO FUENTE, que
+   * valen para fijar reglas («esta ruta existe», «este texto no se filtra»)
+   * pero no pueden responder a lo único que importa de un botón: qué pasa al
+   * pulsarlo. Las piezas reutilizables sí se prueban pulsándolas.
+   *
+   * `environment` va por fichero con la marca `@vitest-environment jsdom`, no
+   * global: montar un DOM para las 140 pruebas de fuente las haría más lentas
+   * a cambio de nada.
+   */
+  test: {
+    globals: false,
+    environment: "node",
+  },
+
   build: {
     rollupOptions: {
       output: {

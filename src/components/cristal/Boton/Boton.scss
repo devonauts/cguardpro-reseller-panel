@@ -1,0 +1,85 @@
+@use "../../../design/material" as m;
+
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  /* 40 px: es el mínimo que se acierta con el dedo sin mirar. */
+  min-height: 40px;
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: var(--r-md);
+  font: inherit;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  transition:
+    background-color var(--motion) var(--ease),
+    color var(--motion) var(--ease),
+    box-shadow var(--motion) var(--ease),
+    transform var(--motion) var(--ease);
+
+  /* El clic se siente: un píxel de hundimiento. Ni rebote ni escala. */
+  &:active:not(:disabled) { transform: translateY(1px); }
+  &:disabled { opacity: 0.42; cursor: not-allowed; }
+
+  &--bloque { width: 100%; }
+}
+
+/* PRIMARIO · plata. El objeto más claro sobre el entorno más oscuro. */
+.btn--primario {
+  background: var(--accent-solid);
+  color: var(--accent-ink);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.55),
+    inset 0 -1px 0 oklch(0 0 0 / 0.14),
+    var(--shadow-contact);
+
+  &:hover:not(:disabled) { background: var(--accent-solid-hover); }
+}
+
+/* SUAVE · cristal ahumado. Es el botón que más se repite, y por eso es el que
+   no lleva color: si lo llevara, el resto dejaría de destacar. */
+.btn--suave {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  color: var(--text-primary);
+
+  &:hover:not(:disabled) { background: var(--glass-interactive); }
+}
+
+.btn--fantasma {
+  background: transparent;
+  color: var(--text-secondary);
+
+  &:hover:not(:disabled) {
+    background: var(--glass-standard);
+    color: var(--text-primary);
+  }
+}
+
+/* PELIGRO · el color semántico se reserva para lo que destruye. */
+.btn--peligro {
+  background: var(--danger-soft);
+  color: var(--danger);
+  box-shadow: inset 0 0 0 1px var(--danger-line);
+
+  &:hover:not(:disabled) {
+    background: var(--danger-hover);
+    box-shadow: inset 0 0 0 1px var(--danger);
+  }
+}
+
+.btn__giro {
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--r-full);
+  animation: btn-giro 720ms linear infinite;
+}
+
+@keyframes btn-giro { to { transform: rotate(360deg); } }

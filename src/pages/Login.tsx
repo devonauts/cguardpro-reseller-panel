@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import { Boton, Campo } from "@/components/ui/kit";
+import { Boton, Campo } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
 
 /**

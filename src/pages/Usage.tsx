@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import DesgloseDeExclusiones from "@/components/DesgloseDeExclusiones";
 import {
   Boton, Cifra, EstadoDeDatos, Tarjeta, TarjetaCabecera, TodaviaNo,
-} from "@/components/ui/kit";
+} from "@/components/cristal";
 import { usageService, type PeriodoDeUso } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta, mesDelPeriodo } from "@/lib/dinero";
-import "./Usage.css";
+import "./Usage.scss";
 
 /**
  * Lo que se ha contado, mes a mes.

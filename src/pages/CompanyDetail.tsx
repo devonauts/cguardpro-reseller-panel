@@ -3,11 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
   Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera,
-} from "@/components/ui/kit";
+} from "@/components/cristal";
 import { companiesService, type Empresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fecha } from "@/lib/dinero";
-import "./CompanyForm.css";
+import "./CompanyForm.scss";
 
 /**
  * La ficha de una empresa.

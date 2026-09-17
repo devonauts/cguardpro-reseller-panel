@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora } from "@/components/ui/kit";
+import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora } from "@/components/cristal";
 import { textoDeEstado } from "@/lib/estadoDeMiembro";
 import { fechaYHora } from "@/lib/dinero";
 import { portalService, type ActividadDelSocio, type LineaDeActividad } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { t as traducir, type Clave } from "@/i18n/idioma";
-import "./Actividad.css";
+import "./Actividad.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,130 @@
+////
+/// ════════════════════════════════════════════════════════════════════════════
+/// LA RECETA DEL CRISTAL NEGRO AHUMADO — Y VIVE AQUÍ SOLA
+///
+/// Un cristal de este producto son SEIS cosas a la vez: relleno negro
+/// translúcido, desenfoque de lo que hay detrás, un filo de luz en el canto
+/// superior, un borde tenue, un realce interior y una sombra en dos capas.
+///
+/// Con una sola no se ve nada. `backdrop-filter` sobre un fondo OPACO no hace
+/// absolutamente nada —no hay nada que atravesar— y es la forma más fácil de
+/// creer que se ha hecho un cristal sin haber hecho ninguno.
+///
+/// ── POR QUÉ UN MIXIN Y NO UNA CLASE SUELTA ────────────────────────────────
+/// Porque la receta tiene seis partes y se usa en doce sitios. Copiada, las
+/// doce empiezan iguales y acaban distintas: alguien sube el desenfoque en las
+/// tarjetas y no en los menús, y el producto deja de parecer un material para
+/// parecer doce materiales. Está aquí, se consume desde el SCSS de cada
+/// componente, y hay una prueba que falla si aparece fuera.
+///
+/// ── Y LOS COLORES NO ESTÁN AQUÍ ───────────────────────────────────────────
+/// Los valores salen de las propiedades personalizadas de `tokens.css`, no de
+/// variables de Sass. Sass compila una vez; el socio elige su marca en tiempo
+/// de EJECUCIÓN. Un color enterrado en el SCSS no podría cambiar nunca.
+/// ════════════════════════════════════════════════════════════════════════════
+////
+
+/// El canto de luz.
+///
+/// Un `border` uniforme alrededor de una pieza la deja plana: la luz real no
+/// llega igual a los cuatro lados. Esto pinta el borde con un degradado que
+/// sólo el canto SUPERIOR recibe de lleno, con la máscara compuesta para que
+/// se vea el filo y no el relleno. Es lo que hace que parezca un objeto.
+@mixin canto($fuerza: 1) {
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      160deg,
+      oklch(1 0 0 / calc(0.22 * #{$fuerza})) 0%,
+      oklch(1 0 0 / calc(0.07 * #{$fuerza})) 26%,
+      oklch(1 0 0 / calc(0.02 * #{$fuerza})) 58%,
+      oklch(1 0 0 / calc(0.06 * #{$fuerza})) 100%
+    );
+    -webkit-mask:
+      linear-gradient(oklch(0 0 0)) content-box,
+      linear-gradient(oklch(0 0 0));
+    mask:
+      linear-gradient(oklch(0 0 0)) content-box,
+      linear-gradient(oklch(0 0 0));
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/// El material completo.
+///
+/// `$nivel` es SEMÁNTICO, no un número que alguien ajusta a ojo:
+///   sutil    · el armazón — raíl y barra superior, detrás de todo
+///   estandar · tarjetas, paneles, listas: lo que más se repite
+///   elevado  · lo que flota SOBRE contenido — menús y diálogos
+///
+/// El elevado es más OPACO a propósito. Debajo hay texto, y un menú que deja
+/// leer lo de atrás no se puede leer él. Ahí la legibilidad gana a la
+/// transparencia, siempre.
+@mixin cristal($nivel: estandar) {
+  position: relative;
+  isolation: isolate;
+
+  @if $nivel == sutil {
+    background: var(--glass-subtle);
+    backdrop-filter: var(--blur-2);
+    -webkit-backdrop-filter: var(--blur-2);
+    box-shadow: var(--shadow-contact);
+    @include canto(0.7);
+  } @else if $nivel == elevado {
+    background: var(--glass-elevated);
+    backdrop-filter: var(--blur-3);
+    -webkit-backdrop-filter: var(--blur-3);
+    box-shadow: var(--inner-highlight), var(--shadow-elevated);
+    @include canto(1.25);
+  } @else {
+    background: var(--glass-standard);
+    backdrop-filter: var(--blur-1);
+    -webkit-backdrop-filter: var(--blur-1);
+    box-shadow: var(--inner-highlight), var(--shadow-contact);
+    @include canto(1);
+  }
+}
+
+/// El pase de luz.
+///
+/// Lo que cambia al pasar por encima es la LUZ —opacidad y canto—, nunca el
+/// color: una superficie que se tiñe deja de ser cristal y pasa a ser un botón.
+@mixin reactivo {
+  transition:
+    background-color var(--motion) var(--ease),
+    box-shadow var(--motion) var(--ease);
+
+  &:hover {
+    background: var(--glass-interactive);
+    box-shadow: var(--inner-highlight-strong), var(--shadow-elevated);
+  }
+}
+
+/// Lo contrario del cristal: un hueco excavado en él.
+///
+/// Para valores que se copian y para campos. SIN desenfoque — va dentro de un
+/// cristal que ya lo tiene, y apilar desenfoques no se ve (el de dentro sólo
+/// difumina al de fuera, que ya está difuminado) y cuesta GPU por nada.
+@mixin hundido {
+  background: var(--glass-sunken);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.34);
+}
+
+/// El navegador que no sabe componer el fondo recibe superficies OPACAS.
+///
+/// Un translúcido SIN desenfoque deja el texto sobre lo que haya detrás y la
+/// pantalla se vuelve ilegible. La degradación es a mate, no a transparente:
+/// antes que un cristal bonito va que se lea.
+@mixin sin-cristal($opaco: var(--surface)) {
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: $opaco;
+  }
+}

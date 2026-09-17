@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/ui/kit";
+import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/cristal";
 import { portalService, type CuentaDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { nombreDeRol } from "@/lib/rolDeSocio";
-import "./Cuenta.css";
+import "./Cuenta.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════

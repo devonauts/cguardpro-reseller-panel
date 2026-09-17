@@ -1,0 +1,234 @@
+@use "../design/material" as m;
+@use "../design/medios" as r;
+
+/**
+ * El armazón: raíl lateral de cristal, barra superior flotante y contenido.
+ *
+ * Los dos cristales del armazón son de NIVEL 1 (sutil): están detrás de todo lo
+ * demás y su trabajo es dejar pasar el lienzo, no competir con las tarjetas.
+ * Si el raíl fuera tan sólido como una tarjeta, la jerarquía se invertiría — lo
+ * que menos importa sería lo que más pesa.
+ */
+
+.marco { min-height: 100dvh; }
+
+/* ── Raíl lateral ──────────────────────────────────────────────────────── */
+/**
+ * El raíl: una lámina vertical de cristal ahumado.
+ *
+ * Material SUTIL a propósito. Está detrás de todo y su trabajo es dejar pasar
+ * el lienzo; si pesara lo mismo que una tarjeta, lo que envuelve competiría
+ * con lo que importa.
+ */
+.lateral {
+  @include m.cristal(sutil);
+  @include m.sin-cristal(var(--surface));
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+
+  /* El canto del mixin rodea los cuatro lados; aquí sólo interesa el derecho,
+     porque los otros tres están fuera de la pantalla. */
+  &::before { border-left: 0; }
+}
+.lateral__marca {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: var(--topbar-h);
+  justify-content: center;
+  padding: 0 var(--s-5);
+  border-bottom: 1px solid var(--glass-border);
+}
+.lateral__nombre { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+.lateral__codigo {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.lateral__nav { padding: var(--s-4) var(--s-3); overflow-y: auto; }
+.lateral__nav ul {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+.nav__enlace {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  text-decoration: none;
+  transition:
+    background-color var(--motion) var(--ease),
+    color var(--motion) var(--ease),
+    border-color var(--motion) var(--ease);
+}
+/* El pase de luz: sube la luz, no aparece un color. */
+.nav__enlace:hover {
+  background: var(--glass-standard);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+/**
+ * LA SECCIÓN ACTIVA NO ES UN RECTÁNGULO DE COLOR.
+ *
+ * Era un bloque relleno del acento, y con el azul de plataforma eso es una
+ * barra azul viva en lo primero que se mira. Ahora es cristal un punto más
+ * claro, con el texto en blanco y una MARCA de acento de tres píxeles en el
+ * canto. El acento sigue diciendo dónde estás; lo dice con un filo y no
+ * pintando la sección entera.
+ */
+.nav__enlace--activo {
+  background: var(--glass-interactive);
+  border-color: var(--glass-border);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: var(--inner-highlight);
+}
+/**
+ * La marca de la sección activa: PLATA, no el acento.
+ *
+ * Era el acento, y con el azul de plataforma resultaba una barra cyan viva en
+ * lo primero que se mira al abrir el panel. El raíl es CROMO del producto, no
+ * marca del socio: vestirlo con su color mezcla dos cosas distintas y, mientras
+ * nadie elige color, pinta de azul lo que debería ser negro y plata.
+ */
+.nav__enlace--activo::before {
+  content: "";
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  border-radius: var(--r-full);
+  background: var(--accent-solid);
+}
+.nav__enlace--activo:hover { color: var(--ink); }
+
+.nav__enlace--proximamente { color: var(--text-muted); cursor: default; }
+.nav__enlace--proximamente:hover { background: transparent; color: var(--text-muted); }
+.nav__insignia {
+  font-size: 10px;
+  padding: 1px var(--s-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-full);
+  color: var(--text-muted);
+}
+
+/* ── Columna y barra superior ──────────────────────────────────────────── */
+.columna {
+  margin-left: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.superior {
+  @include m.cristal(sutil);
+  @include m.sin-cristal(var(--surface));
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: var(--topbar-h);
+  padding: 0 clamp(var(--s-3), 2.4vw, var(--s-5));
+  border-radius: 0;
+}
+/* Un objeto de cristal por derecho propio, igual que el resto de controles
+   de la barra: preciso, oscuro y con su propio canto. */
+.superior__hamburguesa {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: none;
+  /* 44 px: se pulsa con el pulgar. */
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font-size: 16px;
+  cursor: pointer;
+}
+.superior__estado { margin-right: auto; }
+
+.superior__cuenta { position: relative; }
+.cuenta__boton {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  @include m.reactivo;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.cuenta__nombre { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cuenta__correo { font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
+
+.contenido { flex: 1; padding: var(--s-6) var(--s-5); max-width: 1180px; width: 100%; }
+.contenido:focus { outline: none; }
+
+/* La cortina atenúa el ambiente; no lo apaga. Un negro total dejaría el raíl
+   flotando en la nada y se perdería la sensación de capa. */
+.cortina {
+  position: fixed;
+  inset: 0;
+  background: oklch(0.04 0 0 / 0.58);
+  z-index: 25;
+}
+
+/* ── Teléfono ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .lateral {
+    transform: translateX(-100%);
+    transition: transform 220ms var(--ease);
+    /* Abierto flota sobre el contenido, así que sube a nivel 3: si se quedara
+       en el sutil, se leería el texto de debajo a través del menú. */
+    background: var(--glass-elevated);
+  }
+  .lateral--abierto { transform: translateX(0); box-shadow: var(--shadow-elevated); }
+  .columna { margin-left: 0; }
+  .superior__hamburguesa { display: inline-flex; }
+  .contenido { padding: var(--s-5) var(--s-4); }
+  .cuenta__nombre { max-width: 110px; }
+}
+
+/* El logotipo del socio en la cabecera de la barra lateral.
+   `max-height` y `object-fit: contain` y nada más: un logotipo no se recorta ni
+   se deforma. Lo que no cabe se reduce conservando su proporción. */
+.lateral__logo {
+  display: block;
+  max-width: 100%;
+  max-height: 34px;
+  object-fit: contain;
+}
+
+/* El idioma dentro del menú de la cuenta: se cambia sin salir de la sesión. */
+.cuenta__idioma {
+  display: flex;
+  justify-content: center;
+  padding: var(--s-2) var(--s-2) var(--s-1);
+}

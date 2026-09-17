@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/ui/kit";
+import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/cristal";
 import { dinero, fecha } from "@/lib/dinero";
 import { portalService, type ContratoDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-import "./Contrato.css";
+import "./Contrato.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════

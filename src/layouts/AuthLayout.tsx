@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import { useIdioma } from "@/i18n/IdiomaProvider";
-import "./AuthLayout.css";
+import "./AuthLayout.scss";
 
 /**
  * El marco de la pantalla de entrada: negro mate y un degradado contenido.

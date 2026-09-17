@@ -3,12 +3,12 @@ import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import StatusPill, { etiquetaDeEstado } from "@/components/StatusPill";
 import {
   Cifra, Dato, EstadoDeDatos, Tarjeta, TarjetaCabecera, TodaviaNo,
-} from "@/components/ui/kit";
+} from "@/components/cristal";
 import { resellerService, type ResellerDashboard } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta } from "@/lib/dinero";
 import { etiquetaIntl } from "@/i18n/idioma";
-import "./Dashboard.css";
+import "./Dashboard.scss";
 
 /**
  * El resumen COMERCIAL de la cuenta del socio.

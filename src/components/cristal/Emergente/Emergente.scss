@@ -1,0 +1,37 @@
+@use "../../../design/medios" as r;
+
+.emergente-ancla {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--s-2));
+  z-index: 40;
+}
+
+.emergente {
+  position: relative;
+  min-width: 236px;
+  max-width: min(320px, calc(100vw - var(--s-5) * 2));
+  padding: var(--s-3);
+  border-radius: var(--r-lg);
+  animation: emergente-entra 140ms var(--ease);
+}
+
+@keyframes emergente-entra {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emergente { animation: none; }
+}
+
+@include r.hasta(movil) {
+  /* Anclado a la derecha del viewport y no del botón: en un teléfono un menú
+     alineado a un botón del borde se sale de la pantalla. */
+  .emergente-ancla { right: 0; left: auto; }
+  .emergente {
+    min-width: 0;
+    width: max-content;
+    max-width: calc(100vw - var(--s-4) * 2);
+  }
+}

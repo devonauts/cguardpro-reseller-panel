@@ -1,0 +1,245 @@
+@use "../design/material" as m;
+@use "../design/medios" as r;
+
+/**
+ * Tu dirección. Todo sale de las fichas; aquí no hay ni un color literal.
+ *
+ * Es la pantalla donde un socio hace la única tarea TÉCNICA del panel, así que
+ * tiene dos obligaciones que tiran en direcciones contrarias: enseñar valores
+ * exactos que se copian sin un carácter de más, y no parecer una consola. Se
+ * resuelve con el mismo cristal que el resto —nada de cajas de código negras—
+ * y con monoespaciada sólo donde el valor importa carácter a carácter.
+ */
+
+.dominios { display: flex; flex-direction: column; gap: var(--s-5); }
+
+.dominios__aviso {
+  margin: 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  background: var(--glass-standard);
+  font-size: .875rem;
+}
+
+.dominios__bloqueo {
+  margin: var(--s-3) 0 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--r-md);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: .875rem;
+}
+
+.dominios__titulo { font-size: 15px; letter-spacing: -0.01em; }
+.dominios__nota {
+  margin: var(--s-2) 0 var(--s-4);
+  color: var(--text-muted);
+  font-size: .875rem;
+  line-height: 1.6;
+  max-width: 68ch;
+}
+.dominios__vacio { margin: 0; color: var(--text-muted); font-size: .875rem; }
+
+/* La dirección de plataforma: una fila, sin acciones. */
+.dominios__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  padding: var(--s-3) 0;
+}
+.dominios__host {
+  font-family: var(--font-mono);
+  font-size: .9rem;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.dominios__alta {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  flex-wrap: wrap;
+}
+.dominios__alta .campo { flex: 1 1 260px; }
+
+/* ── Un dominio propio ─────────────────────────────────────────────────── */
+.dominio {
+  margin-top: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  background: var(--glass-subtle);
+  box-shadow: var(--inner-highlight);
+}
+.dominio__cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+/* El rótulo de sección: la tipografía hace la jerarquía, no el color. */
+.dominio__rotulo {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.dominio__estado {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  margin-top: var(--s-3);
+}
+.dominio__estado-etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.dominio__ayuda {
+  margin: var(--s-2) 0 0;
+  color: var(--text-secondary);
+  font-size: .875rem;
+  line-height: 1.6;
+  max-width: 68ch;
+}
+.dominio__fallo {
+  margin: var(--s-2) 0 0;
+  font-size: .85rem;
+  color: var(--danger);
+}
+.dominio__meta {
+  display: flex;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  margin-top: var(--s-3);
+  color: var(--text-muted);
+  font-size: .78rem;
+}
+.dominio__acciones {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  margin-top: var(--s-4);
+}
+
+/* ── Las instrucciones de DNS ──────────────────────────────────────────── */
+.dns {
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--glass-border);
+}
+.dns__intro {
+  margin: 0 0 var(--s-4);
+  font-size: .875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+.dns__pie {
+  margin: var(--s-4) 0 0;
+  font-size: .8rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 68ch;
+}
+
+.dns__seccion { margin-bottom: var(--s-4); }
+.dns__seccion-titulo {
+  margin: 0 0 var(--s-2);
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Un registro: el tipo a la izquierda, los campos a la derecha. Hundido, no
+   elevado — está DENTRO de la tarjeta del dominio. */
+.dns__registro {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  background: var(--glass-sunken);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.30);
+}
+.dns__registro + .dns__registro { margin-top: var(--s-2); }
+
+.dns__tipo {
+  flex: none;
+  align-self: flex-start;
+  padding: 2px var(--s-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--glass-standard);
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+}
+
+.dns__campos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.dns__campo { min-width: 0; }
+.dns__campo-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: 2px;
+}
+.dns__etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.dns__copiar {
+  flex: none;
+  appearance: none;
+  padding: 2px var(--s-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--glass-standard);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+}
+.dns__copiar:hover { background: var(--glass-interactive); color: var(--ink); }
+.dns__copiar--hecho { color: var(--ok); border-color: var(--ok-line); }
+
+/* El valor: monoespaciado y partible. Un TXT de validación mide más que
+   cualquier pantalla y NO se puede recortar — lo recortado no se copia. */
+.dns__valor {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: .8rem;
+  line-height: 1.55;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+@media (max-width: 640px) {
+  .dominio { padding: var(--s-3); }
+  .dns__registro { flex-direction: column; gap: var(--s-2); }
+  .dominio__acciones .btn { flex: 1 1 auto; }
+}

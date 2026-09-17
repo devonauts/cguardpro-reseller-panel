@@ -1,7 +1,7 @@
 import type { Exclusiones } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-import "./DesgloseDeExclusiones.css";
+import "./DesgloseDeExclusiones.scss";
 
 /**
  * Por qué se cobran menos asientos que usuarios tiene la empresa.
