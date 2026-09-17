@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { dinero, fecha } from "@/lib/dinero";
 import { portalService, type ContratoDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
@@ -60,11 +61,7 @@ export function Contrato() {
   const vigente = !!contrato && !contrato.effectiveTo;
 
   return (
-    <section className="pagina">
-      <header className="pagina__cabecera">
-        <h1>{t("contrato.titulo")}</h1>
-        <p className="pagina__nota">{t("contrato.nota")}</p>
-      </header>
+    <Pagina titulo={t("contrato.titulo")} nota={t("contrato.nota")}>
 
       <EstadoDeDatos
         cargando={cargando}
@@ -153,7 +150,7 @@ export function Contrato() {
           </>
         )}
       </EstadoDeDatos>
-    </section>
+    </Pagina>
   );
 }
 

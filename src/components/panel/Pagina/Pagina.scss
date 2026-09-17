@@ -1,0 +1,57 @@
+@use "../../../design/medios" as r;
+
+.pagina {
+  display: flex;
+  flex-direction: column;
+}
+
+.pagina__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  /* El aire entre el título y lo primero que hay debajo. Esto es exactamente
+     lo que faltaba: sin él, el encabezado se apoyaba en la primera tarjeta. */
+  margin-bottom: clamp(var(--s-5), 3vw, var(--s-6));
+}
+
+.pagina__texto { min-width: 0; }
+
+.pagina__titulo {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.pagina__nota {
+  margin-top: var(--s-2);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  /* Medida de lectura: una línea de 140 caracteres se pierde al saltar de
+     renglón. */
+  max-width: 78ch;
+}
+
+.pagina__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+/**
+ * EL RITMO DEL CUERPO.
+ *
+ * El `gap` va en el CONTENEDOR y no en márgenes de cada sección: con márgenes,
+ * la primera y la última acaban con un hueco de más y alguien lo compensa con
+ * un `:first-child` — y a partir de ahí el ritmo depende del orden.
+ */
+.pagina__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--s-4), 2vw, var(--s-5));
+}
+
+@include r.hasta(movil) {
+  .pagina__cabecera { flex-direction: column; gap: var(--s-3); }
+  .pagina__acciones { width: 100%; }
+  .pagina__acciones > * { flex: 1 1 auto; }
+}

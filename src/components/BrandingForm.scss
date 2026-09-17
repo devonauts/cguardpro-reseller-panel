@@ -1,6 +1,9 @@
 /* Los controles de marca. Todo sale de las fichas. */
 
-.marca-form { display: flex; flex-direction: column; gap: var(--s-4); }
+/* El MISMO ritmo que el resto de formularios del panel (`.ficha__campos`).
+   A 16 px, con la mitad de los campos llevando texto de ayuda debajo, la vista
+   no encuentra dónde acaba uno y empieza el siguiente. */
+.marca-form { display: flex; flex-direction: column; gap: var(--s-5); }
 
 .marca-form__grupo {
   display: flex;
@@ -17,10 +20,10 @@
   font-weight: 500;
   color: var(--text-secondary);
 }
-.marca-form__ayuda { font-size: 12px; color: var(--text-muted); }
+.marca-form__ayuda { font-size: 12px; line-height: 1.55; color: var(--text-muted); }
 
 /* ── Deslizador ──────────────────────────────────────────────────────────── */
-.desl { display: flex; flex-direction: column; gap: var(--s-2); }
+.desl { display: flex; flex-direction: column; gap: var(--s-3); }
 .desl__etiqueta {
   display: flex;
   align-items: baseline;
@@ -74,9 +77,9 @@
   border: 1px solid var(--line);
   border-radius: var(--r-md);
 }
-.subida__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.subida__texto { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
 .subida__titulo { font-size: 13.5px; font-weight: 500; }
-.subida__nota { font-size: 12px; color: var(--text-muted); }
+.subida__nota { font-size: 12px; line-height: 1.5; color: var(--text-muted); }
 .subida__acciones { display: flex; align-items: center; gap: var(--s-3); }
 .subida__puesto { font-size: 12px; color: var(--ok); }
 .subida__error { flex-basis: 100%; font-size: 12px; color: var(--danger); }

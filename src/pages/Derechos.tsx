@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Cifra, Pildora } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { portalService, type DerechosDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./Derechos.scss";
@@ -48,11 +49,7 @@ export function Derechos() {
   const concedidos = d?.grantedAll ? d.catalog.length : (d?.granted?.length ?? 0);
 
   return (
-    <section className="pagina">
-      <header className="pagina__cabecera">
-        <h1>{t("derechos.titulo")}</h1>
-        <p className="pagina__nota">{t("derechos.nota")}</p>
-      </header>
+    <Pagina titulo={t("derechos.titulo")} nota={t("derechos.nota")}>
 
       <EstadoDeDatos
         cargando={cargando}
@@ -126,7 +123,7 @@ export function Derechos() {
           </>
         )}
       </EstadoDeDatos>
-    </section>
+    </Pagina>
   );
 }
 

@@ -1,19 +1,43 @@
-.cabecera__acciones { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+@use "../design/medios" as r;
+
+/**
+ * Las fichas de empresa — alta y detalle.
+ *
+ * ── EL RITMO DE UN FORMULARIO LARGO ───────────────────────────────────────
+ * Ocho campos seguidos a 16 px se leen como un bloque: la vista no encuentra
+ * dónde acaba uno y empieza el siguiente, sobre todo cuando alguno lleva texto
+ * de ayuda debajo y otros no. A 24 px cada campo es una unidad.
+ *
+ * El respiro va SIEMPRE en el contenedor (`gap`) y nunca en márgenes de cada
+ * campo: con márgenes, el primero y el último acaban con un hueco de más y
+ * alguien lo compensa con un `:first-child` — y desde ahí el ritmo depende del
+ * orden en que estén escritos.
+ */
 
 .ficha {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--s-5);
+  gap: clamp(var(--s-4), 2.4vw, var(--s-6));
   align-items: start;
 }
-.ficha__columna { display: flex; flex-direction: column; gap: var(--s-4); min-width: 0; }
 
-.ficha__campos { display: flex; flex-direction: column; gap: var(--s-4); }
+.ficha__columna {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--s-4), 2vw, var(--s-5));
+  min-width: 0;
+}
+
+.ficha__campos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+}
 
 .ficha__datos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: var(--s-5);
   margin: 0;
 }
 
@@ -22,24 +46,45 @@
   padding-left: var(--s-5);
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: var(--s-3);
   font-size: 13px;
+  line-height: 1.55;
   color: var(--text-secondary);
 }
 
-.ficha__nota { font-size: 13px; color: var(--text-secondary); max-width: 55ch; }
-.ficha__error { margin-top: var(--s-3); font-size: 13px; color: var(--danger); }
-.ficha__estado { margin-top: var(--s-3); font-size: 12px; color: var(--text-muted); min-height: 1em; }
+.ficha__nota {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 60ch;
+}
+
+.ficha__error { margin-top: var(--s-4); font-size: 13px; color: var(--danger); }
+
+.ficha__estado {
+  margin-top: var(--s-4);
+  font-size: 12px;
+  color: var(--text-muted);
+  /* Alto reservado: sin esto, la página DA UN SALTO al aparecer «Guardado». */
+  min-height: 1.2em;
+}
 
 .ficha__pie {
   display: flex;
   justify-content: flex-end;
   gap: var(--s-3);
   margin-top: var(--s-5);
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--line);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--glass-border);
 }
 
-@media (max-width: 900px) {
+@include r.hasta(tableta) {
   .ficha { grid-template-columns: minmax(0, 1fr); }
+}
+
+@include r.hasta(movil) {
+  /* En un teléfono los botones del pie ocupan el ancho: uno de 90 px alineado
+     a la derecha es un objetivo que se falla. */
+  .ficha__pie { flex-direction: column-reverse; }
+  .ficha__pie > * { width: 100%; }
 }

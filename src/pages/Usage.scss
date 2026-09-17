@@ -10,14 +10,17 @@
 
 .uso__cifras {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   gap: var(--s-4);
-  margin-bottom: var(--s-4);
+  margin-bottom: var(--s-5);
 }
 
 .uso__nota {
   margin-bottom: var(--s-5);
   font-size: 13px;
+  /* 1.75 y no 1.5: el chip de la modalidad va en línea y con borde, así que
+     necesita hueco vertical o toca el renglón de arriba. */
+  line-height: 1.75;
   color: var(--text-muted);
   max-width: 70ch;
 }
@@ -26,13 +29,13 @@
   font-size: 12px;
   padding: 1px var(--s-2);
   background: var(--glass-standard);
-  border: 1px solid var(--line);
+  border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);
 }
 
 .uso__empresas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: var(--s-4);
   align-items: start;
 }

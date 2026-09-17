@@ -4,6 +4,7 @@ import {
   Boton, Campo, EstadoDeDatos, Lista, ListaFila, Panel, Pildora, Selector,
   Tarjeta, TarjetaCabecera,
 } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
 import { estadoDeMiembro } from "@/lib/estadoDeMiembro";
@@ -116,15 +117,16 @@ export function Equipo() {
     !!datos && !!me && m.email != null && m.email === me.user.email;
 
   return (
-    <section className="pagina">
-      <header className="pagina__cabecera">
-        <h1>{t("equipo.titulo")}</h1>
-        <p className="pagina__nota">
+    <Pagina
+      titulo={t("equipo.titulo")}
+      nota={
+        <>
           {t("equipo.nota1")}
           <strong> {t("equipo.notaFuerte")} </strong>
           {t("equipo.nota2")}
-        </p>
-      </header>
+        </>
+      }
+    >
 
       {aviso && <div className="equipo__aviso equipo__aviso--ok">{aviso}</div>}
       {error && !cargando && <div className="equipo__aviso equipo__aviso--mal">{error}</div>}
@@ -281,7 +283,7 @@ export function Equipo() {
           <p className="equipo__nota-operacion">{t("equipo.notaOperacion")}</p>
         </Tarjeta>
       )}
-    </section>
+    </Pagina>
   );
 }
 

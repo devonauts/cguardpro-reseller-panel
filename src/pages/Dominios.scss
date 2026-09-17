@@ -11,8 +11,6 @@
  * y con monoespaciada sólo donde el valor importa carácter a carácter.
  */
 
-.dominios { display: flex; flex-direction: column; gap: var(--s-5); }
-
 .dominios__aviso {
   margin: 0;
   padding: var(--s-3) var(--s-4);

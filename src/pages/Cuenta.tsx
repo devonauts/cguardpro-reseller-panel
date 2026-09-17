@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/cristal";
+import { Pagina } from "@/components/panel";
 import { portalService, type CuentaDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
@@ -62,11 +63,7 @@ export function Cuenta() {
   const estado = c?.account.status ? ESTADO[c.account.status] : null;
 
   return (
-    <section className="pagina">
-      <header className="pagina__cabecera">
-        <h1>{t("cuenta.titulo")}</h1>
-        <p className="pagina__nota">{t("cuenta.nota")}</p>
-      </header>
+    <Pagina titulo={t("cuenta.titulo")} nota={t("cuenta.nota")}>
 
       <EstadoDeDatos
         cargando={cargando}
@@ -136,7 +133,7 @@ export function Cuenta() {
           </>
         )}
       </EstadoDeDatos>
-    </section>
+    </Pagina>
   );
 }
 

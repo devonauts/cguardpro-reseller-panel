@@ -30,6 +30,7 @@
   gap: var(--s-2);
 }
 .terminos li {
+  padding: var(--s-2) 0;
   display: flex;
   justify-content: space-between;
   gap: var(--s-4);
@@ -99,12 +100,12 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--s-4);
-  padding: var(--s-3) 0;
+  padding: var(--s-4) 0;
   border-bottom: 1px solid var(--line);
 }
 .linea:last-child { border-bottom: 0; }
 
-.linea__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.linea__texto { display: flex; flex-direction: column; gap: var(--s-1); min-width: 0; }
 .linea__concepto { font-size: 14px; font-weight: 500; }
 .linea__detalle { font-size: 12px; color: var(--text-secondary); }
 .linea__origen { font-size: 12px; color: var(--text-muted); }
@@ -113,6 +114,7 @@
 .linea__importe { font-weight: 600; white-space: nowrap; }
 .linea__importe--credito { color: var(--ok); }
 
+/* Los totales se separan de las líneas: son la conclusión, no otra fila. */
 .totales {
   margin-top: var(--s-4);
   display: flex;
@@ -138,6 +140,7 @@
 }
 
 .factura__acciones {
+  margin-top: var(--s-5);
   margin-top: var(--s-4);
   display: flex;
   flex-wrap: wrap;
