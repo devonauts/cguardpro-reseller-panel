@@ -64,4 +64,17 @@ if (/(src|href)="\/panel\//.test(html)) {
   process.exit(1);
 }
 
+/* Y que el ENRUTADOR tampoco se haya quedado en la dirección vieja. Esto no lo
+   ve `index.html`: un `basename` desparejado deja la página en blanco sin dar
+   ningún error, así que se busca el rastro en el paquete. */
+const conPrefijo = archivos(DIST)
+  .filter((f) => f.endsWith(".js"))
+  .filter((f) => fs.readFileSync(f, "utf8").includes('"/panel"'));
+
+if (conPrefijo.length) {
+  console.error('✗ el paquete todavía menciona "/panel" — ¿quedó un `basename` viejo?');
+  for (const f of conPrefijo) console.error(`  · ${path.basename(f)}`);
+  process.exit(1);
+}
+
 console.log("✓ paquete limpio y servido desde la raíz de su anfitrión");
