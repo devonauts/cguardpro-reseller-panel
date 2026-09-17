@@ -90,8 +90,18 @@
    Estas dos clases existen para anularlo en el sitio donde se usan, en lugar de
    subir la especificidad en la hoja compartida de Ionic y afectar a todo. */
 .nativo {
-  /* El armazón entero por encima del fondo, que es un hermano fijo detrás. */
-  position: relative;
+  /* ── NO SE TOCA `position` AQUÍ ──
+     `.ion-page` se coloca `absolute` con los cuatro lados a 0 Y lleva
+     `contain: size`. Poniéndole `position: relative` —que fue lo primero que
+     se hizo— los cuatro lados dejan de aplicar, y `contain: size` hace que el
+     alto se calcule COMO SI NO HUBIERA CONTENIDO: la página entera medía 0 px.
+
+     No se ve como una página rota: el contenido se sigue pintando porque se
+     desborda. Lo que se rompe es todo lo que se apoya en el borde inferior —la
+     barra de pestañas quedó anclada al fondo de una caja de cero píxeles, o
+     sea a 59 px del techo en vez de abajo del todo.
+
+     El `z-index` sí se puede poner: `.ion-page` ya está posicionada. */
   z-index: 1;
   background: transparent;
 }

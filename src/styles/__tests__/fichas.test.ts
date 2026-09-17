@@ -23,6 +23,38 @@ const RAIZ = path.resolve(__dirname, "../..");
 const TOKENS = path.join(RAIZ, "styles/tokens.css");
 const MATERIAL = path.join(RAIZ, "design/_material.scss");
 
+/** Sin comentarios: se afirma sobre lo que la hoja DECLARA, no sobre lo que
+ *  explica. Una nota que dice «aquí no se pone position» no es un `position`. */
+const sinComentarios = (src: string) =>
+  src.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+
+/**
+ * Los cuerpos de cada bloque de reglas, a cualquier profundidad, con los
+ * bloques anidados RECORTADOS. Así lo que se mide es lo que declara ese
+ * selector y no lo que declaran sus hijos.
+ */
+function bloquesDeReglas(src: string): string[] {
+  const limpio = sinComentarios(src);
+  const salida: string[] = [];
+  for (let i = 0; i < limpio.length; i += 1) {
+    if (limpio[i] !== "{") continue;
+    let prof = 1;
+    let j = i + 1;
+    let cuerpo = "";
+    let inicioHijo = -1;
+    for (; j < limpio.length && prof > 0; j += 1) {
+      const c = limpio[j];
+      if (c === "{") { if (prof === 1) inicioHijo = j; prof += 1; }
+      else if (c === "}") {
+        prof -= 1;
+        if (prof === 1 && inicioHijo >= 0) inicioHijo = -1;   // hijo cerrado: se salta
+      } else if (prof === 1 && inicioHijo < 0) cuerpo += c;
+    }
+    salida.push(cuerpo);
+  }
+  return salida;
+}
+
 function hojas(dir: string, salida: string[] = []): string[] {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
@@ -187,5 +219,38 @@ describe("las fichas de diseño", () => {
       }
     }
     expect(incompletas, "cada componente lleva su .tsx, su .scss y su index.ts").toEqual([]);
+  });
+
+  it("un `position` propio va DESPUÉS de `cristal()`, o el mixin se lo come", () => {
+    /* `cristal()` declara `position: relative` para anclar sus pseudo-elementos.
+       Una regla que escribe `position: fixed` ANTES del `@include` acaba con
+       `relative`: misma especificidad, gana el último que se escribe.
+
+       No falla nada visible. La barra de pestañas de la app se quedó en el
+       flujo y PARECÍA colocada, porque el contenedor de Ionic es una columna
+       flexible con `space-between` y la dejaba abajo de todas formas. Funciona
+       por accidente hasta que cambia el contenido. Se vio midiendo en el
+       navegador: `getComputedStyle(.pestanas).position` decía `relative`.
+
+       Esto es del sistema de diseño entero y no sólo de la app: cualquier
+       pieza flotante que use el material tiene el mismo filo. */
+    const malas: string[] = [];
+
+    for (const f of TODAS.filter((f) => f !== MATERIAL)) {
+      const src = fs.readFileSync(f, "utf8");
+      /* Cada bloque de reglas, a cualquier profundidad. */
+      for (const bloque of bloquesDeReglas(src)) {
+        const inc = bloque.search(/@include\s+\w+\.cristal\(/);
+        if (inc < 0) continue;
+        /* `position` DECLARADA en este bloque (no en uno anidado, que ya viene
+           recortado, ni dentro de un comentario). */
+        const pos = sinComentarios(bloque).search(/(^|[;{\s])position\s*:/);
+        if (pos >= 0 && pos < inc) {
+          malas.push(`${path.relative(RAIZ, f)}: \`position\` antes de cristal()`);
+        }
+      }
+    }
+
+    expect(malas, "el mixin pisa ese `position` y la pieza deja de flotar").toEqual([]);
   });
 });

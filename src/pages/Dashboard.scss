@@ -64,6 +64,20 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
+
+  /* ── LA ETIQUETA BAJA ANTES DE APLASTAR EL DOMINIO ──────────────────────
+     La fila lleva icono + dominio + una etiqueta de estado que no se parte
+     («DNS configuration required» mide 196 px de una pieza). En una columna
+     estrecha no caben los tres: la etiqueta no encoge, y el dominio —que es
+     el único con `flex: 1` y `min-width: 0`— se comía TODA la diferencia y se
+     quedaba en CERO píxeles de ancho. Con `overflow-wrap: anywhere` eso no se
+     ve como un hueco vacío sino como el nombre partido LETRA A LETRA en
+     vertical, una columna de 329 px de alto.
+
+     Envolviendo, la etiqueta se va a la línea siguiente y el dominio conserva
+     su ancho. El dato importante es el dominio; el estado puede esperar a la
+     segunda línea. */
+  flex-wrap: wrap;
   padding: var(--s-3) 0;
   border-bottom: 1px solid var(--glass-border);
   min-width: 0;
@@ -74,8 +88,12 @@
 .tablero__dominio-icono { color: var(--text-muted); display: grid; place-items: center; }
 
 .tablero__dominio-host {
-  flex: 1;
-  min-width: 0;
+  /* Una base con la que trabajar en vez de 0: `flex-basis: 0` deja que el
+     reparto lo decidan los hermanos, y el hermano de al lado no cede. Con
+     `min-width` el dominio reserva lo suyo y es la ETIQUETA la que se va
+     abajo, que es el orden correcto de prioridades. */
+  flex: 1 1 auto;
+  min-width: 11ch;
   font-family: var(--font-mono);
   font-size: 12.5px;
   color: var(--text-primary);

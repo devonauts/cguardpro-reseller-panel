@@ -1,6 +1,15 @@
 @use "../design/material" as m;
 
 .pestanas {
+  /* ── EL `@include` VA PRIMERO ──
+     `cristal()` declara `position: relative` para anclar sus pseudo-elementos.
+     Escrito DESPUÉS de `position: fixed`, lo pisa —misma especificidad, gana
+     el último— y la barra deja de estar fija sin que nada falle: se queda en
+     el flujo y parece colocada porque `.ion-page` es una columna flexible con
+     `space-between`. Funciona por accidente hasta que cambia el contenido.
+     Medido: `getComputedStyle(.pestanas).position` decía `relative`. */
+  @include m.cristal(elevado);
+
   position: fixed;
   inset: auto 0 0 0;
   z-index: 40;
@@ -16,7 +25,6 @@
      nada, y la declaración entera se cae. */
   padding-bottom: env(safe-area-inset-bottom, 0px);
 
-  @include m.cristal(elevado);
   border-radius: 0;
   border-bottom: 0;
   /* Sólo el canto de arriba: los otros tres tocan el borde de la pantalla y un
