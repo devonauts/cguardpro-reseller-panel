@@ -5,6 +5,8 @@ import {
   Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera,
 } from "@/components/ui/kit";
 import { companiesService, type Empresa } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import { fecha } from "@/lib/dinero";
 import "./CompanyForm.css";
 
 /**
@@ -24,18 +26,11 @@ import "./CompanyForm.css";
  * parado; pero es una palanca de la plataforma y se opera desde allí.
  */
 
-function fecha(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("es-EC", { day: "numeric", month: "long", year: "numeric" });
-}
-
 export function CompanyDetail() {
   const { tenantId = "" } = useParams();
   const navigate = useNavigate();
   const { puede } = useResellerAuth();
+  const t = useT();
 
   const [empresa, setEmpresa] = useState<Empresa | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -57,11 +52,11 @@ export function CompanyDetail() {
     } catch (e: any) {
       /* Una empresa que no es suya contesta igual que una que no existe: el
          servidor no distingue, y la pantalla tampoco debe hacerlo. */
-      setError(e?.message || "No se encontró esta empresa.");
+      setError(e?.message || t("fichaEmpresa.noEncontrada"));
     } finally {
       setCargando(false);
     }
-  }, [tenantId]);
+  }, [tenantId, t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -78,9 +73,9 @@ export function CompanyDetail() {
       setEmpresa(r.company);
       setBorrador({});
       setEditando(false);
-      setAviso(r.changed.length ? "Guardado." : "No había nada que cambiar.");
+      setAviso(t(r.changed.length ? "fichaEmpresa.guardado" : "fichaEmpresa.sinCambios"));
     } catch (e: any) {
-      setError(e?.message || "No se pudo guardar.");
+      setError(e?.message || t("fichaEmpresa.noGuardo"));
     } finally {
       setGuardando(false);
     }
@@ -93,19 +88,19 @@ export function CompanyDetail() {
     <div>
       <header className="cabecera">
         <div>
-          <h1 className="cabecera__titulo">{empresa?.name || "Empresa"}</h1>
+          <h1 className="cabecera__titulo">{empresa?.name || t("fichaEmpresa.titulo")}</h1>
           <p className="cabecera__sub">
-            {empresa?.businessTitle || "Ficha comercial de tu cliente"}
+            {empresa?.businessTitle || t("fichaEmpresa.sub")}
           </p>
         </div>
         <div className="cabecera__acciones">
-          {empresa?.suspendedAt && <Pildora tono="peligro">Suspendida</Pildora>}
+          {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
           <Boton variante="fantasma" onClick={() => navigate("/companies")}>
-            Volver
+            {t("comun.volver")}
           </Boton>
           {puedeEditar && !editando && empresa && (
             <Boton variante="suave" onClick={() => setEditando(true)}>
-              Corregir datos
+              {t("fichaEmpresa.corregir")}
             </Boton>
           )}
         </div>
@@ -116,36 +111,34 @@ export function CompanyDetail() {
           <div className="ficha">
             <div className="ficha__columna">
               <Tarjeta>
-                <TarjetaCabecera titulo="Identidad" />
+                <TarjetaCabecera titulo={t("fichaEmpresa.identidad")} />
                 <dl className="ficha__datos">
-                  <Dato etiqueta="Nombre" valor={empresa.name} />
-                  <Dato etiqueta="Razón social" valor={empresa.businessTitle} />
-                  <Dato etiqueta="Identificación tributaria" valor={empresa.taxNumber} />
-                  <Dato etiqueta="Alta" valor={fecha(empresa.createdAt)} />
+                  <Dato etiqueta={t("altaEmpresa.nombre")} valor={empresa.name} />
+                  <Dato etiqueta={t("altaEmpresa.razonSocial")} valor={empresa.businessTitle} />
+                  <Dato etiqueta={t("altaEmpresa.ruc")} valor={empresa.taxNumber} />
+                  <Dato etiqueta={t("fichaEmpresa.alta")} valor={fecha(empresa.createdAt)} />
                 </dl>
               </Tarjeta>
             </div>
 
             <div className="ficha__columna">
               <Tarjeta>
-                <TarjetaCabecera titulo="Contacto" />
+                <TarjetaCabecera titulo={t("fichaEmpresa.contacto")} />
                 <dl className="ficha__datos">
-                  <Dato etiqueta="Correo" valor={empresa.email} />
-                  <Dato etiqueta="Teléfono" valor={empresa.phone} />
-                  <Dato etiqueta="País" valor={empresa.country} />
-                  <Dato etiqueta="Ciudad" valor={empresa.city} />
-                  <Dato etiqueta="Dirección" valor={empresa.address} />
-                  <Dato etiqueta="Zona horaria" valor={empresa.timezone} />
+                  <Dato etiqueta={t("altaEmpresa.correo")} valor={empresa.email} />
+                  <Dato etiqueta={t("altaEmpresa.telefono")} valor={empresa.phone} />
+                  <Dato etiqueta={t("altaEmpresa.pais")} valor={empresa.country} />
+                  <Dato etiqueta={t("altaEmpresa.ciudad")} valor={empresa.city} />
+                  <Dato etiqueta={t("altaEmpresa.direccion")} valor={empresa.address} />
+                  <Dato etiqueta={t("fichaEmpresa.zonaHoraria")} valor={empresa.timezone} />
                 </dl>
               </Tarjeta>
 
               {empresa.suspendedAt && (
                 <Tarjeta>
-                  <TarjetaCabecera titulo="Suspendida" />
+                  <TarjetaCabecera titulo={t("fichaEmpresa.suspendidaTitulo")} />
                   <p className="ficha__nota">
-                    Esta empresa está suspendida desde el{" "}
-                    {fecha(empresa.suspendedAt)}. Es una medida administrativa de
-                    la plataforma; habla con tu contacto para revisarla.
+                    {t("fichaEmpresa.suspendidaNota", { f: fecha(empresa.suspendedAt) })}
                   </p>
                 </Tarjeta>
               )}
@@ -157,25 +150,25 @@ export function CompanyDetail() {
           <form onSubmit={guardar}>
             <Tarjeta>
               <TarjetaCabecera
-                titulo="Corregir datos"
-                nota="Sólo los datos de contacto e identificación de tu cliente."
+                titulo={t("fichaEmpresa.corregir")}
+                nota={t("fichaEmpresa.corregirNota")}
               />
               <div className="ficha__campos">
-                <Campo etiqueta="Nombre" value={campo("name")}
+                <Campo etiqueta={t("altaEmpresa.nombre")} value={campo("name")}
                   onChange={(e) => setBorrador((b) => ({ ...b, name: e.target.value }))} />
-                <Campo etiqueta="Razón social" value={campo("businessTitle")}
+                <Campo etiqueta={t("altaEmpresa.razonSocial")} value={campo("businessTitle")}
                   onChange={(e) => setBorrador((b) => ({ ...b, businessTitle: e.target.value }))} />
-                <Campo etiqueta="Correo" type="email" value={campo("email")}
+                <Campo etiqueta={t("altaEmpresa.correo")} type="email" value={campo("email")}
                   onChange={(e) => setBorrador((b) => ({ ...b, email: e.target.value }))} />
-                <Campo etiqueta="Teléfono" value={campo("phone")}
+                <Campo etiqueta={t("altaEmpresa.telefono")} value={campo("phone")}
                   onChange={(e) => setBorrador((b) => ({ ...b, phone: e.target.value }))} />
-                <Campo etiqueta="País" value={campo("country")}
+                <Campo etiqueta={t("altaEmpresa.pais")} value={campo("country")}
                   onChange={(e) => setBorrador((b) => ({ ...b, country: e.target.value }))} />
-                <Campo etiqueta="Ciudad" value={campo("city")}
+                <Campo etiqueta={t("altaEmpresa.ciudad")} value={campo("city")}
                   onChange={(e) => setBorrador((b) => ({ ...b, city: e.target.value }))} />
-                <Campo etiqueta="Dirección" value={campo("address")}
+                <Campo etiqueta={t("altaEmpresa.direccion")} value={campo("address")}
                   onChange={(e) => setBorrador((b) => ({ ...b, address: e.target.value }))} />
-                <Campo etiqueta="Identificación tributaria" value={campo("taxNumber")}
+                <Campo etiqueta={t("altaEmpresa.ruc")} value={campo("taxNumber")}
                   onChange={(e) => setBorrador((b) => ({ ...b, taxNumber: e.target.value }))} />
               </div>
 
@@ -183,9 +176,9 @@ export function CompanyDetail() {
 
               <div className="ficha__pie">
                 <Boton variante="fantasma" onClick={() => { setEditando(false); setBorrador({}); }}>
-                  Cancelar
+                  {t("comun.cancelar")}
                 </Boton>
-                <Boton type="submit" cargando={guardando}>Guardar</Boton>
+                <Boton type="submit" cargando={guardando}>{t("comun.guardar")}</Boton>
               </div>
             </Tarjeta>
           </form>

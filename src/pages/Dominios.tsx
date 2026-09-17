@@ -9,6 +9,8 @@ import {
   domainsService,
   type DominioDelSocio, type DominiosDelSocio, type InstruccionDeDns,
 } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./Dominios.css";
 
 /**
@@ -22,8 +24,10 @@ import "./Dominios.css";
  * ── SE ESCRIBE PARA QUIEN NO SABE QUÉ ES UN CNAME ─────────────────────────
  * El que abre esto es el dueño de una empresa de seguridad, no el que
  * administra su DNS. Así que no se le pide «configura un CNAME»: se le dice
- * qué tiene que copiar y dónde, y se le da un botón para copiarlo. La palabra
- * «Cloudflare» no aparece: es nuestro proveedor, no su problema.
+ * qué tiene que copiar y dónde, y se le da un botón para copiarlo. El nombre
+ * de nuestro proveedor de borde no aparece por ninguna parte: es nuestro
+ * proveedor, no su problema, y decirlo sólo le daría un sitio equivocado al
+ * que ir a buscar cuando algo no funcione.
  *
  * ── Y SE LE DICE LA VERDAD CUANDO NO PODEMOS ──────────────────────────────
  * Mientras el borde no esté configurado, las acciones que dependen de él salen
@@ -32,36 +36,31 @@ import "./Dominios.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-const ESTADO: Record<string, { texto: string; tono: "ok" | "aviso" | "peligro" | "neutro"; ayuda: string }> = {
+type Tono = "ok" | "aviso" | "peligro" | "neutro";
+
+const ESTADO: Record<string, { texto: Clave; tono: Tono; ayuda: Clave }> = {
   activo: {
-    texto: "Funcionando", tono: "ok",
-    ayuda: "Tu gente ya puede entrar por esta dirección.",
+    texto: "dominios.conectado", tono: "ok", ayuda: "dominios.conectadoAyuda",
   },
   pendiente_dns: {
-    texto: "Falta el registro", tono: "aviso",
-    ayuda: "Añade el registro de abajo con la empresa que gestiona tu dominio. "
-      + "Suele tardar entre unos minutos y unas horas en propagarse.",
+    texto: "dominios.dnsRequerida", tono: "aviso", ayuda: "dominios.dnsRequeridaAyuda",
   },
   verificando: {
-    texto: "Comprobando", tono: "aviso",
-    ayuda: "Estamos comprobando tu dominio. No tienes que hacer nada más.",
+    texto: "dominios.verificando", tono: "aviso", ayuda: "dominios.verificandoAyuda",
   },
   pendiente_tls: {
-    texto: "Preparando el certificado", tono: "aviso",
-    ayuda: "Tu dominio ya nos llega. Falta emitir el certificado de seguridad; "
-      + "es automático y suele tardar unos minutos.",
+    texto: "dominios.preparandoSsl", tono: "aviso", ayuda: "dominios.preparandoSslAyuda",
   },
   mal_configurado: {
-    texto: "Algo no cuadra", tono: "peligro",
-    ayuda: "No encontramos el registro esperado. Revisa que esté copiado exactamente.",
+    texto: "dominios.requiereAtencion", tono: "peligro", ayuda: "dominios.requiereAtencionAyuda",
   },
   desactivado: {
-    texto: "Desactivado", tono: "neutro",
-    ayuda: "Esta dirección no está en uso. Puedes volver a activarla comprobándola.",
+    texto: "dominios.desactivado", tono: "neutro", ayuda: "dominios.desactivadoAyuda",
   },
 };
 
 function Instruccion({ paso }: { paso: InstruccionDeDns }) {
+  const t = useT();
   const [copiado, setCopiado] = useState(false);
 
   const copiar = async () => {
@@ -78,21 +77,23 @@ function Instruccion({ paso }: { paso: InstruccionDeDns }) {
   return (
     <div className="dns__fila">
       <div className="dns__campo">
-        <span className="dns__etiqueta">Tipo</span>
+        <span className="dns__etiqueta">{t("dominios.dnsTipo")}</span>
         <code className="dns__valor">{paso.tipo}</code>
       </div>
       <div className="dns__campo">
-        <span className="dns__etiqueta">Nombre</span>
+        <span className="dns__etiqueta">{t("dominios.dnsNombre")}</span>
         <code className="dns__valor">{paso.nombre}</code>
       </div>
       <div className="dns__campo dns__campo--ancho">
         <span className="dns__etiqueta">
-          {paso.proposito === "titularidad" ? "Valor (para verificar que es tuyo)" : "Valor"}
+          {t(paso.proposito === "titularidad"
+            ? "dominios.dnsValorTitularidad"
+            : "dominios.dnsValor")}
         </span>
         <code className="dns__valor dns__valor--largo">{paso.valor}</code>
       </div>
       <Boton variante="suave" onClick={copiar} type="button">
-        {copiado ? "Copiado" : "Copiar"}
+        {t(copiado ? "comun.copiado" : "comun.copiar")}
       </Boton>
     </div>
   );
@@ -100,6 +101,7 @@ function Instruccion({ paso }: { paso: InstruccionDeDns }) {
 
 export function Dominios() {
   const { puede } = useResellerAuth();
+  const t = useT();
   const gestiona = puede("reseller.domain.manage");
 
   const [datos, setDatos] = useState<DominiosDelSocio | null>(null);
@@ -116,11 +118,11 @@ export function Dominios() {
     try {
       setDatos(await domainsService.listar());
     } catch (e: any) {
-      setError(e?.message || "No se pudieron cargar tus direcciones.");
+      setError(e?.message || t("dominios.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -132,7 +134,7 @@ export function Dominios() {
       if (exito) setAviso(exito);
       await cargar();
     } catch (e: any) {
-      setAviso(e?.message || "No se pudo completar la acción.");
+      setAviso(e?.message || t("comun.noSePudoAccion"));
     } finally {
       setEnviando(false);
     }
@@ -145,7 +147,7 @@ export function Dominios() {
       const d = await domainsService.agregar(nuevo.trim());
       setDetalle((p) => ({ ...p, [d.id]: d }));
       setNuevo("");
-    }, "Dominio añadido. Ahora añade el registro que te indicamos abajo.");
+    }, t("dominios.anadido"));
   };
 
   const verInstrucciones = async (id: string) => {
@@ -157,7 +159,7 @@ export function Dominios() {
       const d = await domainsService.ver(id);
       setDetalle((p) => ({ ...p, [id]: d }));
     } catch (e: any) {
-      setAviso(e?.message || "No se pudieron cargar las instrucciones.");
+      setAviso(e?.message || t("dominios.noInstrucciones"));
     }
   };
 
@@ -167,8 +169,8 @@ export function Dominios() {
   return (
     <div className="dominios">
       <TarjetaCabecera
-        titulo="Tu dirección"
-        nota="La dirección web por la que tu equipo y tus clientes entran a la plataforma."
+        titulo={t("dominios.titulo")}
+        nota={t("dominios.sub")}
       />
 
       {aviso && <p className="dominios__aviso">{aviso}</p>}
@@ -176,37 +178,33 @@ export function Dominios() {
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         {/* ── La que da CGuard Pro ─────────────────────────────────────── */}
         <Tarjeta>
-          <h2 className="dominios__titulo">Tu dirección de CGuard Pro</h2>
-          <p className="dominios__nota">
-            Siempre funciona y no hay que configurar nada. Aunque añadas un dominio
-            propio, esta dirección sigue disponible.
-          </p>
+          <h2 className="dominios__titulo">{t("dominios.plataformaTitulo")}</h2>
+          <p className="dominios__nota">{t("dominios.plataformaNota")}</p>
           {dePlataforma.length === 0 && (
-            <p className="dominios__vacio">Todavía no tienes una dirección asignada.</p>
+            <p className="dominios__vacio">{t("dominios.sinAsignada")}</p>
           )}
           {dePlataforma.map((d) => (
             <div key={d.id} className="dominios__fila">
               <span className="dominios__host">{d.hostname}</span>
               <Pildora tono={d.isActive ? "ok" : "neutro"}>
-                {d.isActive ? "Funcionando" : "Sin activar"}
+                {t(d.isActive ? "dominios.conectado" : "dominios.sinActivar")}
               </Pildora>
-              {d.isPrimary && <Pildora tono="ok">Principal</Pildora>}
+              {d.isPrimary && <Pildora tono="ok">{t("dominios.principal")}</Pildora>}
             </div>
           ))}
         </Tarjeta>
 
         {/* ── Los suyos ────────────────────────────────────────────────── */}
         <Tarjeta>
-          <h2 className="dominios__titulo">Tu propio dominio</h2>
+          <h2 className="dominios__titulo">{t("dominios.propioTitulo")}</h2>
           <p className="dominios__nota">
-            Usa una dirección tuya, como <code>portal.tuempresa.com</code>. Tu sitio
-            web principal sigue funcionando igual: sólo se usa un subdominio.
+            {t("dominios.propioNota1")} <code>{t("dominios.ejemplo")}</code>
+            {t("dominios.propioNota2")}
           </p>
 
           {datos && !datos.proveedorListo && (
             <p className="dominios__bloqueo">
-              {datos.motivoProveedor
-                || "Los dominios propios todavía no están disponibles en esta instalación."}
+              {datos.motivoProveedor || t("dominios.bloqueo")}
             </p>
           )}
 
@@ -214,8 +212,8 @@ export function Dominios() {
             <form className="dominios__alta" onSubmit={agregar}>
               <Campo
                 id="nuevo-dominio"
-                etiqueta="Dominio"
-                placeholder="portal.tuempresa.com"
+                etiqueta={t("dominios.campoDominio")}
+                placeholder={t("dominios.ejemplo")}
                 value={nuevo}
                 onChange={(e) => setNuevo(e.target.value)}
                 disabled={enviando || propios.length >= (datos?.tope ?? 0)}
@@ -224,13 +222,13 @@ export function Dominios() {
                 type="submit"
                 disabled={enviando || !nuevo.trim() || propios.length >= (datos?.tope ?? 0)}
               >
-                Añadir dominio
+                {t("dominios.anadir")}
               </Boton>
             </form>
           )}
 
           {propios.length === 0 && (
-            <p className="dominios__vacio">Todavía no has añadido ningún dominio propio.</p>
+            <p className="dominios__vacio">{t("dominios.sinPropios")}</p>
           )}
 
           {propios.map((d) => {
@@ -241,25 +239,32 @@ export function Dominios() {
               <div key={d.id} className="dominio">
                 <div className="dominio__cabecera">
                   <span className="dominios__host">{d.hostname}</span>
-                  <Pildora tono={est.tono}>{est.texto}</Pildora>
-                  {d.isPrimary && <Pildora tono="ok">Principal</Pildora>}
+                  <Pildora tono={est.tono}>{t(est.texto)}</Pildora>
+                  {d.isPrimary && <Pildora tono="ok">{t("dominios.principal")}</Pildora>}
                 </div>
 
-                <p className="dominio__ayuda">{est.ayuda}</p>
+                <p className="dominio__ayuda">{t(est.ayuda)}</p>
 
                 {d.lastFailureReason && (
                   <p className="dominio__fallo">{d.lastFailureReason}</p>
                 )}
 
                 <div className="dominio__meta">
-                  {d.lastCheckedAt && <span>Comprobado {fechaYHora(d.lastCheckedAt)}</span>}
-                  {d.failureCount > 0 && <span>{d.failureCount} intento(s) sin éxito</span>}
+                  {d.lastCheckedAt && (
+                    <span>{t("dominios.comprobado", { f: fechaYHora(d.lastCheckedAt) })}</span>
+                  )}
+                  {d.failureCount > 0 && (
+                    <span>
+                      {t(d.failureCount === 1 ? "dominios.intentoUno" : "dominios.intentosVarios",
+                         { n: d.failureCount })}
+                    </span>
+                  )}
                 </div>
 
                 {gestiona && (
                   <div className="dominio__acciones">
                     <Boton variante="suave" type="button" onClick={() => verInstrucciones(d.id)}>
-                      {abierto ? "Ocultar instrucciones" : "Ver qué añadir en tu DNS"}
+                      {t(abierto ? "dominios.ocultarInstrucciones" : "dominios.verInstrucciones")}
                     </Boton>
                     <Boton
                       variante="suave"
@@ -267,10 +272,10 @@ export function Dominios() {
                       disabled={enviando || !datos?.proveedorListo}
                       onClick={() => accion(
                         () => domainsService.comprobar(d.id),
-                        "Comprobación lanzada.",
+                        t("dominios.verificacionLanzada"),
                       )}
                     >
-                      Comprobar de nuevo
+                      {t("dominios.verificar")}
                     </Boton>
                     {d.isActive && !d.isPrimary && (
                       <Boton
@@ -279,10 +284,10 @@ export function Dominios() {
                         disabled={enviando}
                         onClick={() => accion(
                           () => domainsService.hacerPrincipal(d.id),
-                          "Ahora es tu dirección principal.",
+                          t("dominios.ahoraPrincipal"),
                         )}
                       >
-                        Hacer principal
+                        {t("dominios.hacerPrincipal")}
                       </Boton>
                     )}
                     {d.isActive && (
@@ -292,10 +297,10 @@ export function Dominios() {
                         disabled={enviando}
                         onClick={() => accion(
                           () => domainsService.desactivar(d.id),
-                          "Dominio desactivado.",
+                          t("dominios.dominioDesactivado"),
                         )}
                       >
-                        Desactivar
+                        {t("dominios.desactivar")}
                       </Boton>
                     )}
                     <Boton
@@ -304,10 +309,10 @@ export function Dominios() {
                       disabled={enviando}
                       onClick={() => accion(
                         () => domainsService.quitar(d.id),
-                        "Dominio quitado.",
+                        t("dominios.quitado"),
                       )}
                     >
-                      Quitar
+                      {t("dominios.quitar")}
                     </Boton>
                   </div>
                 )}
@@ -315,16 +320,14 @@ export function Dominios() {
                 {abierto && detalle[d.id]?.instrucciones && (
                   <div className="dns">
                     <p className="dns__intro">
-                      Añade {detalle[d.id].instrucciones!.length === 1 ? "este registro" : "estos registros"}
-                      {" "}con la empresa que gestiona tu dominio (donde lo compraste).
+                      {t(detalle[d.id].instrucciones!.length === 1
+                        ? "dominios.dnsIntroUno"
+                        : "dominios.dnsIntroVarios")}
                     </p>
                     {detalle[d.id].instrucciones!.map((paso, i) => (
                       <Instruccion key={`${paso.tipo}-${i}`} paso={paso} />
                     ))}
-                    <p className="dns__pie">
-                      Cuando lo hayas añadido, pulsa «Comprobar de nuevo». Los cambios de
-                      DNS pueden tardar un rato en verse.
-                    </p>
+                    <p className="dns__pie">{t("dominios.dnsPie")}</p>
                   </div>
                 )}
               </div>

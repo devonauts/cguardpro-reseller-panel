@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/components/ui/kit";
 import { dinero, fecha } from "@/lib/dinero";
 import { portalService, type ContratoDelSocio } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./Contrato.css";
 
 /**
@@ -22,19 +24,20 @@ import "./Contrato.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-const INTERVALO: Record<string, string> = {
-  monthly: "cada mes",
-  quarterly: "cada trimestre",
-  annual: "cada año",
+const INTERVALO: Record<string, Clave> = {
+  monthly: "contrato.intervaloMonthly",
+  quarterly: "contrato.intervaloQuarterly",
+  annual: "contrato.intervaloAnnual",
 };
 
-const POLITICA: Record<string, string> = {
-  active_all_roles_v1: "Toda persona activa de tus empresas, incluidos los accesos de cliente.",
-  active_staff_only_v1: "Sólo personal: se excluyen los accesos de cliente.",
-  active_field_only_v1: "Sólo vigilantes y supervisores.",
+const POLITICA: Record<string, Clave> = {
+  active_all_roles_v1: "contrato.politicaTodos",
+  active_staff_only_v1: "contrato.politicaPersonal",
+  active_field_only_v1: "contrato.politicaCampo",
 };
 
 export function Contrato() {
+  const t = useT();
   const [contrato, setContrato] = useState<ContratoDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,11 +49,11 @@ export function Contrato() {
       const r = await portalService.contrato();
       setContrato(r.contract);
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu contrato.");
+      setError(e?.message || t("contrato.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -59,60 +62,61 @@ export function Contrato() {
   return (
     <section className="pagina">
       <header className="pagina__cabecera">
-        <h1>Tu contrato</h1>
-        <p className="pagina__nota">
-          Lo que CGuard Pro te cobra a ti. No es lo que tú le cobras a tus clientes:
-          eso lo decides tú y no se gestiona desde aquí.
-        </p>
+        <h1>{t("contrato.titulo")}</h1>
+        <p className="pagina__nota">{t("contrato.nota")}</p>
       </header>
 
       <EstadoDeDatos
         cargando={cargando}
         error={error}
         vacio={!cargando && !error && !contrato}
-        etiquetaVacio="Todavía no tienes un contrato vigente. Cuando CGuard Pro lo active, aparecerá aquí."
+        etiquetaVacio={t("contrato.vacio")}
         onReintentar={cargar}
       >
         {contrato && (
           <>
             <Tarjeta>
               <TarjetaCabecera
-                titulo={`Versión ${contrato.version}`}
+                titulo={t("contrato.version", { v: contrato.version })}
                 nota={
                   <Pildora tono={vigente ? "ok" : "neutro"}>
-                    {vigente ? "Vigente" : "Cerrado"}
+                    {t(vigente ? "contrato.vigente" : "contrato.cerrado")}
                   </Pildora>
                 }
               />
               <div className="contrato__rejilla">
-                <Dato etiqueta="En vigor desde" valor={fecha(contrato.effectiveFrom)} />
+                <Dato etiqueta={t("contrato.enVigorDesde")} valor={fecha(contrato.effectiveFrom)} />
                 <Dato
-                  etiqueta="En vigor hasta"
-                  valor={contrato.effectiveTo ? fecha(contrato.effectiveTo) : "Sin fecha de fin"}
+                  etiqueta={t("contrato.enVigorHasta")}
+                  valor={contrato.effectiveTo
+                    ? fecha(contrato.effectiveTo)
+                    : t("contrato.sinFechaFin")}
                 />
-                <Dato etiqueta="Moneda" valor={contrato.currency} />
+                <Dato etiqueta={t("contrato.moneda")} valor={contrato.currency} />
                 <Dato
-                  etiqueta="Periodicidad"
-                  valor={INTERVALO[contrato.billingInterval] || contrato.billingInterval}
+                  etiqueta={t("contrato.periodicidad")}
+                  valor={INTERVALO[contrato.billingInterval]
+                    ? t(INTERVALO[contrato.billingInterval])
+                    : contrato.billingInterval}
                 />
               </div>
             </Tarjeta>
 
             <Tarjeta>
               <TarjetaCabecera
-                titulo="Lo que pagas"
-                nota="Importes que CGuard Pro te factura."
+                titulo={t("contrato.loQuePagas")}
+                nota={t("contrato.loQuePagasNota")}
               />
               <div className="contrato__rejilla">
                 <Dato
-                  etiqueta="Cuota de alta"
+                  etiqueta={t("contrato.cuotaAlta")}
                   valor={
                     contrato.setupFeeWaived ? (
                       <>
                         <span className="contrato__tachado">
                           {dinero(contrato.setupFeeCents, contrato.currency)}
                         </span>{" "}
-                        <Pildora tono="ok">Condonada</Pildora>
+                        <Pildora tono="ok">{t("contrato.condonada")}</Pildora>
                       </>
                     ) : (
                       dinero(contrato.setupFeeCents, contrato.currency)
@@ -120,30 +124,31 @@ export function Contrato() {
                   }
                 />
                 <Dato
-                  etiqueta="Cuota recurrente"
+                  etiqueta={t("contrato.cuotaRecurrente")}
                   valor={`${dinero(contrato.monthlyFeeCents, contrato.currency)} · ${
-                    INTERVALO[contrato.billingInterval] || contrato.billingInterval
+                    INTERVALO[contrato.billingInterval]
+                      ? t(INTERVALO[contrato.billingInterval])
+                      : contrato.billingInterval
                   }`}
                 />
                 <Dato
-                  etiqueta="Regalía por persona"
+                  etiqueta={t("contrato.regaliaPersona")}
                   valor={dinero(contrato.royaltyPerUserCents, contrato.currency)}
                 />
               </div>
               <p className="contrato__politica">
-                <strong>Quién cuenta para la regalía.</strong>{" "}
+                <strong>{t("contrato.quienCuenta")}</strong>{" "}
                 {contrato.royaltySeatPolicy
-                  ? POLITICA[contrato.royaltySeatPolicy] || contrato.royaltySeatPolicy
-                  : "Sin política fijada."}
+                  ? (POLITICA[contrato.royaltySeatPolicy]
+                      ? t(POLITICA[contrato.royaltySeatPolicy])
+                      : contrato.royaltySeatPolicy)
+                  : t("contrato.sinPolitica")}
               </p>
             </Tarjeta>
 
             <Tarjeta>
-              <TarjetaCabecera titulo="Tus precios son tuyos" />
-              <p className="contrato__aviso">
-                CGuard Pro no fija ni limita lo que cobras a tus clientes. Las cifras
-                de arriba son sólo la relación entre tu empresa y CGuard Pro.
-              </p>
+              <TarjetaCabecera titulo={t("contrato.preciosTuyosTitulo")} />
+              <p className="contrato__aviso">{t("contrato.preciosTuyosNota")}</p>
             </Tarjeta>
           </>
         )}

@@ -142,3 +142,10 @@
   max-height: 34px;
   object-fit: contain;
 }
+
+/* El idioma dentro del menú de la cuenta: se cambia sin salir de la sesión. */
+.cuenta__idioma {
+  display: flex;
+  justify-content: center;
+  padding: var(--s-2) var(--s-2) var(--s-1);
+}

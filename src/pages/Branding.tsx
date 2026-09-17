@@ -3,6 +3,7 @@ import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
 import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera } from "@/components/ui/kit";
 import { brandingService, type Marca, type MarcaEditable } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
 import "./Branding.css";
 
 /**
@@ -29,6 +30,7 @@ function hayCambios(borrador: Marca | null, publicado: Marca | null): boolean {
 }
 
 export function Branding() {
+  const t = useT();
   const [borrador, setBorrador] = useState<Marca | null>(null);
   const [publicado, setPublicado] = useState<Marca | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -45,11 +47,11 @@ export function Branding() {
       setBorrador(r.draft);
       setPublicado(r.published);
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu marca.");
+      setError(e?.message || t("marca.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -78,7 +80,7 @@ export function Branding() {
     } catch (e: any) {
       // El servidor dice qué campo está mal; se enseña tal cual y se recarga
       // para que la pantalla no siga enseñando algo que no se ha guardado.
-      setError(e?.message || "No se pudo guardar.");
+      setError(e?.message || t("marca.noGuardo"));
       await cargar();
     } finally {
       setGuardando(false);
@@ -93,9 +95,9 @@ export function Branding() {
     try {
       const fresco = await brandingService.publicar();
       setPublicado(fresco);
-      setAviso("Publicado. Tus clientes ya ven esta marca.");
+      setAviso(t("marca.publicado"));
     } catch (e: any) {
-      setError(e?.message || "No se pudo publicar.");
+      setError(e?.message || t("marca.noPublico"));
     } finally {
       setPublicando(false);
     }
@@ -107,18 +109,15 @@ export function Branding() {
     <div>
       <header className="cabecera">
         <div>
-          <h1 className="cabecera__titulo">Tu marca</h1>
-          <p className="cabecera__sub">
-            Lo que ven tus clientes cuando entran. Los cambios no se aplican
-            hasta que publicas.
-          </p>
+          <h1 className="cabecera__titulo">{t("marca.titulo")}</h1>
+          <p className="cabecera__sub">{t("marca.sub")}</p>
         </div>
         <Boton
           onClick={publicar}
           cargando={publicando}
           disabled={!sinPublicar || cargando}
         >
-          Publicar
+          {t("marca.publicar")}
         </Boton>
       </header>
 
@@ -128,12 +127,8 @@ export function Branding() {
             <div className="marca__columna">
               <Tarjeta>
                 <TarjetaCabecera
-                  titulo="Identidad"
-                  nota={
-                    sinPublicar
-                      ? "Tienes cambios sin publicar."
-                      : "Todo lo que ves aquí está publicado."
-                  }
+                  titulo={t("marca.identidad")}
+                  nota={t(sinPublicar ? "marca.sinPublicar" : "marca.todoPublicado")}
                 />
                 <BrandingForm
                   marca={borrador}
@@ -146,7 +141,7 @@ export function Branding() {
                 {/* Se dice lo que está pasando: «guardando» y los errores se
                     anuncian, no sólo se pintan. */}
                 <p className="marca__estado" role="status" aria-live="polite">
-                  {guardando ? "Guardando…" : aviso || ""}
+                  {guardando ? t("marca.guardando") : aviso || ""}
                 </p>
                 {error && borrador && (
                   <p role="alert" className="marca__error">{error}</p>
@@ -157,7 +152,7 @@ export function Branding() {
             <div className="marca__columna">
               <BrandingPreview
                 marca={borrador}
-                nota="Sólo tú ves esto. Nada cambia para tus clientes hasta que publicas."
+                nota={t("marca.previaNota")}
               />
             </div>
           </div>

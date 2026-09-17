@@ -26,6 +26,13 @@ const soloCodigo = (src: string) =>
 const P = soloCodigo(bruto("../Dominios.tsx"));
 const SRV = soloCodigo(bruto("../../services/resellerService.ts"));
 
+/* El texto que LEE el socio ya no está en la pantalla: está en el catálogo. Las
+   afirmaciones sobre cómo se le habla tienen que mirar ahí, y tienen que mirar
+   LOS DOS idiomas — una fuga de proveedor en uno solo sigue siendo una fuga. */
+const EN = bruto("../../i18n/catalogo/en.ts");
+const ES = bruto("../../i18n/catalogo/es.ts");
+const CATALOGOS: Array<[string, string]> = [["en", EN], ["es", ES]];
+
 describe("Fase 16 · la pantalla de tu dirección", () => {
   it("LA QUE IMPORTA · no se nombra al proveedor en ningún sitio", () => {
     /* El socio contrata a CGuard Pro. Quién nos da el borde es problema
@@ -34,12 +41,65 @@ describe("Fase 16 · la pantalla de tu dirección", () => {
     for (const fuga of ["Cloudflare", "cloudflare", "CNAME target", "zone", "fallback origin"]) {
       expect(P).not.toContain(fuga);
     }
+
+    /* Y tampoco en el TEXTO, que es donde se le hablaría de verdad y adonde se
+       ha mudado toda la copia.
+
+       Aquí se busca la jerga concreta y no la palabra suelta: «time zone» es
+       la zona horaria de una empresa y no tiene nada que ver con las zonas de
+       un proveedor de DNS. Una prueba que confunde las dos se desactiva sola
+       el día que alguien la ve fallar por un motivo tonto. */
+    const JERGA = [
+      /cloudflare/i,
+      /\bzone id\b/i,
+      /\bdns zone\b/i,
+      /\bapi token\b/i,
+      /\btunnel\b/i,
+      /fallback origin/i,
+      /custom hostname/i,
+      /\borigin server\b/i,
+    ];
+    for (const [idioma, cat] of CATALOGOS) {
+      for (const jerga of JERGA) {
+        expect(cat, `${idioma} filtra ${jerga}`).not.toMatch(jerga);
+      }
+    }
   });
 
   it("se explica en la lengua del cliente, no en la del que administra DNS", () => {
-    expect(P).toMatch(/la empresa que gestiona tu dominio/i);
+    expect(ES).toMatch(/la empresa que gestiona tu dominio/i);
+    expect(EN).toMatch(/the company that manages your domain/i);
     // y no se le suelta jerga a secas
-    expect(P).not.toMatch(/configura un CNAME/i);
+    for (const [, cat] of CATALOGOS) {
+      expect(cat).not.toMatch(/configura un CNAME/i);
+      expect(cat).not.toMatch(/set up a CNAME/i);
+    }
+  });
+
+  it("usa el vocabulario pactado para los dominios, en los dos idiomas", () => {
+    /* Estos pares son producto, no estilo: son las palabras con las que se le
+       explica a un socio qué le pasa a su dominio. Si alguien reescribe una
+       mitad, el par se rompe aquí y no en la pantalla de un cliente. */
+    const PARES: Array<[string, string]> = [
+      ["Domains", "Dominios"],
+      ["Connect a domain", "Conectar un dominio"],
+      ["DNS configuration required", "Configuración DNS requerida"],
+      ["Copy", "Copiar"],
+      ["Copied", "Copiado"],
+      ["Verifying", "Verificando"],
+      ["Preparing SSL", "Preparando SSL"],
+      ["Connected", "Conectado"],
+      ["Needs attention", "Requiere atención"],
+      ["Disabled", "Desactivado"],
+      ["Make primary", "Establecer como principal"],
+      ["Primary domain", "Dominio principal"],
+      ["Check again", "Verificar nuevamente"],
+      ["Remove domain", "Eliminar dominio"],
+    ];
+    for (const [ingles, castellano] of PARES) {
+      expect(EN, `falta «${ingles}» en inglés`).toContain(`"${ingles}"`);
+      expect(ES, `falta «${castellano}» en castellano`).toContain(`"${castellano}"`);
+    }
   });
 
   it("las acciones que dependen del borde se APAGAN cuando no está", () => {

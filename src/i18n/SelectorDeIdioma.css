@@ -1,0 +1,37 @@
+.idiomas {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+
+.idiomas__opcion {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-subtle);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.idiomas__opcion:hover { color: var(--ink); }
+
+.idiomas__opcion:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.idiomas__opcion--puesta {
+  background: var(--surface-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.idiomas--compacto .idiomas__opcion { padding: 2px var(--s-2); }

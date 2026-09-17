@@ -4,6 +4,8 @@ import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora } from "@/compo
 import { textoDeEstado } from "@/lib/estadoDeMiembro";
 import { fechaYHora } from "@/lib/dinero";
 import { portalService, type ActividadDelSocio, type LineaDeActividad } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import { t as traducir, type Clave } from "@/i18n/idioma";
 import "./Actividad.css";
 
 /**
@@ -26,51 +28,51 @@ import "./Actividad.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-/** Los identificadores de acción que sabemos nombrar en español. */
-const ACCION: Record<string, string> = {
-  "branding.draft.update": "Borrador de marca guardado",
-  "branding.asset.upload": "Imagen de marca subida",
-  "branding.asset.remove": "Imagen de marca quitada",
-  "branding.publish": "Marca publicada",
-  "reseller.company.create": "Empresa dada de alta",
-  "reseller.company.create_on_behalf": "Empresa dada de alta por CGuard Pro",
-  "reseller.status.begin_onboarding": "Alta iniciada",
-  "reseller.status.activate": "Cuenta activada",
-  "reseller.status.mark_past_due": "Cuenta marcada como vencida",
-  "reseller.status.restrict": "Cuenta restringida",
-  "reseller.status.restore": "Cuenta restablecida",
-  "reseller.status.suspend": "Cuenta suspendida",
-  "reseller.status.reinstate": "Cuenta reactivada",
+/** Los identificadores de acción que sabemos nombrar. */
+const ACCION: Record<string, Clave> = {
+  "branding.draft.update": "actividad.accionBrandingDraftUpdate",
+  "branding.asset.upload": "actividad.accionBrandingAssetUpload",
+  "branding.asset.remove": "actividad.accionBrandingAssetRemove",
+  "branding.publish": "actividad.accionBrandingPublish",
+  "reseller.company.create": "actividad.accionCompanyCreate",
+  "reseller.company.create_on_behalf": "actividad.accionCompanyCreateOnBehalf",
+  "reseller.status.begin_onboarding": "actividad.accionStatusBeginOnboarding",
+  "reseller.status.activate": "actividad.accionStatusActivate",
+  "reseller.status.mark_past_due": "actividad.accionStatusMarkPastDue",
+  "reseller.status.restrict": "actividad.accionStatusRestrict",
+  "reseller.status.restore": "actividad.accionStatusRestore",
+  "reseller.status.suspend": "actividad.accionStatusSuspend",
+  "reseller.status.reinstate": "actividad.accionStatusReinstate",
   /* Equipo. Sin estas cuatro, invitar a un compañero dejaba en la pantalla del
      socio una línea que decía «team.invite» — el identificador crudo, que es
      justo lo que el repliegue de abajo hace cuando no sabe un nombre. */
-  "team.invite": "Invitación enviada",
-  "team.role_change": "Rol cambiado",
-  "team.deactivate": "Acceso retirado",
-  "team.reinvite": "Invitación reenviada",
+  "team.invite": "actividad.accionTeamInvite",
+  "team.role_change": "actividad.accionTeamRoleChange",
+  "team.deactivate": "actividad.accionTeamDeactivate",
+  "team.reinvite": "actividad.accionTeamReinvite",
 };
 
 /**
  * Las claves de `details` también son identificadores. El servidor sólo deja
  * pasar una lista corta y cerrada; aquí se nombra la que tiene cada acción.
  */
-const CLAVE: Record<string, string> = {
-  status: "Estado",
-  role: "Rol",
-  fields: "Campos",
-  from: "Desde",
-  to: "Hasta",
-  version: "Versión",
-  reason: "Motivo",
-  slot: "Ranura",
-  quota: "Cupo",
-  decision: "Decisión",
-  tenantName: "Empresa",
-  ownerInvited: "Se invitó al titular",
+const CLAVE: Record<string, Clave> = {
+  status: "actividad.claveStatus",
+  role: "actividad.claveRole",
+  fields: "actividad.claveFields",
+  from: "actividad.claveFrom",
+  to: "actividad.claveTo",
+  version: "actividad.claveVersion",
+  reason: "actividad.claveReason",
+  slot: "actividad.claveSlot",
+  quota: "actividad.claveQuota",
+  decision: "actividad.claveDecision",
+  tenantName: "actividad.claveTenantName",
+  ownerInvited: "actividad.claveOwnerInvited",
 };
 
-/** Un identificador sin traducir se enseña tal cual: mejor crudo que inventado. */
-const nombreDeAccion = (a: string) => ACCION[a] || a;
+/** Un identificador sin nombre se enseña tal cual: mejor crudo que inventado. */
+const nombreDeAccion = (a: string) => (ACCION[a] ? traducir(ACCION[a]) : a);
 
 /**
  * El valor de `status` se traduce SEGÚN LA ACCIÓN, no siempre. `archived` sólo
@@ -88,6 +90,7 @@ function valorDeDetalle(accion: string, clave: string, v: unknown): string {
 }
 
 function Detalles({ accion, d }: { accion: string; d: Record<string, unknown> | null }) {
+  const t = useT();
   if (!d) return null;
   const pares = Object.entries(d);
   if (!pares.length) return null;
@@ -95,7 +98,7 @@ function Detalles({ accion, d }: { accion: string; d: Record<string, unknown> | 
     <ul className="actividad__detalles">
       {pares.map(([k, v]) => (
         <li key={k}>
-          <span className="actividad__clave">{CLAVE[k] ?? k}</span>
+          <span className="actividad__clave">{CLAVE[k] ? t(CLAVE[k]) : k}</span>
           {/* Siempre texto. El servidor ya recorta a valores simples, pero
               pintar una variable sin convertirla es exactamente cómo se cuela
               un objeto en un hijo de React. */}
@@ -109,6 +112,7 @@ function Detalles({ accion, d }: { accion: string; d: Record<string, unknown> | 
 }
 
 export function Actividad() {
+  const t = useT();
   const [datos, setDatos] = useState<ActividadDelSocio | null>(null);
   const [pagina, setPagina] = useState(0);
   const [cargando, setCargando] = useState(true);
@@ -120,11 +124,11 @@ export function Actividad() {
     try {
       setDatos(await portalService.actividad(p, 25));
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu actividad.");
+      setError(e?.message || t("actividad.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(pagina); }, [cargar, pagina]);
 
@@ -134,24 +138,23 @@ export function Actividad() {
   return (
     <section className="pagina">
       <header className="pagina__cabecera">
-        <h1>Actividad</h1>
-        <p className="pagina__nota">
-          Lo que ha pasado en tu cuenta de distribuidor: marca, empresas y
-          decisiones de CGuard Pro. No incluye la operación de tus empresas
-          —rondas, incidentes o fichajes—, que vive en cada una de ellas.
-        </p>
+        <h1>{t("actividad.titulo")}</h1>
+        <p className="pagina__nota">{t("actividad.nota")}</p>
       </header>
 
       <Tarjeta>
         <TarjetaCabecera
-          titulo="Historial"
-          nota={datos ? `${datos.count} ${datos.count === 1 ? "registro" : "registros"}` : undefined}
+          titulo={t("actividad.historial")}
+          nota={datos
+            ? t(datos.count === 1 ? "actividad.registroUno" : "actividad.registrosVarios",
+                { n: datos.count })
+            : undefined}
         />
         <EstadoDeDatos
           cargando={cargando}
           error={error}
           vacio={!cargando && !error && filas.length === 0}
-          etiquetaVacio="Todavía no hay actividad registrada en tu cuenta."
+          etiquetaVacio={t("actividad.vacio")}
           onReintentar={() => cargar(pagina)}
         >
           <ul className="actividad__lista">
@@ -160,7 +163,7 @@ export function Actividad() {
                 <div className="actividad__cab">
                   <span className="actividad__accion">{nombreDeAccion(f.action)}</span>
                   {f.statusCode && f.statusCode >= 400 && (
-                    <Pildora tono="peligro">Error</Pildora>
+                    <Pildora tono="peligro">{t("actividad.error")}</Pildora>
                   )}
                 </div>
                 <div className="actividad__meta">
@@ -174,23 +177,23 @@ export function Actividad() {
           </ul>
 
           {total > 1 && (
-            <nav className="actividad__paginas" aria-label="Páginas de actividad">
+            <nav className="actividad__paginas" aria-label={t("actividad.paginas")}>
               <Boton
                 variante="suave"
                 disabled={pagina === 0 || cargando}
                 onClick={() => setPagina((p) => Math.max(0, p - 1))}
               >
-                Anterior
+                {t("comun.anterior")}
               </Boton>
               <span className="actividad__contador">
-                Página {pagina + 1} de {total}
+                {t("actividad.paginaDe", { a: pagina + 1, b: total })}
               </span>
               <Boton
                 variante="suave"
                 disabled={pagina + 1 >= total || cargando}
                 onClick={() => setPagina((p) => p + 1)}
               >
-                Siguiente
+                {t("comun.siguiente")}
               </Boton>
             </nav>
           )}

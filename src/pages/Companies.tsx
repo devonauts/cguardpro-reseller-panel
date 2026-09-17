@@ -5,6 +5,8 @@ import {
   Boton, Cifra, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, TodaviaNo,
 } from "@/components/ui/kit";
 import { companiesService, type Cupo, type Empresa } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import { fechaCorta } from "@/lib/dinero";
 import "./Companies.css";
 
 /**
@@ -21,17 +23,10 @@ import "./Companies.css";
  * contrario de la verdad, y es el error fácil cuando el servidor manda `null`.
  */
 
-function fecha(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric" });
-}
-
 export function Companies() {
   const navigate = useNavigate();
   const { me, puede } = useResellerAuth();
+  const t = useT();
 
   const [filas, setFilas] = useState<Empresa[]>([]);
   const [cupo, setCupo] = useState<Cupo | null>(null);
@@ -49,11 +44,11 @@ export function Companies() {
       setCupo(r.quota ?? null);
     } catch (e: any) {
       if (e?.status === 403 && e?.resellerStatus) setBloqueadoPorEstado(e.resellerStatus);
-      else setError(e?.message || "No se pudieron cargar tus empresas.");
+      else setError(e?.message || t("empresas.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -68,12 +63,8 @@ export function Companies() {
       <>
         <Cabecera />
         <Tarjeta>
-          <TarjetaCabecera titulo="Esta sección no está disponible ahora" />
-          <p className="empresas__nota">
-            Mientras tu cuenta esté en este estado no puedes ver ni dar de alta
-            empresas. Las que ya tienes siguen funcionando con normalidad: esto
-            sólo afecta a tu panel.
-          </p>
+          <TarjetaCabecera titulo={t("empresas.bloqueadaTitulo")} />
+          <p className="empresas__nota">{t("empresas.bloqueadaNota")}</p>
         </Tarjeta>
       </>
     );
@@ -88,62 +79,57 @@ export function Companies() {
             disabled={!puedeCrear}
             title={
               !activo
-                ? "Tu cuenta tiene que estar activa para dar de alta empresas."
+                ? t("empresas.porQueNoActiva")
                 : !puede("reseller.company.create")
-                  ? "Tu rol no permite dar de alta empresas."
+                  ? t("empresas.porQueNoRol")
                   : !cupo?.canCreate
-                    ? "Has llegado a tu límite de empresas."
+                    ? t("empresas.porQueNoCupo")
                     : undefined
             }
           >
-            Dar de alta una empresa
+            {t("empresas.alta")}
           </Boton>
         }
       />
 
       {cupo && (
         <div className="empresas__cifras">
-          <Cifra etiqueta="Empresas" valor={cupo.used} />
+          <Cifra etiqueta={t("empresas.titulo")} valor={cupo.used} />
           <Cifra
-            etiqueta="Tu límite"
-            valor={cupo.unlimited ? "Sin límite" : cupo.max}
+            etiqueta={t("empresas.tuLimite")}
+            valor={cupo.unlimited ? t("comun.sinLimite") : cupo.max}
           />
           <Cifra
-            etiqueta="Te quedan"
+            etiqueta={t("empresas.teQuedan")}
             /* `null` es SIN LÍMITE. Pintar «0» aquí sería decirle a quien no
                tiene límite que no le queda ninguna. */
-            valor={cupo.unlimited ? "Sin límite" : cupo.remaining}
+            valor={cupo.unlimited ? t("comun.sinLimite") : cupo.remaining}
           />
         </div>
       )}
 
       {cupo && !cupo.unlimited && !cupo.canCreate && (
         <div className="empresas__aviso">
-          Has llegado a tu límite de {cupo.max}{" "}
-          {cupo.max === 1 ? "empresa" : "empresas"}. Habla con tu contacto en la
-          plataforma si necesitas ampliarlo.
+          {t(cupo.max === 1 ? "empresas.topeUno" : "empresas.topeVarios", { n: cupo.max ?? 0 })}
         </div>
       )}
 
       {!activo && (
-        <div className="empresas__aviso">
-          Tu cuenta no está activa, así que no puedes dar de alta empresas
-          nuevas. Las que ya tienes no se ven afectadas.
-        </div>
+        <div className="empresas__aviso">{t("empresas.noActiva")}</div>
       )}
 
       <EstadoDeDatos
         cargando={cargando}
         error={error}
         vacio={!cargando && filas.length === 0}
-        etiquetaVacio="Todavía no tienes ninguna empresa dada de alta."
+        etiquetaVacio={t("empresas.vacio")}
         onReintentar={cargar}
       >
         <div className="empresas__lista">
           {filas.map((e) => (
             <Link key={e.id} to={`/companies/${e.id}`} className="empresa">
               <div className="empresa__principal">
-                <span className="empresa__nombre">{e.name || "Sin nombre"}</span>
+                <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
                 {e.businessTitle && e.businessTitle !== e.name && (
                   <span className="empresa__razon">{e.businessTitle}</span>
                 )}
@@ -151,12 +137,12 @@ export function Companies() {
               <div className="empresa__meta">
                 {[e.city, e.country].filter(Boolean).join(", ") || "—"}
               </div>
-              <div className="empresa__meta">Alta {fecha(e.createdAt)}</div>
+              <div className="empresa__meta">{t("empresas.altaFecha", { f: fechaCorta(e.createdAt) })}</div>
               <div>
                 {e.suspendedAt ? (
-                  <Pildora tono="peligro">Suspendida</Pildora>
+                  <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
                 ) : (
-                  <Pildora tono="ok">Activa</Pildora>
+                  <Pildora tono="ok">{t("empresas.activa")}</Pildora>
                 )}
               </div>
             </Link>
@@ -168,11 +154,12 @@ export function Companies() {
 }
 
 function Cabecera({ accion }: { accion?: React.ReactNode }) {
+  const t = useT();
   return (
     <header className="cabecera">
       <div>
-        <h1 className="cabecera__titulo">Empresas</h1>
-        <p className="cabecera__sub">Las empresas que llevas bajo tu marca.</p>
+        <h1 className="cabecera__titulo">{t("empresas.titulo")}</h1>
+        <p className="cabecera__sub">{t("empresas.sub")}</p>
       </div>
       {accion}
     </header>

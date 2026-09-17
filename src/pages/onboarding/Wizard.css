@@ -85,3 +85,12 @@
   .alta__caja { padding: var(--s-5) var(--s-4); }
   .alta__doble { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* El idioma durante el alta: sobre la caja, sin competir con el paso. */
+.alta__idioma {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--s-4);
+}

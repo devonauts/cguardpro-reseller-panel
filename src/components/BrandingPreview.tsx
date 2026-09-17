@@ -1,5 +1,6 @@
 import { CSSProperties, ReactNode } from "react";
 import type { Marca } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
 import "./BrandingPreview.css";
 
 /**
@@ -46,7 +47,7 @@ function fichasDeMarca(hue: number | null, chroma: number | null): CSSProperties
 export function BrandingPreview({
   marca,
   logoUrl,
-  titulo = "Vista previa",
+  titulo,
   nota,
 }: {
   marca: Marca;
@@ -54,12 +55,13 @@ export function BrandingPreview({
   titulo?: string;
   nota?: ReactNode;
 }) {
-  const nombre = marca.platformName?.trim() || "Tu marca";
+  const t = useT();
+  const nombre = marca.platformName?.trim() || t("marca.previaTuMarca");
 
   return (
     <section className="previa" aria-labelledby="previa-titulo">
       <header className="previa__cabecera">
-        <h2 id="previa-titulo" className="previa__titulo">{titulo}</h2>
+        <h2 id="previa-titulo" className="previa__titulo">{titulo ?? t("marca.previaTitulo")}</h2>
         {nota && <p className="previa__nota">{nota}</p>}
       </header>
 
@@ -83,18 +85,18 @@ export function BrandingPreview({
 
           {/* Un formulario de mentira: se ve el acento donde de verdad se verá. */}
           <div className="previa__campo" aria-hidden="true">
-            <span className="previa__etiqueta">Correo</span>
+            <span className="previa__etiqueta">{t("marca.previaCorreo")}</span>
             <span className="previa__control" />
           </div>
           <div className="previa__campo" aria-hidden="true">
-            <span className="previa__etiqueta">Contraseña</span>
+            <span className="previa__etiqueta">{t("marca.previaContrasena")}</span>
             <span className="previa__control" />
           </div>
-          <span className="previa__boton" aria-hidden="true">Entrar</span>
+          <span className="previa__boton" aria-hidden="true">{t("marca.previaEntrar")}</span>
 
           {(marca.supportEmail || marca.supportPhone) && (
             <p className="previa__soporte">
-              ¿Necesitas ayuda? {marca.supportEmail || marca.supportPhone}
+              {t("marca.previaAyuda")} {marca.supportEmail || marca.supportPhone}
             </p>
           )}
         </div>

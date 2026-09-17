@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Cifra, Pildora } from "@/components/ui/kit";
 import { portalService, type DerechosDelSocio } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
 import "./Derechos.css";
 
 /**
@@ -25,6 +26,7 @@ import "./Derechos.css";
  * ════════════════════════════════════════════════════════════════════════════
  */
 export function Derechos() {
+  const t = useT();
   const [d, setD] = useState<DerechosDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,11 +37,11 @@ export function Derechos() {
     try {
       setD(await portalService.derechos());
     } catch (e: any) {
-      setError(e?.message || "No se pudieron cargar tus derechos.");
+      setError(e?.message || t("derechos.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -48,52 +50,47 @@ export function Derechos() {
   return (
     <section className="pagina">
       <header className="pagina__cabecera">
-        <h1>Plan y derechos</h1>
-        <p className="pagina__nota">
-          Qué módulos puedes ofrecer a tus empresas y cuántas puedes gestionar.
-          Lo define tu acuerdo con CGuard Pro.
-        </p>
+        <h1>{t("derechos.titulo")}</h1>
+        <p className="pagina__nota">{t("derechos.nota")}</p>
       </header>
 
       <EstadoDeDatos
         cargando={cargando}
         error={error}
         vacio={!cargando && !error && !d}
-        etiquetaVacio="No se pudieron leer tus derechos."
+        etiquetaVacio={t("derechos.vacio")}
         onReintentar={cargar}
       >
         {d && (
           <>
             <div className="derechos__cifras">
               <Cifra
-                etiqueta="Módulos incluidos"
-                valor={d.grantedAll ? "Todo el catálogo" : `${concedidos} de ${d.catalog.length}`}
+                etiqueta={t("derechos.modulosIncluidos")}
+                valor={d.grantedAll
+                  ? t("derechos.todoElCatalogo")
+                  : t("derechos.deN", { a: concedidos, b: d.catalog.length })}
               />
               <Cifra
-                etiqueta="Empresas dadas de alta"
+                etiqueta={t("derechos.empresasAlta")}
                 valor={String(d.quota.used)}
               />
               <Cifra
-                etiqueta="Límite de empresas"
-                valor={d.quota.unlimited ? "Sin límite" : String(d.quota.max ?? "—")}
+                etiqueta={t("derechos.limiteEmpresas")}
+                valor={d.quota.unlimited ? t("comun.sinLimite") : String(d.quota.max ?? "—")}
               />
               <Cifra
-                etiqueta="Te quedan"
+                etiqueta={t("derechos.teQuedan")}
                 valor={d.quota.unlimited ? "—" : String(d.quota.remaining ?? 0)}
               />
             </div>
 
             <Tarjeta>
               <TarjetaCabecera
-                titulo="Módulos"
-                nota={
-                  d.grantedAll
-                    ? "Tu acuerdo no recorta el catálogo: puedes ofrecerlos todos."
-                    : "Sólo los marcados como incluidos entran en tu acuerdo."
-                }
+                titulo={t("derechos.modulos")}
+                nota={t(d.grantedAll ? "derechos.notaTodo" : "derechos.notaParcial")}
               />
               {!d.catalog.length ? (
-                <p className="derechos__vacio">El catálogo de módulos está vacío.</p>
+                <p className="derechos__vacio">{t("derechos.catalogoVacio")}</p>
               ) : (
                 <ul className="derechos__lista">
                   {d.catalog.map((f) => {
@@ -109,7 +106,7 @@ export function Derechos() {
                           {/* Nunca `{f}`: el objeto no se pinta. */}
                           <span className="derechos__nombre">{f.label}</span>
                           <Pildora tono={incluido ? "ok" : "neutro"}>
-                            {incluido ? "Incluido" : "No incluido"}
+                            {t(incluido ? "derechos.incluido" : "derechos.noIncluido")}
                           </Pildora>
                         </div>
                         <p className="derechos__desc">{f.description}</p>
@@ -121,11 +118,9 @@ export function Derechos() {
             </Tarjeta>
 
             <Tarjeta>
-              <TarjetaCabecera titulo="Marca de la plataforma" />
+              <TarjetaCabecera titulo={t("derechos.marcaPlataforma")} />
               <p className="derechos__desc">
-                {d.showPlatformAttribution
-                  ? "Tus pantallas pueden mostrar que la tecnología es de CGuard Pro."
-                  : "Tus pantallas no muestran ninguna referencia a CGuard Pro."}
+                {t(d.showPlatformAttribution ? "derechos.marcaSi" : "derechos.marcaNo")}
               </p>
             </Tarjeta>
           </>

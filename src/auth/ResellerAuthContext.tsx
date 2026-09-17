@@ -6,6 +6,7 @@ import {
 } from "@/services/api";
 import { resellerService, type ResellerMe } from "@/services/resellerService";
 import { aplicarMarca, limpiarMarca } from "@/branding/marcaDelSocio";
+import { t } from "@/i18n/idioma";
 
 /**
  * La sesión del panel.
@@ -67,7 +68,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
       if (status === 404) {
         setEstado({
           cargando: false, me: null, motivo: "capa-apagada",
-          mensaje: "El panel de socio no está disponible en este momento.",
+          mensaje: t("sesion.capaApagada"),
         });
         return;
       }
@@ -78,7 +79,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
         limpiarMarca();
         setEstado({
           cargando: false, me: null, motivo: "canal-incorrecto",
-          mensaje: "Esta sesión no pertenece a un panel de socio. Vuelve a entrar.",
+          mensaje: t("sesion.canalIncorrecto"),
         });
         return;
       }
@@ -88,7 +89,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
       }
       setEstado({
         cargando: false, me: null, motivo: "error",
-        mensaje: e?.message || "No se pudo comprobar la sesión.",
+        mensaje: e?.message || t("sesion.noComprobada"),
       });
     }
   }, []);
@@ -112,7 +113,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
     const r = await resellerService.signIn(email, password);
     const token = (r as any)?.token ?? (r as any);
     if (!token || typeof token !== "string") {
-      throw { message: "El servidor no devolvió una sesión válida." };
+      throw { message: t("sesion.sinSesionValida") };
     }
     setAuthToken(token);
     await cargarMe();

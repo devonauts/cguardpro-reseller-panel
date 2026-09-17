@@ -4,6 +4,8 @@ import {
   Boton, Cifra, EstadoDeDatos, Tarjeta, TarjetaCabecera, TodaviaNo,
 } from "@/components/ui/kit";
 import { usageService, type PeriodoDeUso } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import { fechaCorta, mesDelPeriodo } from "@/lib/dinero";
 import "./Usage.css";
 
 /**
@@ -20,26 +22,8 @@ import "./Usage.css";
  * justo lo que hace falta para que nadie tenga que fiarse.
  */
 
-const MES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
-];
-
-function tituloDePeriodo(label: string): string {
-  const m = /^(\d{4})-(\d{2})$/.exec(label);
-  if (!m) return label;
-  return `${MES[Number(m[2]) - 1]} de ${m[1]}`;
-}
-
-function fecha(iso: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime())
-    ? "—"
-    : d.toLocaleDateString("es-EC", { day: "numeric", month: "short", year: "numeric" });
-}
-
 export function Usage() {
+  const t = useT();
   const [periodos, setPeriodos] = useState<PeriodoDeUso[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,11 +37,11 @@ export function Usage() {
       setPeriodos(r.periods ?? []);
       setAbierto(r.periods?.[0]?.periodId ?? null);
     } catch (e: any) {
-      setError(e?.message || "No se pudo cargar tu consumo.");
+      setError(e?.message || t("consumo.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -67,10 +51,8 @@ export function Usage() {
     <>
       <header className="cabecera">
         <div>
-          <h1 className="cabecera__titulo">Consumo</h1>
-          <p className="cabecera__sub">
-            Los usuarios contabilizados en cada mes ya cerrado.
-          </p>
+          <h1 className="cabecera__titulo">{t("consumo.titulo")}</h1>
+          <p className="cabecera__sub">{t("consumo.sub")}</p>
         </div>
       </header>
 
@@ -78,19 +60,19 @@ export function Usage() {
         cargando={cargando}
         error={error}
         vacio={!cargando && periodos.length === 0}
-        etiquetaVacio="Todavía no se ha cerrado ningún mes."
+        etiquetaVacio={t("consumo.vacio")}
         onReintentar={cargar}
       >
         {periodos.length > 0 && (
           <>
-            <nav className="uso__meses" aria-label="Meses cerrados">
+            <nav className="uso__meses" aria-label={t("consumo.meses")}>
               {periodos.map((p) => (
                 <Boton
                   key={p.periodId}
                   variante={p.periodId === actual?.periodId ? "primario" : "suave"}
                   onClick={() => setAbierto(p.periodId)}
                 >
-                  {tituloDePeriodo(p.period.label)}
+                  {mesDelPeriodo(p.period.label)}
                 </Boton>
               ))}
             </nav>
@@ -99,48 +81,49 @@ export function Usage() {
               <>
                 <div className="uso__cifras">
                   <Cifra
-                    etiqueta="Usuarios contabilizados"
+                    etiqueta={t("consumo.contabilizados")}
                     valor={actual.totalRoyaltySeats}
-                    nota={`${actual.tenants.length} ${actual.tenants.length === 1 ? "empresa" : "empresas"}`}
+                    nota={t(
+                      actual.tenants.length === 1 ? "consumo.empresaUna" : "consumo.empresasVarias",
+                      { n: actual.tenants.length },
+                    )}
                   />
                   <Cifra
-                    etiqueta="Periodo"
-                    valor={tituloDePeriodo(actual.period.label)}
+                    etiqueta={t("consumo.periodo")}
+                    valor={mesDelPeriodo(actual.period.label)}
                     nota={`${actual.period.start} → ${actual.period.end}`}
                   />
                   <Cifra
-                    etiqueta="Contado el"
-                    valor={fecha(actual.snapshotTakenAt)}
-                    nota="Esta cifra ya no cambia"
+                    etiqueta={t("consumo.contadoEl")}
+                    valor={fechaCorta(actual.snapshotTakenAt)}
+                    nota={t("consumo.yaNoCambia")}
                   />
                 </div>
 
                 <p className="uso__nota">
-                  Es una foto del último día del mes: quien estaba activo ese día
-                  cuenta entero, y quien ya no estaba no cuenta. No se reparte por
-                  días. Modalidad contratada: <code>{actual.seatPolicy}</code>.
+                  {t("consumo.nota")} <code>{actual.seatPolicy}</code>.
                 </p>
 
                 {actual.tenants.length === 0 ? (
-                  <TodaviaNo>
-                    Ese mes no hubo ninguna empresa que contabilizar.
-                  </TodaviaNo>
+                  <TodaviaNo>{t("consumo.sinEmpresas")}</TodaviaNo>
                 ) : (
                   <div className="uso__empresas">
-                    {actual.tenants.map((t) => (
-                      <Tarjeta key={t.tenantId}>
+                    {actual.tenants.map((e) => (
+                      <Tarjeta key={e.tenantId}>
                         <TarjetaCabecera
-                          titulo={t.tenantName || t.tenantId}
+                          titulo={e.tenantName || e.tenantId}
                           nota={
-                            t.sourceMemberships !== null
-                              ? `${t.sourceMemberships} cuentas · ${t.royaltySeats} contabilizadas`
-                              : `${t.royaltySeats} contabilizadas`
+                            e.sourceMemberships !== null
+                              ? t("consumo.cuentasYContadas", {
+                                  a: e.sourceMemberships, b: e.royaltySeats,
+                                })
+                              : t("consumo.soloContadas", { b: e.royaltySeats })
                           }
                         />
                         <DesgloseDeExclusiones
-                          excluded={t.excluded}
-                          sourceMemberships={t.sourceMemberships}
-                          royaltySeats={t.royaltySeats}
+                          excluded={e.excluded}
+                          sourceMemberships={e.sourceMemberships}
+                          royaltySeats={e.royaltySeats}
                         />
                       </Tarjeta>
                     ))}

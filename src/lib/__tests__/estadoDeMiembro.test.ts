@@ -17,7 +17,8 @@ import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
-import { ESTADO_DE_MIEMBRO, textoDeEstado } from "../estadoDeMiembro";
+import { estadoDeMiembro, textoDeEstado } from "../estadoDeMiembro";
+import { elegirIdioma, IDIOMAS } from "@/i18n/idioma";
 
 const actividad = fs.readFileSync(
   path.resolve(__dirname, "../../pages/Actividad.tsx"),
@@ -36,19 +37,30 @@ const ACCIONES_DE_EQUIPO = [
 ];
 
 describe("estado de un miembro", () => {
-  it("los tres estados tienen nombre en castellano, y ninguno es el identificador", () => {
-    for (const e of ESTADOS) {
-      const entrada = ESTADO_DE_MIEMBRO[e];
-      expect(entrada, `falta el estado ${e}`).toBeTruthy();
-      expect(entrada.texto).not.toBe(e);
-      expect(entrada.texto.length).toBeGreaterThan(2);
+  it("los tres estados tienen nombre EN LOS DOS IDIOMAS, y ninguno es el identificador", () => {
+    /* En los dos. Un estado nombrado sólo en castellano dejaría una insignia en
+       español dentro de una pantalla en inglés, que es justo la mezcla que este
+       panel no debe tener. */
+    for (const idioma of IDIOMAS) {
+      elegirIdioma(idioma);
+      for (const e of ESTADOS) {
+        const entrada = estadoDeMiembro(e);
+        expect(entrada, `falta el estado ${e} en ${idioma}`).toBeTruthy();
+        expect(entrada!.texto).not.toBe(e);
+        expect(entrada!.texto.length).toBeGreaterThan(2);
+      }
     }
+    elegirIdioma("en");
   });
 
   it("«archived» se lee como lo que le pasa a la PERSONA, no a su ficha", () => {
-    /* «Archivado» describiría el registro. Lo que el socio necesita saber es
+    /* «Archived» describiría el registro. Lo que el socio necesita saber es
        que esa persona ya no entra. */
+    elegirIdioma("en");
+    expect(textoDeEstado("archived")).toBe("Deactivated");
+    elegirIdioma("es");
     expect(textoDeEstado("archived")).toBe("Desactivado");
+    elegirIdioma("en");
   });
 
   it("un estado desconocido se enseña tal cual, sin inventarle un nombre", () => {
@@ -75,7 +87,7 @@ describe("Actividad · las acciones de equipo tienen nombre", () => {
     });
   }
 
-  it("el valor de `status` sólo se traduce en las acciones de equipo", () => {
+  it("el valor de `status` sólo se nombra en las acciones de equipo", () => {
     /* `archived` pertenece al vocabulario de un miembro. El `status` de una
        CUENTA de socio es otro juego de palabras; leerlo con este diccionario
        enseñaría un estado que no es. */

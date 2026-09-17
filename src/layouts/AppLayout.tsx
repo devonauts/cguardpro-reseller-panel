@@ -5,6 +5,9 @@ import StatusPill from "@/components/StatusPill";
 import { logoDeCabecera } from "@/branding/marcaDelSocio";
 import useModoOscuro from "@/branding/useModoOscuro";
 import { Boton } from "@/components/ui/kit";
+import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./AppLayout.css";
 
 /**
@@ -23,30 +26,32 @@ import "./AppLayout.css";
 
 interface Entrada {
   a: string;
-  texto: string;
+  /** La CLAVE del rótulo, no el rótulo: el menú también cambia de idioma. */
+  texto: Clave;
   /** Sin implementar todavía: se ve, no se pulsa. */
   proximamente?: boolean;
 }
 
 const NAV: Entrada[] = [
-  { a: "/dashboard", texto: "Resumen" },
-  { a: "/branding", texto: "Tu marca" },
-  { a: "/companies", texto: "Empresas" },
-  { a: "/usage", texto: "Consumo" },
-  { a: "/billing", texto: "Facturación" },
+  { a: "/dashboard", texto: "nav.resumen" },
+  { a: "/branding", texto: "nav.marca" },
+  { a: "/companies", texto: "nav.empresas" },
+  { a: "/usage", texto: "nav.consumo" },
+  { a: "/billing", texto: "nav.facturacion" },
   /* El bloque de «tu acuerdo con CGuardPro»: qué se pactó, qué incluye y qué
      ha pasado. Va después de lo operativo-comercial porque se consulta de
      tanto en tanto, no a diario. */
-  { a: "/contract", texto: "Tu contrato" },
-  { a: "/entitlements", texto: "Plan y derechos" },
-  { a: "/activity", texto: "Actividad" },
-  { a: "/domains", texto: "Tu dirección" },
-  { a: "/account", texto: "Tu cuenta" },
-  { a: "/team", texto: "Equipo" },
+  { a: "/contract", texto: "nav.contrato" },
+  { a: "/entitlements", texto: "nav.derechos" },
+  { a: "/activity", texto: "nav.actividad" },
+  { a: "/domains", texto: "nav.dominios" },
+  { a: "/account", texto: "nav.cuenta" },
+  { a: "/team", texto: "nav.equipo" },
 ];
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const { me, salir } = useResellerAuth();
+  const t = useT();
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
   const location = useLocation();
@@ -75,7 +80,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const nombre = me?.branding?.platformName
     || me?.reseller.displayName
     || me?.reseller.legalName
-    || "Panel de socio";
+    || t("armazon.tituloNeutro");
 
   /* Qué logotipo toca lo decidió el servidor; aquí sólo se elige claro u
      oscuro según el modo del sistema. `null` = no hay imagen, y entonces se
@@ -84,16 +89,16 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const persona = me?.user.fullName
     || [me?.user.firstName, me?.user.lastName].filter(Boolean).join(" ")
     || me?.user.email
-    || "Mi cuenta";
+    || t("armazon.miCuenta");
 
   return (
     <div className="marco">
-      <a className="skip-link" href="#contenido">Saltar al contenido</a>
+      <a className="skip-link" href="#contenido">{t("armazon.saltar")}</a>
 
       <aside
         id="nav-lateral"
         className={`lateral${menuAbierto ? " lateral--abierto" : ""}`}
-        aria-label="Secciones del panel"
+        aria-label={t("armazon.secciones")}
       >
         <div className="lateral__marca">
           {logo
@@ -112,8 +117,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
                   /* Un `span` y no un enlace desactivado: un `<a>` sin destino
                      sigue recibiendo el foco y promete algo que no cumple. */
                   <span className="nav__enlace nav__enlace--proximamente">
-                    {e.texto}
-                    <span className="nav__insignia">Próximamente</span>
+                    {t(e.texto)}
+                    <span className="nav__insignia">{t("armazon.proximamente")}</span>
                   </span>
                 ) : (
                   <NavLink
@@ -121,7 +126,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                     className={({ isActive }) =>
                       `nav__enlace${isActive ? " nav__enlace--activo" : ""}`}
                   >
-                    {e.texto}
+                    {t(e.texto)}
                   </NavLink>
                 )}
               </li>
@@ -142,7 +147,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             className="superior__hamburguesa"
             aria-expanded={menuAbierto}
             aria-controls="nav-lateral"
-            aria-label={menuAbierto ? "Cerrar el menú" : "Abrir el menú"}
+            aria-label={menuAbierto ? t("armazon.cerrarMenu") : t("armazon.abrirMenu")}
             onClick={() => setMenuAbierto((v) => !v)}
           >
             <span aria-hidden="true">☰</span>
@@ -166,8 +171,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
             {cuentaAbierta && (
               <div className="cuenta__menu" role="menu">
                 <div className="cuenta__correo">{me?.user.email}</div>
+                {/* El idioma se cambia SIN salir: no se toca la sesión. */}
+                <div className="cuenta__idioma">
+                  <SelectorDeIdioma compacto />
+                </div>
                 <Boton variante="fantasma" bloque role="menuitem" onClick={salir}>
-                  Cerrar sesión
+                  {t("armazon.cerrarSesion")}
                 </Boton>
               </div>
             )}

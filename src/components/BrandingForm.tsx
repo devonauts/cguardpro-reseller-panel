@@ -3,6 +3,8 @@ import { Boton, Campo } from "@/components/ui/kit";
 import {
   brandingService, type Marca, type MarcaEditable, type RanuraDeImagen,
 } from "@/services/resellerService";
+import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./BrandingForm.css";
 
 /**
@@ -37,24 +39,25 @@ interface Props {
 export function BrandingForm({
   marca, campos, onCambio, ranuras = [], onImagenSubida, deshabilitado,
 }: Props) {
+  const t = useT();
   const muestra = (c: keyof MarcaEditable) => !campos || campos.includes(c);
 
   return (
     <div className="marca-form">
       {muestra("platformName") && (
         <Campo
-          etiqueta="Nombre que verán tus clientes"
+          etiqueta={t("marca.campoNombre")}
           value={marca.platformName ?? ""}
           maxLength={60}
           disabled={deshabilitado}
-          ayuda="Texto sin formato. Aparece en su pantalla de entrada."
+          ayuda={t("marca.campoNombreAyuda")}
           onChange={(e) => onCambio({ platformName: e.target.value })}
         />
       )}
 
       {muestra("loginTagline") && (
         <Campo
-          etiqueta="Frase de la pantalla de entrada"
+          etiqueta={t("marca.campoLema")}
           value={marca.loginTagline ?? ""}
           maxLength={140}
           disabled={deshabilitado}
@@ -64,15 +67,13 @@ export function BrandingForm({
 
       {(muestra("brandHue") || muestra("brandChroma")) && (
         <fieldset className="marca-form__grupo">
-          <legend className="marca-form__leyenda">Color de marca</legend>
-          <p className="marca-form__ayuda">
-            Eliges el tono; el brillo lo fija el sistema para que el texto se lea
-            siempre, sea cual sea el color.
-          </p>
+          <legend className="marca-form__leyenda">{t("marca.colorLeyenda")}</legend>
+          <p className="marca-form__ayuda">{t("marca.colorAyuda")}</p>
 
           {muestra("brandHue") && (
             <Deslizador
-              etiqueta="Tono"
+              etiqueta={t("marca.colorTono")}
+              id="tono"
               min={0}
               max={360}
               paso={1}
@@ -89,7 +90,8 @@ export function BrandingForm({
 
           {muestra("brandChroma") && (
             <Deslizador
-              etiqueta="Intensidad"
+              etiqueta={t("marca.colorIntensidad")}
+              id="intensidad"
               min={0}
               max={0.4}
               paso={0.01}
@@ -103,18 +105,18 @@ export function BrandingForm({
 
       {muestra("supportEmail") && (
         <Campo
-          etiqueta="Correo de soporte"
+          etiqueta={t("marca.campoCorreoSoporte")}
           type="email"
           value={marca.supportEmail ?? ""}
           disabled={deshabilitado}
-          ayuda="A donde escriben tus clientes cuando necesitan ayuda."
+          ayuda={t("marca.campoCorreoSoporteAyuda")}
           onChange={(e) => onCambio({ supportEmail: e.target.value })}
         />
       )}
 
       {muestra("supportPhone") && (
         <Campo
-          etiqueta="Teléfono de soporte"
+          etiqueta={t("marca.campoTelefonoSoporte")}
           value={marca.supportPhone ?? ""}
           disabled={deshabilitado}
           onChange={(e) => onCambio({ supportPhone: e.target.value })}
@@ -123,13 +125,13 @@ export function BrandingForm({
 
       {muestra("supportUrl") && (
         <Campo
-          etiqueta="Web de soporte"
+          etiqueta={t("marca.campoWebSoporte")}
           type="url"
           inputMode="url"
           placeholder="https://"
           value={marca.supportUrl ?? ""}
           disabled={deshabilitado}
-          ayuda="Debe empezar por https://"
+          ayuda={t("marca.campoWebSoporteAyuda")}
           onChange={(e) => onCambio({ supportUrl: e.target.value })}
         />
       )}
@@ -150,12 +152,17 @@ export function BrandingForm({
 /* ── Deslizador ──────────────────────────────────────────────────────────── */
 
 function Deslizador({
-  etiqueta, min, max, paso, valor, onChange, conRampa, deshabilitado,
+  etiqueta, id: nombre, min, max, paso, valor, onChange, conRampa, deshabilitado,
 }: {
-  etiqueta: string; min: number; max: number; paso: number; valor: number;
+  etiqueta: string;
+  /** Estable y en ASCII: el `id` no puede salir de un rótulo que cambia de
+   *  idioma — si saliera, la etiqueta dejaría de apuntar al control al
+   *  cambiarlo. */
+  id: string;
+  min: number; max: number; paso: number; valor: number;
   onChange: (v: number) => void; conRampa?: boolean; deshabilitado?: boolean;
 }) {
-  const id = `desl-${etiqueta.toLowerCase()}`;
+  const id = `desl-${nombre}`;
   return (
     <div className="desl">
       <label className="desl__etiqueta" htmlFor={id}>
@@ -181,25 +188,13 @@ function Deslizador({
 
 /* ── Subida ──────────────────────────────────────────────────────────────── */
 
-const ETIQUETA_RANURA: Record<RanuraDeImagen, { titulo: string; nota: string }> = {
-  logo: {
-    titulo: "Logotipo — fondo claro",
-    nota: "El completo, y el que se usa por defecto. PNG, JPEG o WebP, hasta 512 px.",
-  },
-  logoDark: {
-    titulo: "Logotipo — fondo oscuro",
-    nota: "Para barras y fondos oscuros. Sin él se usa el claro tal cual: nunca se invierte.",
-  },
-  mark: {
-    titulo: "Marca compacta — fondo claro",
-    nota: "Cuadrada. Para la barra plegada, avatares y el icono del navegador.",
-  },
-  markDark: {
-    titulo: "Marca compacta — fondo oscuro",
-    nota: "La compacta sobre fondo oscuro.",
-  },
-  favicon: { titulo: "Icono", nota: "El de la pestaña del navegador. Se ajusta a 180 px." },
-  emailLogo: { titulo: "Logotipo para correos", nota: "Se ajusta a 512 px. Los correos se leen en claro." },
+const ETIQUETA_RANURA: Record<RanuraDeImagen, { titulo: Clave; nota: Clave }> = {
+  logo: { titulo: "marca.ranuraLogo", nota: "marca.ranuraLogoNota" },
+  logoDark: { titulo: "marca.ranuraLogoDark", nota: "marca.ranuraLogoDarkNota" },
+  mark: { titulo: "marca.ranuraMark", nota: "marca.ranuraMarkNota" },
+  markDark: { titulo: "marca.ranuraMarkDark", nota: "marca.ranuraMarkDarkNota" },
+  favicon: { titulo: "marca.ranuraFavicon", nota: "marca.ranuraFaviconNota" },
+  emailLogo: { titulo: "marca.ranuraEmailLogo", nota: "marca.ranuraEmailLogoNota" },
 };
 
 function SubidaDeImagen({
@@ -210,11 +205,13 @@ function SubidaDeImagen({
   onSubida?: (m: Marca) => void;
   deshabilitado?: boolean;
 }) {
+  const t = useT();
   const entrada = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const puesto = !!(marca as any)[`${ranura}FileId`];
   const meta = ETIQUETA_RANURA[ranura];
+  const titulo = t(meta.titulo);
 
   const elegir = async (e: ChangeEvent<HTMLInputElement>) => {
     const archivo = e.target.files?.[0];
@@ -232,7 +229,7 @@ function SubidaDeImagen({
       /* El servidor dice POR QUÉ no vale —un SVG, una imagen enorme, un archivo
          dañado— y ese mensaje se enseña tal cual: es lo único que le permite al
          socio saber qué volver a exportar. */
-      setError(err?.message || "No se pudo subir la imagen.");
+      setError(err?.message || t("marca.subidaFallo"));
     } finally {
       setSubiendo(false);
     }
@@ -241,19 +238,19 @@ function SubidaDeImagen({
   return (
     <div className="subida">
       <div className="subida__texto">
-        <span className="subida__titulo">{meta.titulo}</span>
-        <span className="subida__nota">{meta.nota}</span>
+        <span className="subida__titulo">{titulo}</span>
+        <span className="subida__nota">{t(meta.nota)}</span>
       </div>
 
       <div className="subida__acciones">
-        {puesto && <span className="subida__puesto">Cargado</span>}
+        {puesto && <span className="subida__puesto">{t("marca.subidaCargado")}</span>}
         <Boton
           variante="suave"
           cargando={subiendo}
           disabled={deshabilitado}
           onClick={() => entrada.current?.click()}
         >
-          {puesto ? "Cambiar" : "Subir"}
+          {t(puesto ? "marca.subidaCambiar" : "marca.subidaSubir")}
         </Boton>
       </div>
 
@@ -264,7 +261,7 @@ function SubidaDeImagen({
         className="sr-only"
         // La etiqueta va en el input porque el botón de arriba es quien lo
         // dispara: sin esto, un lector de pantalla encuentra un campo sin nombre.
-        aria-label={`Subir ${meta.titulo.toLowerCase()}`}
+        aria-label={t("marca.subidaAria", { que: titulo.toLowerCase() })}
         onChange={elegir}
       />
 

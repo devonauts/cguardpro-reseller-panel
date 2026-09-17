@@ -23,10 +23,18 @@
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-/** El separador de miles y el decimal del idioma del navegador. */
+import { etiquetaIntl, t } from "@/i18n/idioma";
+
+/**
+ * El separador de miles y el decimal DEL IDIOMA ELEGIDO.
+ *
+ * Antes se usaba el del navegador. Eso daba una pantalla en inglés con los
+ * importes escritos a la española —«1.234,56»— en cuanto el portátil estaba en
+ * castellano, que es exactamente la mezcla que este panel no debe tener.
+ */
 function separadores(): { miles: string; decimal: string } {
   try {
-    const partes = new Intl.NumberFormat(undefined).formatToParts(1234.5);
+    const partes = new Intl.NumberFormat(etiquetaIntl()).formatToParts(1234.5);
     return {
       miles: partes.find((p) => p.type === "group")?.value ?? ",",
       decimal: partes.find((p) => p.type === "decimal")?.value ?? ".",
@@ -68,7 +76,15 @@ export function fecha(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  return d.toLocaleDateString(etiquetaIntl(), { year: "numeric", month: "long", day: "numeric" });
+}
+
+/** La misma fecha, corta: la que cabe en una fila de tabla. */
+export function fechaCorta(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString(etiquetaIntl(), { year: "numeric", month: "short", day: "numeric" });
 }
 
 /** Fecha y hora, para el registro de actividad. */
@@ -76,8 +92,23 @@ export function fechaYHora(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(etiquetaIntl(), {
     year: "numeric", month: "short", day: "numeric",
     hour: "2-digit", minute: "2-digit",
   });
+}
+
+/**
+ * `2026-09` → «September 2026» / «septiembre de 2026».
+ *
+ * El orden de la palabra y el año NO es el mismo en los dos idiomas, así que la
+ * plantilla entera vive en el catálogo y aquí sólo se rellenan los huecos.
+ */
+export function mesDelPeriodo(label: string | null | undefined): string {
+  if (!label) return "—";
+  const m = /^(\d{4})-(\d{2})$/.exec(label);
+  if (!m) return label;
+  const n = Number(m[2]);
+  if (!(n >= 1 && n <= 12)) return label;
+  return t("mes.de", { mes: t(`mes.${n}` as never), anio: m[1] });
 }
