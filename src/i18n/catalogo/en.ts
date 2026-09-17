@@ -88,6 +88,7 @@ export const en = {
   "nav.tablero": "Dashboard",
   "nav.marcaCorto": "Branding",
   "nav.ajustesCorto": "Settings",
+  "nav.mas": "More",
   "buscador.abrir": "Search…",
   "buscador.titulo": "Search the panel",
   "buscador.marcador": "Jump to a section or a company…",

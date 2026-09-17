@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { lazy, ReactNode, Suspense, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
@@ -6,8 +6,18 @@ import StatusPill from "@/components/StatusPill";
 import { FondoEspacial } from "@/components/cristal";
 import { BarraSuperior, Rail } from "@/components/panel";
 import { nombreDeRol } from "@/lib/rolDeSocio";
+import { esNativo } from "@/plataforma";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./AppLayout.scss";
+
+/**
+ * El armazón de la app instalada se carga SOLO. Es el único módulo que toca
+ * Ionic, y Ionic pesa 809 kB — medidos: el paquete de entrada pasaba de 221 kB
+ * a 1.030 kB con sólo importarlo. Detrás de `lazy()` vive en su propio trozo,
+ * que un navegador no pide nunca porque `esNativo` es falso y esta rama no se
+ * llega a pintar. `checkBundle` lo comprueba después de cada construcción.
+ */
+const ArmazonNativo = lazy(() => import("@/nativo"));
 
 /**
  * El armazón del panel: raíl flotante, barra de controles y contenido, todo
@@ -17,6 +27,24 @@ import "./AppLayout.scss";
  * son piezas con su propio SCSS; este fichero no dibuja nada.
  */
 export function AppLayout({ children }: { children: ReactNode }) {
+  /* Instalada o en un navegador: son dos armazones distintos para el MISMO
+     panel. Lo de dentro —las páginas, los datos, los permisos— es el mismo
+     código; lo que cambia es la forma que lo envuelve.
+
+     La decisión se toma UNA vez, aquí. Repartir `esNativo` por las páginas es
+     como acabó la app del vigilante, con 49 comprobaciones sueltas y ningún
+     sitio donde entender qué se ve en cada plataforma. */
+  if (esNativo) {
+    return (
+      <Suspense fallback={<div className="marco"><FondoEspacial /></div>}>
+        <ArmazonNativo>{children}</ArmazonNativo>
+      </Suspense>
+    );
+  }
+  return <ArmazonWeb>{children}</ArmazonWeb>;
+}
+
+function ArmazonWeb({ children }: { children: ReactNode }) {
   const { me, salir } = useResellerAuth();
   const t = useT();
   const [menuAbierto, setMenuAbierto] = useState(false);

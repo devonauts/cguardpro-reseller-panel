@@ -15,3 +15,4 @@ export { arrancarNativo, ocultarSplash } from "./arranqueNativo";
 export { abrirFuera, alAbrirFuera } from "./enlacesExternos";
 export { useConectividad } from "./conectividad";
 export { useAtras, atenderAtras } from "./botonAtras";
+export { CicloNativo } from "./CicloNativo";

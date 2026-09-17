@@ -107,6 +107,11 @@ const NATIVO = [
   "@capacitor/splash-screen", "@capacitor/keyboard", "@capacitor/network",
   "@capacitor/haptics", "@capacitor/preferences", "@capacitor/browser",
   "capacitor-plugin", "registerPlugin",
+  /* Ionic no deja su nombre de paquete en el resultado, pero sí los nombres de
+     sus elementos, que son literales y sobreviven al minificador porque el
+     navegador los necesita para registrarlos. Ionic mide 809 kB: es lo caro de
+     verdad, así que es lo que más importa vigilar. */
+  "ion-app", "ion-content", "ion-router-outlet", "IonApp",
 ];
 const colados = NATIVO.filter((n) => jsEntrada.includes(n));
 if (colados.length) {
@@ -114,6 +119,22 @@ if (colados.length) {
   for (const c of colados) console.error(`  · ${c}`);
   console.error("  lo nativo se carga con import() detrás de `esNativo`.");
   process.exit(1);
+}
+
+/* Y la HOJA de entrada. El CSS se parte en trozos igual que el código, pero
+   una importación mal puesta mete las 17 kB de Ionic en la hoja que la web
+   carga de forma bloqueante — que es peor que en el JS, porque retrasa el
+   primer pintado. */
+const cssEntrada = /<link[^>]+rel="stylesheet"[^>]+href="(\/assets\/[^"]+\.css)"/.exec(html)?.[1];
+if (cssEntrada) {
+  const hoja = fs.readFileSync(path.join(DIST, cssEntrada.slice(1)), "utf8");
+  const cssColado = ["ion-app", "ion-content", "ion-page", "--ion-background-color"]
+    .filter((n) => hoja.includes(n));
+  if (cssColado.length) {
+    console.error(`✗ ${path.basename(cssEntrada)} arrastra estilos de Ionic a la web:`);
+    for (const c of cssColado) console.error(`  · ${c}`);
+    process.exit(1);
+  }
 }
 
 console.log("✓ paquete limpio y servido desde la raíz de su anfitrión");

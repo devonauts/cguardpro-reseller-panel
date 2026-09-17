@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ResellerAuthProvider } from "./auth/ResellerAuthContext";
 import { IdiomaProvider } from "./i18n/IdiomaProvider";
+import { CicloNativo } from "./plataforma";
 import "./styles/global.css";
 
 /**
@@ -18,6 +19,9 @@ import "./styles/global.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
+      {/* Dentro del enrutador: atrás necesita saber navegar. No pinta nada, y
+          en un navegador no hace nada en absoluto. */}
+      <CicloNativo />
       {/* El idioma envuelve a la sesión: la pantalla de entrada y los avisos de
           «no hay sesión» también se leen, y se leen antes de que haya nadie. */}
       <IdiomaProvider>

@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
 
-import { Icono, Marca, type NombreDeIcono } from "@/components/cristal";
+import { Icono, Marca } from "@/components/cristal";
+import { PRINCIPALES, SECUNDARIAS, type Seccion } from "@/navegacion/secciones";
 import { useT } from "@/i18n/IdiomaProvider";
-import type { Clave } from "@/i18n/idioma";
 import "./Rail.scss";
 
 /**
@@ -26,38 +26,16 @@ import "./Rail.scss";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-interface Entrada {
-  a: string;
-  icono: NombreDeIcono;
-  texto: Clave;
-}
+/* La lista NO vive aquí. El móvil enseña las mismas secciones con otra forma,
+   y dos listas que empiezan iguales dejan de serlo a la primera sección nueva.
+   Está en `@/navegacion/secciones`, que es de donde beben los dos armazones.
 
-/**
- * Lo que se usa a diario, arriba. Lo que se consulta de tanto en tanto
- * —contrato, plan, actividad— baja a un segundo grupo separado por una línea.
- *
- * Once entradas seguidas se leen como una lista de la compra y obligan a
- * repasarlas enteras cada vez. Partidas en seis y cuatro, la mirada va directa
- * al grupo que toca.
- */
-const NAV: Entrada[] = [
-  { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
-  { a: "/companies", icono: "edificio", texto: "nav.empresas" },
-  { a: "/domains", icono: "globo", texto: "nav.dominios" },
-  { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
-  { a: "/team", icono: "personas", texto: "nav.equipo" },
-  { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
-];
+   Lo que SÍ decide el raíl es la FORMA: dos grupos separados por una línea.
+   Once entradas seguidas se leen como una lista de la compra y obligan a
+   repasarlas enteras cada vez; partidas en seis y cinco, la mirada va directa
+   al grupo que toca. */
 
-const NAV_SECUNDARIA: Entrada[] = [
-  { a: "/usage", icono: "grafico", texto: "nav.consumo" },
-  { a: "/activity", icono: "libro", texto: "nav.actividad" },
-  { a: "/contract", icono: "escudo", texto: "nav.contrato" },
-  { a: "/entitlements", icono: "corona", texto: "nav.derechos" },
-  { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
-];
-
-function Enlace({ entrada }: { entrada: Entrada }) {
+function Enlace({ entrada }: { entrada: Seccion }) {
   const t = useT();
   return (
     <li>
@@ -91,10 +69,10 @@ export function Rail({
 
       <nav className="rail__nav">
         <ul>
-          {NAV.map((e) => <Enlace key={e.a} entrada={e} />)}
+          {PRINCIPALES.map((e) => <Enlace key={e.a} entrada={e} />)}
         </ul>
         <ul className="rail__nav--secundaria">
-          {NAV_SECUNDARIA.map((e) => <Enlace key={e.a} entrada={e} />)}
+          {SECUNDARIAS.map((e) => <Enlace key={e.a} entrada={e} />)}
         </ul>
       </nav>
 

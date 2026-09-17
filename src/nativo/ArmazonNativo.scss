@@ -1,0 +1,107 @@
+@use "../design/material" as m;
+
+.nativo__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  /* La barra de estado del teléfono va ENCIMA de esto. Sin el `env()`, el
+     nombre del socio queda debajo de la hora y la batería. */
+  padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
+
+  @include m.cristal(estandar);
+  border-radius: 0;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+
+  position: relative;
+  z-index: 10;
+}
+
+.nativo__socio {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nativo__socio-nombre {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nativo__socio-codigo {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.nativo__persona {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 45%;
+  color: var(--text-secondary);
+}
+
+.nativo__persona-texto {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.nativo__persona-nombre,
+.nativo__persona-rol {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nativo__persona-nombre { font-size: 12px; font-weight: 550; }
+.nativo__persona-rol { font-size: 10px; color: var(--text-muted); }
+
+.nativo__interior {
+  /* El hueco de la barra de pestañas: su alto más el indicador de inicio. Sin
+     esto la última tarjeta de cada pantalla queda debajo de la barra y no hay
+     manera de leerla entera. */
+  padding: 16px 14px calc(72px + env(safe-area-inset-bottom, 0px));
+  display: block;
+}
+
+/* En una tableta el contenido no se estira de canto a canto: una línea de
+   texto de 900 px no se lee. */
+@media (min-width: 700px) {
+  .nativo__interior {
+    max-width: 780px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+/* `IonPage` e `IonContent` traen su propio fondo y su propia pila de contexto.
+   Estas dos clases existen para anularlo en el sitio donde se usan, en lugar de
+   subir la especificidad en la hoja compartida de Ionic y afectar a todo. */
+.nativo {
+  /* El armazón entero por encima del fondo, que es un hermano fijo detrás. */
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.nativo__contenido {
+  /* `ion-content` calcula su desplazamiento con estas dos variables. Puestas a
+     cero, el contenido empieza justo debajo de nuestra cabecera en vez de
+     dejar el hueco de una `ion-toolbar` que aquí no existe. */
+  --offset-top: 0px;
+  --offset-bottom: 0px;
+  --padding-start: 0px;
+  --padding-end: 0px;
+}

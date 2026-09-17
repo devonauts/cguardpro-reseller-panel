@@ -78,6 +78,7 @@ export const es: Record<Clave, string> = {
   "nav.tablero": "Tablero",
   "nav.marcaCorto": "Marca",
   "nav.ajustesCorto": "Ajustes",
+  "nav.mas": "Más",
   "buscador.abrir": "Buscar…",
   "buscador.titulo": "Buscar en el panel",
   "buscador.marcador": "Ir a una sección o a una empresa…",

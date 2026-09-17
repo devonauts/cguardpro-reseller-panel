@@ -1,0 +1,96 @@
+@use "../design/material" as m;
+
+.pestanas {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: stretch;
+
+  /* El alto de la fila más lo que se queda el indicador de inicio. `env()` con
+     un cero de respaldo: en Android no existe y sin el respaldo la barra se
+     quedaría con `padding-bottom: env(...)` sin resolver, que no es 0 sino
+     nada, y la declaración entera se cae. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  @include m.cristal(elevado);
+  border-radius: 0;
+  border-bottom: 0;
+  /* Sólo el canto de arriba: los otros tres tocan el borde de la pantalla y un
+     borde ahí se ve como una raya sucia contra el bisel. */
+  border-left: 0;
+  border-right: 0;
+}
+
+.pestanas__boton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  /* 52 px de zona pulsable. Por debajo de 44 se falla el dedo, y la referencia
+     de Apple son 44: 52 deja margen para el rótulo sin apretarlo. */
+  min-height: 52px;
+  padding: 7px 4px 6px;
+
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  transition: color 140ms ease;
+}
+
+.pestanas__icono {
+  display: grid;
+  place-items: center;
+  /* El icono se desplaza un pelo al pulsar: es el acuse de recibo que en una
+     app se espera del propio botón, no de la pantalla que tarda en llegar. */
+  transition: transform 140ms ease;
+}
+
+.pestanas__boton:active .pestanas__icono { transform: scale(0.9); }
+
+.pestanas__texto {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  /* Un rótulo largo se recorta antes que partirse: una pestaña de dos líneas
+     empuja a las otras cuatro y descoloca la fila entera. */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pestanas__boton--activo {
+  color: var(--text-primary);
+}
+
+/* La marca de la pestaña activa: una barra corta arriba, del ancho del icono.
+   Se prefiere a pintar el fondo entero porque sobre cristal ahumado un fondo
+   sólido se ve como un parche pegado. */
+.pestanas__boton--activo::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 26px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: var(--accent-solid);
+}
+
+.pestanas__boton { position: relative; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pestanas__boton,
+  .pestanas__icono { transition: none; }
+  .pestanas__boton:active .pestanas__icono { transform: none; }
+}

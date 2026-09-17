@@ -1,0 +1,33 @@
+/**
+ * Ionic pinta con SUS variables. Si no se le dicen, el fondo de `ion-content`
+ * es blanco y el lienzo negro del panel se queda debajo, invisible: la app
+ * arranca en blanco y parece otra aplicación.
+ *
+ * Esto las ata a las fichas que ya manda el sistema de diseño, para que haya
+ * UN sitio donde se decide el color y no dos que se contradicen.
+ */
+:root {
+  --ion-background-color: transparent;
+  --ion-background-color-rgb: 0, 0, 0;
+  --ion-text-color: var(--text-primary);
+  --ion-font-family: inherit;
+
+  /* El lienzo lo pinta nuestro fondo, no Ionic: `ion-content` transparente deja
+     ver las capas de `FondoEspacial`, que es lo que da la profundidad. */
+  --ion-item-background: transparent;
+  --ion-toolbar-background: transparent;
+}
+
+/* `ion-app` e `ion-content` traen su propio color de fondo con especificidad
+   alta. Se anula aquí, una vez, en lugar de pelear caso por caso. */
+ion-app,
+ion-content {
+  --background: transparent;
+  background: transparent;
+}
+
+/* El contenido va por encima del fondo, que es un hermano en posición fija. */
+ion-content {
+  position: relative;
+  z-index: 1;
+}
