@@ -1,0 +1,56 @@
+@use "../../../design/medios" as r;
+
+.copiable { min-width: 0; }
+
+.copiable__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin-bottom: 2px;
+}
+
+.copiable__etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.copiable__boton {
+  flex: none;
+  appearance: none;
+  /* 32 px de alto y su propio relleno: es un objetivo táctil, no un enlace. */
+  min-height: 32px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--glass-standard);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { background: var(--glass-interactive); color: var(--text-primary); }
+  &--hecho { color: var(--ok); border-color: var(--ok-line); }
+}
+
+/* El valor: monoespaciado y PARTIBLE. Un TXT de validación mide más que
+   cualquier pantalla y no se puede recortar — lo recortado no se copia. */
+.copiable__valor {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+@include r.hasta(movil) {
+  /* En un teléfono el botón baja bajo el rótulo: los dos en la misma línea
+     dejan al rótulo sin sitio y lo parten. */
+  .copiable__cabecera { flex-wrap: wrap; }
+}

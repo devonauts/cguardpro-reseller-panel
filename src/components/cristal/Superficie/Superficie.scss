@@ -1,0 +1,11 @@
+@use "../../../design/material" as m;
+
+.cristal {
+  border-radius: var(--r-lg);
+
+  &--sutil { @include m.cristal(sutil); @include m.sin-cristal(var(--surface)); }
+  &--estandar { @include m.cristal(estandar); @include m.sin-cristal(var(--surface-raised)); }
+  &--elevado { @include m.cristal(elevado); @include m.sin-cristal(var(--surface-raised)); }
+
+  &--reactivo { @include m.reactivo; }
+}

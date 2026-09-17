@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Cifra, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, TodaviaNo,
-  type Tono,
-} from "@/components/ui/kit";
+  Cifra, Cifras, EstadoDeDatos, Lista, ListaFila, Pildora, Tarjeta,
+  TarjetaCabecera, TodaviaNo, type Tono,
+} from "@/components/cristal";
 import {
   billingService,
   type FacturaDetallada, type FacturaEnLista, type LineaDeFactura,
@@ -17,7 +17,7 @@ import type { Clave } from "@/i18n/idioma";
    inglesa, y sin separador de miles. El compartido saca los separadores del
    idioma elegido, que es justo lo que hace falta aquí. */
 import { dinero, fechaCorta, mesDelPeriodo } from "@/lib/dinero";
-import "./Billing.css";
+import "./Billing.scss";
 
 /**
  * Lo que CGuardPro le cobra al socio.
@@ -118,7 +118,7 @@ export function Billing() {
       >
         <div className="facturacion">
           {totales.map((x) => (
-            <div className="facturacion__cifras" key={x.currency}>
+            <Cifras key={x.currency}>
               <Cifra
                 etiqueta={t("facturacion.facturado", { m: x.currency })}
                 valor={dinero(x.billedCents, x.currency)}
@@ -135,7 +135,7 @@ export function Billing() {
                 etiqueta={t("facturacion.pendiente", { m: x.currency })}
                 valor={dinero(x.outstandingCents, x.currency)}
               />
-            </div>
+            </Cifras>
           ))}
 
           {totales.length > 1 && (
@@ -144,10 +144,11 @@ export function Billing() {
 
           {terminos && <Terminos terminos={terminos} />}
 
-          <nav className="facturacion__lista" aria-label={t("facturacion.tusFacturas")}>
+          <Lista como="nav" aria-label={t("facturacion.tusFacturas")}>
             {facturas.map((f) => (
-              <button
+              <ListaFila
                 key={f.id}
+                como="button"
                 type="button"
                 className={`factura-fila${f.id === abierta ? " factura-fila--abierta" : ""}`}
                 onClick={() => setAbierta(f.id)}
@@ -159,9 +160,9 @@ export function Billing() {
                 <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
                   {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
                 </Pildora>
-              </button>
+              </ListaFila>
             ))}
-          </nav>
+          </Lista>
 
           {detalle && <Detalle factura={detalle} />}
         </div>

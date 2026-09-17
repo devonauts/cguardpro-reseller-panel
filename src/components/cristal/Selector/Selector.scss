@@ -1,0 +1,29 @@
+@use "../../../design/material" as m;
+
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.selector__etiqueta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.selector__control {
+  @include m.hundido;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 0 var(--s-3);
+  color: var(--text-primary);
+  font: inherit;
+  transition: border-color var(--motion) var(--ease);
+
+  &:hover { border-color: var(--glass-border-highlight); }
+  &:focus { outline: none; border-color: oklch(1 0 0 / 0.34); }
+
+  &--compacto { min-height: 38px; font-size: 0.85rem; }
+}

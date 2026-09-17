@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  Boton, Campo, EstadoDeDatos, Tarjeta, TarjetaCabecera, Pildora,
-} from "@/components/ui/kit";
+  Boton, Campo, EstadoDeDatos, Lista, ListaFila, Panel, Pildora, Selector,
+  Tarjeta, TarjetaCabecera,
+} from "@/components/cristal";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
 import { estadoDeMiembro } from "@/lib/estadoDeMiembro";
@@ -11,7 +12,7 @@ import { useT } from "@/i18n/IdiomaProvider";
 import {
   teamService, type EquipoDelSocio, type MiembroDelEquipo, type RolDeSocio,
 } from "@/services/resellerService";
-import "./Equipo.css";
+import "./Equipo.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
@@ -148,20 +149,17 @@ export function Equipo() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="persona@empresa.com"
               />
-              <label className="equipo__campo">
-                <span className="equipo__etiqueta">{t("equipo.rol")}</span>
-                <select
-                  className="equipo__select"
-                  value={rol}
-                  onChange={(e) => setRol(e.target.value)}
-                >
-                  {roles.map((r) => (
-                    /* El rol que se manda es `r.id` —la autoridad es suya—; lo
-                       que cambia es cómo se escribe. Ver `lib/rolDeSocio`. */
-                    <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
-                  ))}
-                </select>
-              </label>
+              <Selector
+                etiqueta={t("equipo.rol")}
+                value={rol}
+                onChange={(e) => setRol(e.target.value)}
+              >
+                {roles.map((r) => (
+                  /* El rol que se manda es `r.id` —la autoridad es suya—; lo
+                     que cambia es cómo se escribe. Ver `lib/rolDeSocio`. */
+                  <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
+                ))}
+              </Selector>
               {rolActual && (
                 <p className="equipo__explicacion">
                   {descripcionDeRol(rolActual.id, rolActual.description)}
@@ -221,21 +219,19 @@ export function Equipo() {
 
                   {gestiona && (
                     <div className="equipo__acciones">
-                      <label className="equipo__rol-inline">
-                        <span className="sr-only">{t("equipo.rolDe", { correo: m.email ?? "" })}</span>
-                        <select
-                          className="equipo__select equipo__select--mini"
-                          value={m.role ?? ""}
-                          disabled={ocupado === m.id || !activo}
-                          onChange={(e) =>
-                            accion(m.id, () => teamService.cambiarRol(m.id, e.target.value),
-                              t("equipo.rolActualizado"))}
-                        >
-                          {roles.map((r) => (
-                            <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
-                          ))}
-                        </select>
-                      </label>
+                      <Selector
+                        compacto
+                        etiquetaOculta={t("equipo.rolDe", { correo: m.email ?? "" })}
+                        value={m.role ?? ""}
+                        disabled={ocupado === m.id || !activo}
+                        onChange={(e) =>
+                          accion(m.id, () => teamService.cambiarRol(m.id, e.target.value),
+                            t("equipo.rolActualizado"))}
+                      >
+                        {roles.map((r) => (
+                          <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
+                        ))}
+                      </Selector>
 
                       {m.status === "invited" && (
                         <Boton

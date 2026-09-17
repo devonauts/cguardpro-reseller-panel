@@ -2,14 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
-import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/ui/kit";
+import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/cristal";
 import {
   onboardingService, type EstadoDelAlta, type MarcaEditable, type PasoDelAlta,
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import type { Clave } from "@/i18n/idioma";
-import "./Wizard.css";
+import "./Wizard.scss";
 
 /**
  * El asistente de alta.

@@ -1,0 +1,20 @@
+/* Rejilla que se pliega sola: en un móvil las fichas van una debajo de otra
+   sin que la página desborde a lo ancho. */
+.contrato__rejilla {
+  display: grid;
+  gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+
+.contrato__tachado {
+  text-decoration: line-through;
+  opacity: 0.55;
+}
+
+.contrato__politica,
+.contrato__aviso {
+  margin: var(--s-4) 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}

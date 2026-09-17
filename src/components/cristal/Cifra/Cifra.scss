@@ -1,0 +1,47 @@
+@use "../../../design/medios" as r;
+
+.cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: clamp(var(--s-3), 1.6vw, var(--s-4));
+}
+
+.cifra {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: clamp(var(--s-4), 2.4vw, var(--s-5));
+  min-width: 0;
+}
+
+.cifra__etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.cifra__valor {
+  /* `tabular-nums` fija el ancho del dígito: sin ello, una columna de cifras
+     baila al actualizarse y deja de leerse como columna. */
+  font-size: clamp(24px, 3.2vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.cifra__nota {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.cifra__esqueleto {
+  height: 32px;
+  width: 84px;
+  border-radius: var(--r-sm);
+  background: var(--glass-interactive);
+}

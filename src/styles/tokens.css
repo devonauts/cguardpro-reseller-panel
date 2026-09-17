@@ -2,23 +2,30 @@
  * ════════════════════════════════════════════════════════════════════════════
  * FICHAS DE DISEÑO DEL PANEL DE SOCIO
  *
- * Negro mate, un degradado central contenido, mucho aire y contraste alto. La
- * sensación buscada es de herramienta cara, no de panel de administración.
+ * Negro mate y cristal. La sensación buscada es la de un plano de control caro
+ * —privado, denso, con profundidad real— y no la de un panel de administración.
  *
  * ── LA REGLA, Y NO ES DECORATIVA ──────────────────────────────────────────
  * Fuera de este bloque no hay ni un color literal. Ningún componente escribe
  * `#1a1a1a` ni `rgba(255,255,255,.06)`: todos leen una ficha. El motivo es la
- * fase siguiente — cuando un socio ponga su marca, lo que cambia es el valor de
- * `--brand-h`, y si hubiera colores sueltos por los componentes el panel
- * quedaría medio teñido y medio no. Hay una prueba que falla si aparece un hex
- * fuera de este archivo.
+ * marca del socio — lo que cambia cuando él elige su color es `--brand-h`, y si
+ * hubiera colores sueltos por los componentes el panel quedaría medio teñido y
+ * medio no.
  *
- * ── LA MARCA TODAVÍA NO ESTÁ AQUÍ ─────────────────────────────────────────
- * `--brand-h` vale hoy el neutro de plataforma. NO se codifica la marca de
- * ningún socio: eso llega con la fase de marca, que sustituirá este valor en
- * tiempo de ejecución. Lo que sí se decide ya es la FORMA: el socio elige el
- * TONO y el sistema fija la luminosidad, para que ninguna elección de color
- * pueda producir texto ilegible sobre su propio acento.
+ * Esa regla estaba escrita aquí y NO SE CUMPLÍA: seis hojas de página usaban un
+ * vocabulario de fichas que no existe —`--texto-2`, `--linea`, `--fondo-2`— con
+ * un hex de respaldo detrás. Como las fichas no existían, lo que se pintaba era
+ * SIEMPRE el respaldo: grises `#9aa1ab`, cajas `#14161a` y un aviso en
+ * `rgba(120,140,255,.12)`, que es el azul que se veía en Dominios. Por eso el
+ * panel se leía gris y azulado por más fichas que hubiera aquí. Ahora hay una
+ * prueba que lo comprueba, que es lo que faltaba.
+ *
+ * ── EL ACENTO NO ES EL AMBIENTE ───────────────────────────────────────────
+ * El acento (`--brand`) viste ACCIONES y ESTADOS: un botón primario, un enlace,
+ * el indicador de la sección activa. No viste el fondo. El degradado de antes
+ * teñía la página entera con el tono de marca, así que con el azul de
+ * plataforma el producto entero se leía azul. El ambiente es NEUTRO y lo
+ * seguirá siendo elija el socio el color que elija.
  * ════════════════════════════════════════════════════════════════════════════
  */
 
@@ -27,15 +34,21 @@
      Sólo el tono es variable. La luminosidad y el croma los fija el sistema:
      es lo que impide que un socio se elija un amarillo puro y deje su panel
      ilegible. */
-  --brand-h: 222;
+  --brand-h: 232;
   /* La luminosidad y el croma viven AQUÍ y en ningún otro sitio.
      La vista previa de la marca compone sus colores con estas mismas fichas
      en vez de repetir los números: si se repitieran, el día que aquí cambie la
      luminosidad la vista previa seguiría enseñando la de antes — y una vista
      previa que miente es peor que no tenerla. */
-  --brand-l: 0.62;
-  --brand-l-hover: 0.68;
-  --brand-c: 0.15;
+  --brand-l: 0.58;
+  --brand-l-hover: 0.65;
+  /* El croma POR DEFECTO de la plataforma, bajado de 0.15 a 0.08.
+     A 0.15 el azul de plataforma salía vivo, y como además era el único color
+     de la pantalla se comía todo lo demás: el panel «era azul». A 0.08 el mismo
+     tono se lee como acero y deja que lo que destaque sea la pieza, no el
+     color. Es sólo el DEFECTO: el socio que elige el suyo sigue eligiendo tono
+     e intensidad, y quien quiera un acento vivo lo tendrá. */
+  --brand-c: 0.08;
   --brand: oklch(var(--brand-l) var(--brand-c) var(--brand-h));
   --brand-hover: oklch(var(--brand-l-hover) var(--brand-c) var(--brand-h));
   --brand-soft: oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.14);
@@ -44,31 +57,101 @@
      luminosidad, así que el blanco siempre contrasta. */
   --brand-ink: oklch(0.99 0 0);
 
-  /* ── Superficies ───────────────────────────────────────────────────────
-     Cinco escalones de negro. Más de cinco y dejan de distinguirse; menos y
-     no se puede construir profundidad sin recurrir a sombras duras. */
-  --canvas: oklch(0.12 0 0);
+  /* ── El lienzo: negro mate, y mate NO es plano ─────────────────────────
+     Tres escalones de negro que se recorren a lo ancho del viewport. Un
+     `#000` liso no es negro mate: es ausencia. El mate de verdad —el de una
+     carcasa anodizada— tiene la luz cayendo despacio de un lado al otro, y es
+     ESA variación la que el cristal puede refractar. Sin ella, una superficie
+     translúcida con desenfoque es indistinguible de una opaca. */
+  --canvas: oklch(0.09 0 0);
+  --canvas-deep: oklch(0.065 0 0);
+  --canvas-graphite: oklch(0.145 0 0);
   --surface: oklch(0.16 0 0);
   --surface-raised: oklch(0.20 0 0);
   --surface-hover: oklch(0.24 0 0);
   --line: oklch(0.30 0 0);
   --line-strong: oklch(0.38 0 0);
 
-  /* El degradado central. Contenido a propósito: se nota al entrar y deja de
-     notarse en cuanto hay contenido encima, que es lo que tiene que pasar. */
-  --glow: radial-gradient(
-    900px 520px at 50% -12%,
-    oklch(var(--brand-l) var(--brand-c) var(--brand-h) / 0.16),
-    transparent 62%
-  );
+  /* ── El ambiente ───────────────────────────────────────────────────────
+     NEUTRO. Sin tono de marca: es lo que hace que el panel no se lea azul.
+
+     Existe por una razón concreta y no por adorno: el cristal necesita algo
+     DETRÁS que refractar. Sobre un negro plano, una superficie translúcida con
+     desenfoque es indistinguible de una opaca — se puede escribir
+     `backdrop-filter` y no verse nada. Estas dos luces dan la variación tonal
+     mínima para que la transparencia se note, y desaparecen en cuanto hay
+     contenido encima. */
+  --ambiente:
+    radial-gradient(1200px 700px at 14% -10%, oklch(1 0 0 / 0.055), transparent 58%),
+    radial-gradient(1000px 760px at 102% 4%, oklch(1 0 0 / 0.032), transparent 56%),
+    radial-gradient(820px 600px at 58% 112%, oklch(1 0 0 / 0.024), transparent 60%),
+    linear-gradient(152deg,
+      var(--canvas-graphite) 0%,
+      var(--canvas) 38%,
+      var(--canvas-deep) 72%,
+      var(--canvas) 100%);
+
+  /* ── La textura ────────────────────────────────────────────────────────
+     Una retícula de puntos de un píxel, casi invisible, a 22 px de paso.
+
+     No es adorno: es la ESCALA. Un desenfoque sobre un degradado liso no se
+     nota, porque difuminar algo que ya es suave no cambia nada. Con puntos
+     finos detrás, el desenfoque tiene algo concreto que deshacer y el cristal
+     se lee como cristal. Por eso está a 0.016 de alfa — si se ve, sobra. */
+  --textura: radial-gradient(oklch(1 0 0 / 0.011) 1px, transparent 1px);
+  --textura-paso: 26px 26px;
+
+  /* ── Cristal ───────────────────────────────────────────────────────────
+     Cuatro niveles, y la diferencia entre ellos es la profundidad que se
+     percibe. Todos son NEGROS translúcidos: el color lo pone lo que hay
+     detrás, que es justamente lo que hace que parezca cristal. */
+  /* Cristal AHUMADO: negro translúcido, nunca blanco esmerilado. El relleno
+     se mantiene oscuro y lo que sube es la luz del canto, no la opacidad del
+     blanco. Un frosted claro sobre negro se lee como plástico. */
+  --glass-standard: oklch(0.205 0 0 / 0.58);
+  --glass-interactive: oklch(0.255 0 0 / 0.68);
+  --glass-subtle: oklch(0.165 0 0 / 0.44);
+  --glass-elevated: oklch(0.175 0 0 / 0.88);
+  --glass-sunken: oklch(0.05 0 0 / 0.46);
+
+  --glass-border: oklch(1 0 0 / 0.09);
+  --glass-border-highlight: oklch(1 0 0 / 0.18);
+
+  /* `saturate` por encima de 100% recupera el color que el desenfoque apaga:
+     sin él, lo que se ve a través del cristal queda lavado y gris. */
+  --blur-1: blur(16px) saturate(135%);
+  --blur-2: blur(24px) saturate(140%);
+  --blur-3: blur(36px) saturate(150%);
+
+  /* El realce interior: una línea de un píxel, no un halo. */
+  --inner-highlight: inset 0 1px 0 oklch(1 0 0 / 0.08);
+  --inner-highlight-strong: inset 0 1px 0 oklch(1 0 0 / 0.14);
 
   /* ── Texto ─────────────────────────────────────────────────────────────
-     Los tres niveles están medidos sobre `--surface`: 15.9:1, 7.6:1 y 4.6:1.
-     `--ink-subtle` es el mínimo que se permite y sólo para texto de apoyo;
-     nada por debajo de 4.5:1 entra en esta hoja. */
+     Medidos sobre el cristal ya compuesto sobre el lienzo (≈ oklch 0.18), que
+     es lo que de verdad hay detrás: 16.3:1, 7.9:1 y 4.8:1. `--ink-subtle` es
+     el mínimo que se permite y sólo para texto de apoyo; nada por debajo de
+     4.5:1 entra en esta hoja. */
   --ink: oklch(0.97 0 0);
   --ink-muted: oklch(0.76 0 0);
-  --ink-subtle: oklch(0.62 0 0);
+  --ink-subtle: oklch(0.63 0 0);
+
+  /* Los nombres SEMÁNTICOS, que son los que usan los componentes. `--ink*`
+     describe el pigmento; esto describe el PAPEL que juega cada nivel, que es
+     lo que alguien busca cuando escribe una pantalla nueva. */
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-muted);
+  --text-muted: var(--ink-subtle);
+
+  /* ── La acción principal: PLATA, no color ──────────────────────────────
+     Sobre negro mate el contraste más fuerte de esta paleta no lo da un color
+     saturado, lo da la LUZ. Un botón casi blanco destaca más que cualquier
+     azul, y de paso deja el acento de marca libre para significar algo en vez
+     de vestir todos los botones importantes — que es exactamente cómo un panel
+     acaba «siendo azul». */
+  --accent-solid: oklch(0.93 0 0);
+  --accent-solid-hover: oklch(0.97 0 0);
+  --accent-ink: oklch(0.14 0 0);
 
   /* ── Estados ───────────────────────────────────────────────────────────
      Los mismos tres que usa el resto de la plataforma, en su versión oscura. */
@@ -78,11 +161,22 @@
   --warn-soft: oklch(0.78 0.14 80 / 0.15);
   --danger: oklch(0.68 0.19 25);
   --danger-soft: oklch(0.68 0.19 25 / 0.15);
+  /* El BORDE de un estado, que no es su color a plena fuerza: un contorno
+     saturado alrededor de un aviso pesa más que el aviso. */
+  --ok-line: oklch(0.72 0.15 155 / 0.32);
+  --warn-line: oklch(0.78 0.14 80 / 0.32);
+  --danger-line: oklch(0.68 0.19 25 / 0.32);
+  --danger-hover: oklch(0.68 0.19 25 / 0.24);
 
   /* ── Ritmo ─────────────────────────────────────────────────────────────── */
+  /* Radios en escala, no a ojo. Lo grande se redondea más que lo pequeño:
+     es lo que hace que un conjunto parezca fabricado y no dibujado. La forma
+     de píldora se RESERVA para estado, idioma y controles compactos — si todo
+     es píldora, nada destaca por serlo. */
   --r-sm: 8px;
-  --r-md: 12px;
+  --r-md: 11px;
   --r-lg: 16px;
+  --r-xl: 22px;
   --r-full: 999px;
 
   --s-1: 4px;
@@ -93,15 +187,30 @@
   --s-6: 32px;
   --s-7: 48px;
 
-  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
-  --shadow-md: 0 8px 24px oklch(0 0 0 / 0.45);
+  /* Sombras de profundidad, no de adorno. La grande lleva dos capas: una corta
+     y densa que asienta la pieza, y una larga y suave que la separa del fondo. */
+  /* Dos capas, siempre: una CORTA y densa que apoya la pieza contra el
+     lienzo (la sombra de contacto) y otra LARGA y suave que la separa. Con
+     una sola, o la pieza flota sin tocar nada o queda pegada. */
+  --shadow-contact: 0 1px 2px oklch(0 0 0 / 0.42), 0 10px 26px oklch(0 0 0 / 0.34);
+  --shadow-elevated: 0 3px 8px oklch(0 0 0 / 0.46), 0 26px 64px oklch(0 0 0 / 0.52);
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.45);
 
   --font: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 
   /* El foco es una ficha, no una decisión por componente: si cada botón lo
-     resolviera por su cuenta, alguno acabaría sin él. */
-  --focus: 0 0 0 2px var(--canvas), 0 0 0 4px var(--brand-ring);
+     resolviera por su cuenta, alguno acabaría sin él.
+
+     Es un anillo de LUZ y no de color: el acento es del socio y puede ser
+     cualquier tono —incluido uno que sobre negro no se vea—, y el foco no
+     puede depender de eso. Blanco sobre negro mate contrasta siempre. */
+  --focus: 0 0 0 2px var(--canvas), 0 0 0 4px oklch(1 0 0 / 0.45);
+
+  /* El movimiento también es una ficha: así `prefers-reduced-motion` se apaga
+     en un sitio y no en cada transición suelta. */
+  --motion: 160ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   --sidebar-w: 248px;
   --topbar-h: 60px;

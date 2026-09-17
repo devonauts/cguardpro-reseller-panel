@@ -29,6 +29,7 @@ const SRV = soloCodigo(bruto("../../services/resellerService.ts"));
 /* El texto que LEE el socio ya no está en la pantalla: está en el catálogo. Las
    afirmaciones sobre cómo se le habla tienen que mirar ahí, y tienen que mirar
    LOS DOS idiomas — una fuga de proveedor en uno solo sigue siendo una fuga. */
+const COPIABLE = soloCodigo(bruto("../../components/cristal/CampoCopiable/CampoCopiable.tsx"));
 const EN = bruto("../../i18n/catalogo/en.ts");
 const ES = bruto("../../i18n/catalogo/es.ts");
 const CATALOGOS: Array<[string, string]> = [["en", EN], ["es", ES]];
@@ -130,8 +131,31 @@ describe("Fase 16 · la pantalla de tu dirección", () => {
     expect(P).toMatch(/ayuda:/);
   });
 
-  it("el valor del registro se puede COPIAR: nadie transcribe un token a mano", () => {
-    expect(P).toMatch(/clipboard\.writeText\(paso\.valor\)/);
+  it("cada campo del registro se puede COPIAR: nadie transcribe un token a mano", () => {
+    /* Antes había UN botón por registro y copiaba sólo el valor, así que el
+       NOMBRE —que también hay que teclear en el panel del dominio— se
+       transcribía a mano. Un `_acme-challenge` de cuarenta caracteres
+       transcrito a mano falla una de cada dos veces, y el síntoma llega media
+       hora después como «no me verifica». Ahora copia cualquier campo que se
+       le pase, y la pantalla le pasa el nombre Y el valor. */
+    /* El que copia es el componente compartido `CampoCopiable`, y copia el
+       valor ORIGINAL — nunca lo que se ve en pantalla, que va partido para
+       caber. Copiar lo pintado sería copiar un registro a medias. */
+    expect(COPIABLE).toMatch(/clipboard\.writeText\(valor\)/);
+    /* Y la pantalla le pasa el NOMBRE y el VALOR, no sólo el valor. */
+    expect(P).toMatch(/<CampoCopiable[\s\S]*?valor=\{paso\.nombre\}/);
+    expect(P).toMatch(/valor=\{paso\.valor\}/);
+  });
+
+  it("los registros se agrupan por PARA QUÉ sirven, no en una lista suelta", () => {
+    /* Tres registros seguidos sin decir cuál hace qué se leen como una lista de
+       cosas que copiar. Agrupados, quien los pega sabe qué está haciendo — y
+       cuando uno falle sabrá cuál mirar. */
+    expect(P).toMatch(/enrutado:\s*"dominios\.seccionEnrutado"/);
+    expect(P).toMatch(/titularidad:\s*"dominios\.seccionTitularidad"/);
+    expect(P).toMatch(/certificado:\s*"dominios\.seccionCertificado"/);
+    /* Un propósito que no conocemos cae en su propio grupo, no desaparece. */
+    expect(P).toMatch(/SECCION\[g\.proposito\] \?\? "dominios\.seccionOtro"/);
   });
 
   it("las rutas del servicio son las del árbol del socio", () => {

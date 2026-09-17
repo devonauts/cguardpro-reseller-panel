@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
-import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera } from "@/components/ui/kit";
+import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { brandingService, type Marca, type MarcaEditable } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
-import "./Branding.css";
+import "./Branding.scss";
 
 /**
  * La pantalla de marca.

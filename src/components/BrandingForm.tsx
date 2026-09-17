@@ -1,11 +1,11 @@
 import { ChangeEvent, useRef, useState } from "react";
-import { Boton, Campo } from "@/components/ui/kit";
+import { Boton, Campo } from "@/components/cristal";
 import {
   brandingService, type Marca, type MarcaEditable, type RanuraDeImagen,
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-import "./BrandingForm.css";
+import "./BrandingForm.scss";
 
 /**
  * Los controles de la marca. Se usan igual desde la pantalla de Marca y desde

@@ -1,0 +1,39 @@
+.hueco {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-3);
+  min-height: 180px;
+  padding: var(--s-5);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.hueco__texto { font-size: 13px; max-width: 46ch; }
+.hueco__texto--error { color: var(--danger); }
+
+.hueco__giro {
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--r-full);
+  animation: hueco-giro 720ms linear infinite;
+}
+
+@keyframes hueco-giro { to { transform: rotate(360deg); } }
+
+.todavia-no {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+  padding: var(--s-5);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.65;
+
+  p { max-width: 46ch; }
+}

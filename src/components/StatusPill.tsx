@@ -1,4 +1,4 @@
-import { Pildora, type Tono } from "@/components/ui/kit";
+import { Pildora, type Tono } from "@/components/cristal";
 import { t, type Clave } from "@/i18n/idioma";
 import { useT } from "@/i18n/IdiomaProvider";
 

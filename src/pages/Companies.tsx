@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Cifra, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, TodaviaNo,
-} from "@/components/ui/kit";
+  Boton, Cifra, Cifras, EstadoDeDatos, Lista, ListaFila, Panel, Pildora,
+} from "@/components/cristal";
 import { companiesService, type Cupo, type Empresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta } from "@/lib/dinero";
-import "./Companies.css";
+import "./Companies.scss";
 
 /**
  * Las empresas del socio.
@@ -62,10 +62,9 @@ export function Companies() {
     return (
       <>
         <Cabecera />
-        <Tarjeta>
-          <TarjetaCabecera titulo={t("empresas.bloqueadaTitulo")} />
+        <Panel titulo={t("empresas.bloqueadaTitulo")}>
           <p className="empresas__nota">{t("empresas.bloqueadaNota")}</p>
-        </Tarjeta>
+        </Panel>
       </>
     );
   }
@@ -93,7 +92,7 @@ export function Companies() {
       />
 
       {cupo && (
-        <div className="empresas__cifras">
+        <Cifras>
           <Cifra etiqueta={t("empresas.titulo")} valor={cupo.used} />
           <Cifra
             etiqueta={t("empresas.tuLimite")}
@@ -105,7 +104,7 @@ export function Companies() {
                tiene límite que no le queda ninguna. */
             valor={cupo.unlimited ? t("comun.sinLimite") : cupo.remaining}
           />
-        </div>
+        </Cifras>
       )}
 
       {cupo && !cupo.unlimited && !cupo.canCreate && (
@@ -125,9 +124,9 @@ export function Companies() {
         etiquetaVacio={t("empresas.vacio")}
         onReintentar={cargar}
       >
-        <div className="empresas__lista">
+        <Lista>
           {filas.map((e) => (
-            <Link key={e.id} to={`/companies/${e.id}`} className="empresa">
+            <ListaFila key={e.id} como={Link} to={`/companies/${e.id}`} className="empresa">
               <div className="empresa__principal">
                 <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
                 {e.businessTitle && e.businessTitle !== e.name && (
@@ -145,9 +144,9 @@ export function Companies() {
                   <Pildora tono="ok">{t("empresas.activa")}</Pildora>
                 )}
               </div>
-            </Link>
+            </ListaFila>
           ))}
-        </div>
+        </Lista>
       </EstadoDeDatos>
     </>
   );

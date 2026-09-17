@@ -1,0 +1,51 @@
+@use "../design/material" as m;
+@use "../design/medios" as r;
+
+/**
+ * El control de idioma: un interruptor de cristal de dos posiciones.
+ *
+ * La posición puesta NO se pinta del acento. El acento de este panel dice «esto
+ * es la acción principal», y el idioma no lo es: se elige una vez y no se
+ * vuelve a mirar. Lo que la marca es más luz — cristal un punto más claro y el
+ * texto en blanco.
+ */
+
+.idiomas {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  /* Píldora a propósito: el idioma es de los controles COMPACTOS para los que
+     esa forma está reservada. Si todo fuera píldora, nada destacaría por serlo. */
+  border-radius: var(--r-full);
+}
+
+.idiomas__opcion {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  padding: var(--s-1) var(--s-3);
+  border-radius: var(--r-full);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.6;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+}
+
+.idiomas__opcion:hover { color: var(--text-primary); }
+
+.idiomas__opcion:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+.idiomas__opcion--puesta {
+  background: var(--glass-interactive);
+  color: var(--text-primary);
+  box-shadow: var(--inner-highlight);
+}
+
+.idiomas--compacto .idiomas__opcion { padding: 3px var(--s-3); }

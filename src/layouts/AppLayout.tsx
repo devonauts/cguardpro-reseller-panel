@@ -4,11 +4,11 @@ import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import StatusPill from "@/components/StatusPill";
 import { logoDeCabecera } from "@/branding/marcaDelSocio";
 import useModoOscuro from "@/branding/useModoOscuro";
-import { Boton } from "@/components/ui/kit";
+import { Boton, Emergente } from "@/components/cristal";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-import "./AppLayout.css";
+import "./AppLayout.scss";
 
 /**
  * El armazón: barra lateral, barra superior y contenido.
@@ -64,11 +64,12 @@ export function AppLayout({ children }: { children: ReactNode }) {
     setCuentaAbierta(false);
   }, [location.pathname]);
 
-  // Escape cierra lo que esté abierto — quien navega con teclado necesita una
-  // salida que no dependa de acertar con el ratón fuera del menú.
+  // El menú de la cuenta cierra solo (Escape y pulsar fuera): lo hace
+  // `<Emergente>`. Aquí sólo queda el menú MÓVIL, que es una lámina y no un
+  // emergente, y necesita su propia salida por teclado.
   useEffect(() => {
     const alPulsar = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setMenuAbierto(false); setCuentaAbierta(false); }
+      if (e.key === "Escape") setMenuAbierto(false);
     };
     document.addEventListener("keydown", alPulsar);
     return () => document.removeEventListener("keydown", alPulsar);
@@ -168,18 +169,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <span className="cuenta__nombre">{persona}</span>
               <span aria-hidden="true">▾</span>
             </button>
-            {cuentaAbierta && (
-              <div className="cuenta__menu" role="menu">
-                <div className="cuenta__correo">{me?.user.email}</div>
-                {/* El idioma se cambia SIN salir: no se toca la sesión. */}
-                <div className="cuenta__idioma">
-                  <SelectorDeIdioma compacto />
-                </div>
-                <Boton variante="fantasma" bloque role="menuitem" onClick={salir}>
-                  {t("armazon.cerrarSesion")}
-                </Boton>
+            <Emergente
+              abierto={cuentaAbierta}
+              onCerrar={() => setCuentaAbierta(false)}
+              etiqueta={t("armazon.miCuenta")}
+            >
+              <div className="cuenta__correo">{me?.user.email}</div>
+              {/* El idioma se cambia SIN salir: no se toca la sesión. */}
+              <div className="cuenta__idioma">
+                <SelectorDeIdioma compacto />
               </div>
-            )}
+              <Boton variante="fantasma" bloque role="menuitem" onClick={salir}>
+                {t("armazon.cerrarSesion")}
+              </Boton>
+            </Emergente>
           </div>
         </header>
 

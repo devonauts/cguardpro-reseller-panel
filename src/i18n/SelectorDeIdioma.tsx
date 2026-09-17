@@ -1,6 +1,6 @@
 import { IDIOMAS } from "./idioma";
 import { useIdioma } from "./IdiomaProvider";
-import "./SelectorDeIdioma.css";
+import "./SelectorDeIdioma.scss";
 
 /**
  * El control de idioma.

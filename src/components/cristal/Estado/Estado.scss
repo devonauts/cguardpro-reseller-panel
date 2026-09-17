@@ -1,0 +1,55 @@
+.pildora {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 3px var(--s-3);
+  border-radius: var(--r-full);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px currentColor;
+
+  /* El punto: el estado se distingue por FORMA además de por color. */
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: var(--r-full);
+    background: currentColor;
+    flex: none;
+  }
+
+  &--ok { background: var(--ok-soft); color: var(--ok); }
+  &--aviso { background: var(--warn-soft); color: var(--warn); }
+  &--peligro { background: var(--danger-soft); color: var(--danger); }
+  &--neutro {
+    background: var(--glass-standard);
+    color: var(--text-secondary);
+    box-shadow: inset 0 0 0 1px var(--glass-border);
+  }
+}
+
+.estado-ind { min-width: 0; }
+
+.estado-ind__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.estado-ind__etiqueta {
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.estado-ind__explicacion {
+  margin: var(--s-2) 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 68ch;
+}

@@ -1,7 +1,9 @@
 import { FormEvent, useState } from "react";
+
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import { Boton, Campo } from "@/components/ui/kit";
+import { Boton, Campo, Icono } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
+import "./Login.scss";
 
 /**
  * Entrar al panel.
@@ -39,37 +41,44 @@ export function Login() {
   };
 
   return (
-    <form onSubmit={enviar} noValidate>
-      <h1 style={{ fontSize: 20, marginBottom: 4 }}>{t("login.titulo")}</h1>
-      <p style={{ fontSize: 13, color: "var(--ink-subtle)", marginBottom: "var(--s-5)" }}>
-        {t("login.sub")}
-      </p>
+    <form onSubmit={enviar} noValidate className="acceso">
+      <header className="acceso__cabecera">
+        <p className="acceso__rotulo">{t("login.acceso")}</p>
+        <h1 className="acceso__titulo">{t("login.bienvenido")}</h1>
+        <p className="acceso__sub">{t("login.sub")}</p>
+      </header>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "var(--s-4)" }}>
+      <div className="acceso__campos">
         <Campo
           etiqueta={t("login.correo")}
+          icono="correo"
           type="email"
           name="email"
           autoComplete="username"
+          placeholder={t("login.correoMarcador")}
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
         <Campo
           etiqueta={t("login.contrasena")}
+          icono="candado"
+          revelable
           type="password"
           name="password"
           autoComplete="current-password"
+          placeholder={t("login.contrasenaMarcador")}
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        {error && (
-          <p role="alert" style={{ fontSize: 13, color: "var(--danger)" }}>{error}</p>
-        )}
+        {error && <p role="alert" className="acceso__error">{error}</p>}
 
-        <Boton type="submit" bloque cargando={enviando}>{t("login.entrar")}</Boton>
+        <Boton type="submit" bloque cargando={enviando} className="acceso__enviar">
+          {t("login.entrar")}
+          {!enviando && <Icono nombre="flecha" tamano={18} />}
+        </Boton>
       </div>
     </form>
   );

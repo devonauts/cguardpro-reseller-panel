@@ -1,7 +1,7 @@
 import { CSSProperties, ReactNode } from "react";
 import type { Marca } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
-import "./BrandingPreview.css";
+import "./BrandingPreview.scss";
 
 /**
  * La vista previa de la marca.
