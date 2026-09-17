@@ -1,30 +1,127 @@
+@use "../design/medios" as r;
+
+/* La cabecera de las pantallas interiores. */
 .cabecera {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--s-3);
+  gap: var(--s-4);
   flex-wrap: wrap;
-  margin-bottom: var(--s-5);
-}
-.cabecera__titulo { font-size: 22px; }
-.cabecera__sub { margin-top: 2px; font-size: 13px; color: var(--text-muted); }
-
-.cifras {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: var(--s-4);
-  margin-bottom: var(--s-5);
+  margin-bottom: clamp(var(--s-5), 3vw, var(--s-6));
 }
 
-.columnas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--s-4);
+.cabecera__titulo {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
 }
 
-.datos {
+.cabecera__sub {
+  margin-top: var(--s-2);
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.cabecera__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+/* ── El tablero ─────────────────────────────────────────────────────────── */
+.tablero { display: flex; flex-direction: column; gap: clamp(var(--s-4), 2vw, var(--s-5)); }
+
+.tablero__metricas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--s-4);
-  margin: 0;
+  /* Cuatro → dos → una, sin un solo corte de pantalla. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr));
+  gap: clamp(var(--s-3), 1.6vw, var(--s-4));
+}
+
+/* Dos columnas desiguales: lo ancho a la izquierda, lo estrecho a la derecha.
+   `minmax(0, …)` en las dos — sin el 0, una tabla larga empuja la rejilla y
+   aparece barra horizontal. */
+.tablero__dos {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: clamp(var(--s-3), 1.6vw, var(--s-4));
+  align-items: start;
+}
+
+.tablero__enlace-panel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover { color: var(--text-primary); text-decoration: none; }
+}
+
+.tablero__enlace-panel svg { transition: transform var(--motion) var(--ease); }
+.tablero__enlace-panel:hover svg { transform: translateX(2px); }
+
+/* La fila de un dominio dentro del panel de estado. */
+.tablero__dominio {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--glass-border);
+  min-width: 0;
+
+  &:last-child { border-bottom: 0; }
+}
+
+.tablero__dominio-icono { color: var(--text-muted); display: grid; place-items: center; }
+
+.tablero__dominio-host {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.tablero__vacio { font-size: 13px; color: var(--text-muted); }
+
+@include r.hasta(tableta) {
+  .tablero__dos { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* La ficha de fecha y el botón de alta de la cabecera. */
+.cabecera__fecha {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+}
+
+.cabecera__fecha-icono { color: var(--text-secondary); display: grid; place-items: center; }
+.cabecera__fecha-texto { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.cabecera__fecha-dia {
+  font-size: 13px;
+  color: var(--text-primary);
+  /* La primera letra del día en mayúscula: `toLocaleDateString` la devuelve en
+     minúscula en castellano y queda descuidado junto al resto. */
+  &::first-letter { text-transform: uppercase; }
+}
+
+.cabecera__fecha-nota { font-size: 11.5px; color: var(--text-muted); }
+
+.cabecera__alta {
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { text-decoration: none; }
+}
+
+.cabecera__estado { display: inline-flex; align-items: center; }
+
+@include r.hasta(movil) {
+  /* En un teléfono la fecha sobra: ocupa una línea entera y no se consulta. */
+  .cabecera__fecha { display: none; }
+  .cabecera__acciones { width: 100%; }
+  .cabecera__alta { flex: 1; justify-content: center; }
 }

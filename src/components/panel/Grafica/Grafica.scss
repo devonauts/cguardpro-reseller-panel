@@ -1,0 +1,83 @@
+@use "../../../design/medios" as r;
+
+.grafica {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s-3);
+  min-width: 0;
+}
+
+.grafica__eje {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* La altura la marca el lienzo; el eje se estira con él. */
+  padding-bottom: 22px;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.grafica__lienzo {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: clamp(4px, 1.2vw, 12px);
+  height: clamp(130px, 18vw, 180px);
+  min-width: 0;
+  /* Las líneas del fondo: cuatro, en el mismo sitio que las marcas del eje. */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--glass-border) 0 1px,
+    transparent 1px 25%
+  );
+  background-size: 100% calc(100% - 22px);
+  background-repeat: no-repeat;
+}
+
+.grafica__columna {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+.grafica__barra-hueco {
+  display: flex;
+  align-items: flex-end;
+  height: calc(100% - 22px);
+}
+
+.grafica__barra {
+  width: 100%;
+  border-radius: var(--r-sm) var(--r-sm) 2px 2px;
+  /* Plata que se apaga hacia abajo: la barra parece iluminada desde arriba,
+     igual que el resto del material. */
+  background: linear-gradient(180deg,
+    oklch(0.80 0 0 / 0.72) 0%,
+    oklch(0.62 0 0 / 0.30) 100%);
+  transition: background var(--motion) var(--ease);
+}
+
+.grafica__columna:hover .grafica__barra {
+  background: linear-gradient(180deg,
+    oklch(0.94 0 0 / 0.90) 0%,
+    oklch(0.70 0 0 / 0.42) 100%);
+}
+
+.grafica__etiqueta {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@include r.hasta(movil) {
+  /* En un teléfono no caben doce rótulos: se dejan los de los meses impares.
+     Recortarlos a «E F M» sería peor — tres iniciales no se distinguen. */
+  .grafica__columna:nth-child(even) .grafica__etiqueta { visibility: hidden; }
+}

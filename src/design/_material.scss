@@ -155,6 +155,22 @@
   box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.34);
 }
 
+/// LA CORTINA.
+///
+/// El velo que se pone detrás de una lámina flotante — el raíl abierto en un
+/// teléfono, un diálogo. Atenúa el ambiente; NO lo apaga: un negro total
+/// dejaría la lámina flotando en la nada y se perdería la sensación de capa.
+///
+/// Lleva un desenfoque muy corto, y por eso vive aquí: es la misma familia de
+/// material que el cristal, y la prueba antiduplicación no distingue una
+/// cortina de una tarjeta — ni debería. Cualquier `backdrop-filter` del
+/// repositorio sale de este fichero o no sale.
+@mixin cortina {
+  background: oklch(0.04 0 0 / 0.58);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
 /// El navegador que no sabe componer el fondo recibe superficies OPACAS.
 ///
 /// Un translúcido SIN desenfoque deja el texto sobre lo que haya detrás y la

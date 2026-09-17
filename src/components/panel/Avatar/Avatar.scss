@@ -1,0 +1,15 @@
+@use "../../../design/material" as m;
+
+.avatar {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-hover));
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: var(--r-full);
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  /* Las iniciales no se seleccionan: son un adorno, no un dato que copiar. */
+  user-select: none;
+}

@@ -1,0 +1,65 @@
+@use "../../../design/material" as m;
+@use "../../../design/medios" as r;
+
+.promo {
+  @include m.cristal(estandar);
+  @include m.luz-de-estudio(0.8);
+  @include m.sin-cristal(var(--surface-raised));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--s-5);
+  padding: clamp(var(--s-5), 3vw, var(--s-6));
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+
+.promo__texto { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
+
+.promo__marca {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: var(--text-muted);
+}
+
+.promo__titulo {
+  font-size: clamp(20px, 2.4vw, 26px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+}
+
+.promo__sub {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 44ch;
+}
+
+.promo__boton {
+  align-self: flex-start;
+  margin-top: var(--s-2);
+  text-decoration: none;
+
+  &:hover { text-decoration: none; }
+}
+
+/* El escudo: grande, muy tenue y recortado por el borde. Es textura, no un
+   elemento que se mire — por eso no llega ni a un cuarto de opacidad. */
+.promo__arte {
+  color: var(--text-primary);
+  opacity: 0.16;
+  margin: calc(var(--s-5) * -1) calc(var(--s-6) * -1) calc(var(--s-5) * -1) 0;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+
+@include r.hasta(movil) {
+  /* En un teléfono el escudo sobra: robaría la mitad del ancho al texto. */
+  .promo { grid-template-columns: minmax(0, 1fr); }
+  .promo__arte { display: none; }
+}

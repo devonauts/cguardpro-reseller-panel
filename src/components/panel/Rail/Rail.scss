@@ -1,0 +1,157 @@
+@use "../../../design/material" as m;
+@use "../../../design/medios" as r;
+
+.rail {
+  @include m.cristal(sutil);
+  @include m.sin-cristal(var(--surface));
+  position: fixed;
+  /* FLOTANTE: separado de los tres bordes. Pegado al canto se lee como un
+     panel de administración; separado, como una pieza apoyada encima. */
+  top: var(--s-4);
+  left: var(--s-4);
+  bottom: var(--s-4);
+  width: var(--sidebar-w);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-xl);
+  z-index: 30;
+}
+
+.rail__marca {
+  padding: var(--s-5) var(--s-5) var(--s-4);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.rail__nav {
+  flex: 1;
+  padding: var(--s-4) var(--s-3);
+  overflow-y: auto;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+
+/* El segundo grupo, separado por una línea y un respiro. */
+.rail__nav--secundaria {
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--glass-border);
+}
+
+.rail__enlace {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  /* 42 px: cómodo con el ratón y acertable con el dedo. */
+  min-height: 42px;
+  padding: 0 var(--s-3);
+  border-radius: var(--r-md);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  text-decoration: none;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { background: var(--glass-standard); color: var(--text-primary); text-decoration: none; }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+/**
+ * La sección activa: cristal un punto más claro y una MARCA de plata de tres
+ * píxeles en el canto.
+ *
+ * No es un rectángulo de acento. Con el azul de plataforma eso era una barra
+ * viva en lo primero que se mira, y además el raíl es cromo del PRODUCTO, no
+ * marca del socio: vestirlo con su color mezcla dos cosas distintas.
+ */
+.rail__enlace--activo {
+  background: var(--glass-interactive);
+  color: var(--text-primary);
+  font-weight: 500;
+  box-shadow: var(--inner-highlight);
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 18px;
+    border-radius: var(--r-full);
+    background: var(--accent-solid);
+  }
+}
+
+.rail__socio {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0 var(--s-3) var(--s-3);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+}
+
+.rail__socio-icono { color: var(--text-secondary); display: grid; place-items: center; }
+.rail__socio-texto { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.rail__socio-rotulo {
+  font-size: 9.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+
+.rail__socio-nombre {
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail__socio-codigo {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.rail__pie {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  border-top: 1px solid var(--glass-border);
+}
+
+.rail__pie-nombre {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+.rail__pie-lema { font-size: 11px; color: var(--text-muted); }
+
+@include r.hasta(tableta) {
+  .rail {
+    transform: translateX(calc(-100% - var(--s-5)));
+    transition: transform 220ms var(--ease);
+    /* Abierto flota SOBRE el contenido, así que sube al cristal más opaco: en
+       el sutil se leería el texto de debajo a través del menú. */
+    @include m.cristal(elevado);
+    @include m.sin-cristal(var(--surface-raised));
+  }
+
+  .rail--abierto { transform: translateX(0); }
+}

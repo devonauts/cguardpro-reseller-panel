@@ -1,0 +1,79 @@
+@use "../../../design/material" as m;
+
+.avisos { position: relative; }
+
+.avisos__boton {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  @include m.reactivo;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+/* El punto va en ROJO semántico y con borde del lienzo, para que se recorte
+   contra el cristal en vez de fundirse con él. */
+.avisos__punto {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background: var(--danger);
+  box-shadow: 0 0 0 2px var(--canvas);
+}
+
+.avisos__titulo {
+  padding: var(--s-1) var(--s-2) var(--s-3);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.avisos__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  max-height: 260px;
+  overflow-y: auto;
+
+  li { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--s-2); }
+}
+
+.avisos__accion {
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.avisos__cuando { font-size: 11.5px; color: var(--text-muted); }
+
+.avisos__vacio { padding: var(--s-3) var(--s-2); font-size: 13px; color: var(--text-muted); }
+
+.avisos__todo {
+  display: block;
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover { color: var(--text-primary); text-decoration: none; }
+}

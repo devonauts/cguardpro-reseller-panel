@@ -1,0 +1,89 @@
+@use "../../../design/medios" as r;
+
+.tabla__marco { min-width: 0; }
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+
+  th {
+    padding: 0 var(--s-3) var(--s-3);
+    text-align: left;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--glass-border);
+    white-space: nowrap;
+  }
+}
+
+.tabla__fila {
+  transition: background-color var(--motion) var(--ease);
+
+  &:hover { background: var(--glass-standard); }
+}
+
+.tabla__celda {
+  padding: var(--s-3);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--glass-border);
+  vertical-align: middle;
+
+  &--principal { color: var(--text-primary); }
+}
+
+.tabla__fila:last-child .tabla__celda { border-bottom: 0; }
+
+@include r.hasta(movil) {
+  /* La cabecera sale de la VISTA, no del árbol: `display:none` la borraría
+     también para el lector de pantalla. */
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .tabla,
+  .tabla tbody,
+  .tabla__fila,
+  .tabla__celda { display: block; width: 100%; }
+
+  .tabla__fila {
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--glass-border);
+
+    &:last-child { border-bottom: 0; }
+  }
+
+  .tabla__celda {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-4);
+    padding: var(--s-1) 0;
+    border-bottom: 0;
+
+    /* El rótulo de la columna, delante de cada valor. */
+    &::before {
+      content: attr(data-etiqueta);
+      flex: none;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    &--principal {
+      /* El nombre va solo y arriba: es el título de la ficha. */
+      justify-content: flex-start;
+      font-size: 14px;
+      padding-bottom: var(--s-2);
+
+      &::before { display: none; }
+    }
+  }
+}
