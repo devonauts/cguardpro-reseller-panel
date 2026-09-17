@@ -106,6 +106,43 @@
   }
 }
 
+/// LA LUZ DE ESTUDIO.
+///
+/// Un foco blando reflejándose en el canto SUPERIOR, más intenso hacia el
+/// centro. Es el detalle que separa «un rectángulo con borde» de «una lámina de
+/// cristal puesta debajo de una luz»: en un objeto real el brillo del canto no
+/// es uniforme — tiene un punto caliente donde le da la lámpara y se apaga
+/// hacia los lados.
+///
+/// Va en una capa propia y no dentro de `canto()` porque ahí es un BORDE
+/// enmascarado: un degradado radial sobre esa máscara se recortaría al filo de
+/// un píxel y no se vería el desvanecido.
+@mixin luz-de-estudio($fuerza: 1) {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    /* Dos cosas a la vez: el punto caliente del canto y el reflejo interior
+       que cae desde él hacia dentro del cristal. */
+    background:
+      radial-gradient(60% 1.4px at 50% 0,
+        oklch(1 0 0 / calc(0.75 * #{$fuerza})),
+        oklch(1 0 0 / calc(0.10 * #{$fuerza})) 58%,
+        transparent 100%),
+      radial-gradient(78% 42% at 50% -6%,
+        oklch(1 0 0 / calc(0.055 * #{$fuerza})),
+        transparent 72%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* El contenido queda POR ENCIMA del reflejo. Sin esto el velo blanco pasa por
+     delante del texto y le come contraste justo arriba, que es donde está el
+     titular. */
+  > * { position: relative; z-index: 1; }
+}
+
 /// Lo contrario del cristal: un hueco excavado en él.
 ///
 /// Para valores que se copian y para campos. SIN desenfoque — va dentro de un
@@ -116,6 +153,22 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--r-md);
   box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.34);
+}
+
+/// LA CORTINA.
+///
+/// El velo que se pone detrás de una lámina flotante — el raíl abierto en un
+/// teléfono, un diálogo. Atenúa el ambiente; NO lo apaga: un negro total
+/// dejaría la lámina flotando en la nada y se perdería la sensación de capa.
+///
+/// Lleva un desenfoque muy corto, y por eso vive aquí: es la misma familia de
+/// material que el cristal, y la prueba antiduplicación no distingue una
+/// cortina de una tarjeta — ni debería. Cualquier `backdrop-filter` del
+/// repositorio sale de este fichero o no sale.
+@mixin cortina {
+  background: oklch(0.04 0 0 / 0.58);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 /// El navegador que no sabe componer el fondo recibe superficies OPACAS.

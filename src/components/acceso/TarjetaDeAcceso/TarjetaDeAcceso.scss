@@ -1,0 +1,22 @@
+@use "../../../design/material" as m;
+@use "../../../design/medios" as r;
+
+.tarjeta-acceso {
+  @include m.cristal(estandar);
+  @include m.luz-de-estudio(1);
+  /* Si el navegador no compone el fondo, esto pasa a ser una superficie mate
+     legible en vez de un cristal transparente ilegible. */
+  @include m.sin-cristal(var(--surface-raised));
+  width: 100%;
+  border-radius: var(--r-xl);
+  padding: clamp(var(--s-5), 3.4vw, var(--s-7));
+}
+
+@include r.hasta(movil) {
+  .tarjeta-acceso {
+    /* Menos radio en pantalla pequeña: con la tarjeta casi a sangre, una
+       esquina muy redondeada deja un hueco raro contra el borde. */
+    border-radius: var(--r-lg);
+    padding: var(--s-5);
+  }
+}

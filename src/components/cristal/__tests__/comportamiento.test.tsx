@@ -131,16 +131,16 @@ describe("Emergente · el menú flotante", () => {
   });
 });
 
-describe("SelectorDeIdioma", () => {
+describe("SelectorDeIdioma · variante segmentada (dentro del menú de cuenta)", () => {
   it("arranca en inglés y el cambio se refleja al momento", () => {
-    conIdioma(<SelectorDeIdioma />);
+    conIdioma(<SelectorDeIdioma variante="segmentado" />);
     expect(idioma()).toBe("en");
     fireEvent.click(screen.getByText("Español"));
     expect(idioma()).toBe("es");
   });
 
   it("la elección PERSISTE", () => {
-    conIdioma(<SelectorDeIdioma />);
+    conIdioma(<SelectorDeIdioma variante="segmentado" />);
     fireEvent.click(screen.getByText("Español"));
     expect(localStorage.getItem("cguard_reseller_lang")).toBe("es");
   });
@@ -148,15 +148,61 @@ describe("SelectorDeIdioma", () => {
   it("NO toca la sesión: cambiar de idioma no echa a nadie", () => {
     /* La regresión más fácil de este control sería resolverlo recargando. */
     localStorage.setItem("cguard_reseller_token", "sesion-viva");
-    conIdioma(<SelectorDeIdioma />);
+    conIdioma(<SelectorDeIdioma variante="segmentado" />);
     fireEvent.click(screen.getByText("Español"));
     expect(localStorage.getItem("cguard_reseller_token")).toBe("sesion-viva");
   });
 
   it("dice cuál está puesto, y no con el color", () => {
-    conIdioma(<SelectorDeIdioma />);
+    conIdioma(<SelectorDeIdioma variante="segmentado" />);
     expect(screen.getByText("English").getAttribute("aria-pressed")).toBe("true");
     expect(screen.getByText("Español").getAttribute("aria-pressed")).toBe("false");
+  });
+});
+
+describe("SelectorDeIdioma · variante menú (pantalla de entrada)", () => {
+  it("enseña el idioma puesto sin abrir nada", () => {
+    conIdioma(<SelectorDeIdioma />);
+    expect(screen.getByRole("button").textContent).toContain("English");
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("abre, deja elegir y se cierra solo", () => {
+    conIdioma(<SelectorDeIdioma />);
+    const disparador = screen.getByRole("button");
+    expect(disparador.getAttribute("aria-expanded")).toBe("false");
+
+    fireEvent.click(disparador);
+    expect(disparador.getAttribute("aria-expanded")).toBe("true");
+    expect(screen.getByRole("listbox")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("option", { name: "Español" }));
+    expect(idioma()).toBe("es");
+    /* Se cierra al elegir: dejarlo abierto tapa el primer campo. */
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("marca la opción puesta para quien no ve el color", () => {
+    conIdioma(<SelectorDeIdioma />);
+    fireEvent.click(screen.getByRole("button"));
+    expect(screen.getByRole("option", { name: "English" }).getAttribute("aria-selected")).toBe("true");
+    expect(screen.getByRole("option", { name: "Español" }).getAttribute("aria-selected")).toBe("false");
+  });
+
+  it("Escape lo cierra: se abrió con teclado, se sale con teclado", () => {
+    conIdioma(<SelectorDeIdioma />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.keyDown(screen.getByRole("listbox").querySelector("button")!, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).toBeNull();
+  });
+
+  it("y tampoco aquí se toca la sesión", () => {
+    localStorage.setItem("cguard_reseller_token", "sesion-viva");
+    conIdioma(<SelectorDeIdioma />);
+    fireEvent.click(screen.getByRole("button"));
+    fireEvent.click(screen.getByRole("option", { name: "Español" }));
+    expect(localStorage.getItem("cguard_reseller_token")).toBe("sesion-viva");
+    expect(localStorage.getItem("cguard_reseller_lang")).toBe("es");
   });
 });
 

@@ -80,5 +80,12 @@
   &:hover { color: var(--text-primary); background: var(--glass-standard); }
 }
 
+/* En pantalla táctil el control sube a 16 px: por debajo de eso iOS AMPLÍA la
+   página al enfocar el campo, y al salir no vuelve — la pantalla se queda
+   descuadrada y el formulario a medio ver. */
+@media (pointer: coarse) {
+  .campo__control { font-size: 16px; }
+}
+
 .campo__ayuda { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
 .campo__error { font-size: 12px; color: var(--danger); }

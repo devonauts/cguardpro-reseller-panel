@@ -1,15 +1,10 @@
 @use "../design/material" as m;
 @use "../design/medios" as r;
 
-/**
- * El control de idioma: un interruptor de cristal de dos posiciones.
- *
- * La posición puesta NO se pinta del acento. El acento de este panel dice «esto
- * es la acción principal», y el idioma no lo es: se elige una vez y no se
- * vuelve a mirar. Lo que la marca es más luz — cristal un punto más claro y el
- * texto en blanco.
- */
-
+/* ══ Variante SEGMENTADA ═══════════════════════════════════════════════════
+   Dos botones en una píldora. La posición puesta NO se pinta del acento: el
+   acento de este panel dice «esto es LA acción», y el idioma no lo es — se
+   elige una vez y no se vuelve a mirar. Lo que la marca es más luz. */
 .idiomas {
   @include m.cristal(estandar);
   @include m.sin-cristal(var(--surface-raised));
@@ -17,7 +12,7 @@
   gap: 2px;
   padding: 3px;
   /* Píldora a propósito: el idioma es de los controles COMPACTOS para los que
-     esa forma está reservada. Si todo fuera píldora, nada destacaría por serlo. */
+     esa forma está reservada. */
   border-radius: var(--r-full);
 }
 
@@ -33,19 +28,102 @@
   font-size: 12px;
   line-height: 1.6;
   transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+
+  &--puesta {
+    background: var(--glass-interactive);
+    color: var(--text-primary);
+    box-shadow: var(--inner-highlight);
+  }
 }
 
-.idiomas__opcion:hover { color: var(--text-primary); }
+/* ══ Variante MENÚ ═════════════════════════════════════════════════════════ */
+.idioma-menu { position: relative; }
 
-.idiomas__opcion:focus-visible {
-  outline: none;
-  box-shadow: var(--focus);
+.idioma-menu__boton {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  @include m.reactivo;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  /* 40 px: es un objetivo táctil, no un adorno de la esquina. */
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
 }
 
-.idiomas__opcion--puesta {
-  background: var(--glass-interactive);
-  color: var(--text-primary);
-  box-shadow: var(--inner-highlight);
+.idioma-menu__actual { color: var(--text-primary); }
+
+.idioma-menu__galon {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  transition: transform var(--motion) var(--ease);
+
+  &--abierto { transform: rotate(180deg); }
 }
 
-.idiomas--compacto .idiomas__opcion { padding: 3px var(--s-3); }
+/* El desplegable flota SOBRE el contenido: cristal elevado, el más opaco.
+   Debajo hay texto, y un menú que deja leer lo de atrás no se puede leer él. */
+.idioma-menu__lista {
+  @include m.cristal(elevado);
+  @include m.sin-cristal(var(--surface-raised));
+  position: absolute;
+  top: calc(100% + var(--s-2));
+  right: 0;
+  z-index: 50;
+  min-width: 100%;
+  width: max-content;
+  list-style: none;
+  margin: 0;
+  padding: var(--s-1);
+  border-radius: var(--r-md);
+  animation: idioma-entra 140ms var(--ease);
+}
+
+@keyframes idioma-entra {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idioma-menu__lista { animation: none; }
+  .idioma-menu__galon { transition: none; }
+}
+
+.idioma-menu__opcion {
+  display: block;
+  width: 100%;
+  min-height: 38px;
+  padding: 0 var(--s-4) 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { background: var(--glass-interactive); color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+
+  /* El puesto se marca con una palomita tipográfica, no sólo con color: el
+     color solo no funciona para quien no lo distingue. */
+  &--puesta {
+    color: var(--text-primary);
+
+    &::after { content: " ✓"; color: var(--text-muted); }
+  }
+}

@@ -1,0 +1,133 @@
+@use "../../../design/material" as m;
+@use "../../../design/medios" as r;
+
+.buscador__disparador {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  @include m.reactivo;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  /* Ancho generoso: es lo primero de la barra y da su sitio al resto. */
+  width: clamp(200px, 30vw, 380px);
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-full);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-align: left;
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.buscador__texto { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.buscador__atajo {
+  flex: none;
+  padding: 2px var(--s-2);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-sm);
+  background: var(--glass-sunken);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.buscador__velo {
+  @include m.cortina;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  /* Arriba y no centrado: al escribir crece hacia abajo, y centrado saltaría. */
+  padding: clamp(var(--s-5), 12vh, 140px) var(--s-4) var(--s-4);
+}
+
+.buscador__caja {
+  @include m.cristal(elevado);
+  @include m.sin-cristal(var(--surface-raised));
+  width: 100%;
+  max-width: 560px;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+}
+
+.buscador__campo {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--glass-border);
+  color: var(--text-muted);
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    /* 16 px: por debajo, iOS amplía la página al enfocar. */
+    font-size: 16px;
+
+    &:focus { outline: none; }
+    &::placeholder { color: var(--text-muted); }
+  }
+}
+
+.buscador__resultados {
+  overflow-y: auto;
+  padding: var(--s-2);
+}
+
+.buscador__grupo {
+  padding: var(--s-3) var(--s-3) var(--s-2);
+  font-size: 10.5px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.buscador__item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 42px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { background: var(--glass-interactive); color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.buscador__vacio {
+  padding: var(--s-5) var(--s-3);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+@include r.hasta(movil) {
+  /* En un teléfono el disparador se queda en la lupa: el rótulo y el atajo se
+     comerían el ancho que necesitan el idioma y la ficha. */
+  .buscador__texto,
+  .buscador__atajo { display: none; }
+  .buscador__disparador { width: 44px; justify-content: center; padding: 0; }
+}

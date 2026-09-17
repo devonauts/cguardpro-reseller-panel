@@ -1,3 +1,5 @@
+@use "../design/medios" as r;
+
 .acceso {
   display: flex;
   flex-direction: column;
@@ -17,6 +19,8 @@
 
 .acceso__titulo {
   font-size: clamp(26px, 3.2vw, 32px);
+  /* 600 y no 700: sobre negro el peso se percibe MÁS de lo que es, y un 700
+     a este tamaño se lee como un grito. */
   font-weight: 600;
   letter-spacing: -0.03em;
   color: var(--text-primary);
@@ -30,9 +34,42 @@
 
 .acceso__campos { display: flex; flex-direction: column; gap: var(--s-4); }
 
+/* Los enlaces de la tarjeta son BOTONES: cambian de estado, no navegan. Se
+   visten como enlaces porque es lo que la gente busca ahí. */
+.acceso__enlace {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: oklch(1 0 0 / 0.28);
+  text-underline-offset: 3px;
+  transition: color var(--motion) var(--ease), text-decoration-color var(--motion) var(--ease);
+
+  &:hover { color: var(--text-primary); text-decoration-color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
+
+  &--derecha { align-self: flex-end; margin-top: calc(var(--s-2) * -1); }
+  &--centro { align-self: center; }
+}
+
 .acceso__error {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--danger);
+}
+
+.acceso__aviso {
+  padding: var(--s-3);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--r-md);
+  background: var(--ok-soft);
+  color: var(--ok);
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -41,4 +78,17 @@
   min-height: 52px;
   margin-top: var(--s-2);
   font-size: 15px;
+}
+
+.acceso__pie {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+@include r.hasta(movil) {
+  .acceso { gap: var(--s-5); }
+  /* 16 px en los controles: por debajo de eso iOS hace zoom al enfocar un
+     campo, y la página se queda descuadrada al volver. */
+  .acceso__enviar { min-height: 50px; font-size: 16px; }
 }
