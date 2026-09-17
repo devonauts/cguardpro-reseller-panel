@@ -7,6 +7,10 @@
  * página. Hay una prueba que lo comprueba.
  */
 export { Superficie } from "./Superficie";
+export { Icono } from "./Icono";
+export type { NombreDeIcono } from "./Icono";
+export { FondoEspacial } from "./FondoEspacial";
+export { Marca } from "./Marca";
 export type { Material } from "./Superficie";
 export { Tarjeta, TarjetaCabecera, Dato } from "./Tarjeta";
 export { Panel } from "./Panel";

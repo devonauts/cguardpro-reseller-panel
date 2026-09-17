@@ -1,0 +1,7 @@
+.icono {
+  display: block;
+  flex: none;
+  /* Hereda el color del texto que lo acompaña: un icono que decide su propio
+     color se despega del rótulo el día que el rótulo cambia de tono. */
+  color: currentColor;
+}

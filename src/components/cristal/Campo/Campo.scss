@@ -8,35 +8,76 @@
 }
 
 .campo__etiqueta {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--text-secondary);
 }
 
-.campo__control {
+/* La caja es lo hundido; el `input` de dentro va desnudo. Así el icono y el
+   ojo viven DENTRO del hueco y no flotando encima de él. */
+.campo__caja {
   @include m.hundido;
-  /* 44 px: se usa con el dedo. */
-  min-height: 44px;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
   padding: 0 var(--s-3);
-  color: var(--text-primary);
-  font: inherit;
-  transition: border-color var(--motion) var(--ease), background-color var(--motion) var(--ease);
+  transition: border-color var(--motion) var(--ease), box-shadow var(--motion) var(--ease);
 
-  &::placeholder { color: var(--text-muted); }
   &:hover { border-color: var(--glass-border-highlight); }
 
-  /* El foco NO es un anillo de color gigante: el borde se aclara y el realce
-     interior sube. El anillo del sistema sigue estando en `:focus-visible`. */
-  &:focus {
-    outline: none;
+  /* El foco vive en la CAJA y no en el `input`: si viviera en el input, el
+     anillo se dibujaría por dentro del hueco y dejaría fuera al icono. */
+  &:focus-within {
     border-color: oklch(1 0 0 / 0.34);
-    background: var(--glass-sunken);
     box-shadow: inset 0 1px 2px oklch(0 0 0 / 0.34), 0 0 0 3px oklch(1 0 0 / 0.07);
   }
 
   &--error { border-color: var(--danger); }
+}
+
+.campo__icono { color: var(--text-muted); }
+
+.campo__control {
+  flex: 1;
+  min-width: 0;
+  /* 48 px: es la altura cómoda con el pulgar, y la que da aire al icono. */
+  min-height: 48px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font: inherit;
+
+  &:focus { outline: none; }
+  &::placeholder { color: var(--text-muted); }
+
+  /* El autorrelleno de Chrome pinta un fondo azul claro imposible de cambiar
+     por `background`. La sombra interior enorme lo tapa sin tocar el color del
+     texto, que es el único truco que funciona. */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    -webkit-box-shadow: 0 0 0 1000px oklch(0.09 0 0) inset;
+    caret-color: var(--text-primary);
+  }
+}
+
+.campo__ojo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  /* 36 px: un objetivo que se acierta sin ampliar. */
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--motion) var(--ease), background-color var(--motion) var(--ease);
+
+  &:hover { color: var(--text-primary); background: var(--glass-standard); }
 }
 
 .campo__ayuda { font-size: 12px; color: var(--text-muted); line-height: 1.5; }

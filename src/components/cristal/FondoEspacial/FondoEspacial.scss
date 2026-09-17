@@ -1,0 +1,122 @@
+@use "../../../design/medios" as r;
+
+/* ── CAPA 1 · el lienzo ───────────────────────────────────────────────────
+   Negro mate en gradiente, no `#000` liso: sin variación tonal detrás, una
+   superficie translúcida con desenfoque es indistinguible de una opaca. */
+.espacio {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  /* Nada de lo que hay aquí puede empujar la página a lo ancho. */
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 900px at 82% 88%, oklch(0.19 0.010 240 / 0.26), transparent 62%),
+    radial-gradient(900px 700px at 8% 2%, oklch(0.23 0 0 / 0.20), transparent 58%),
+    linear-gradient(155deg, oklch(0.105 0 0) 0%, oklch(0.055 0 0) 54%, oklch(0.085 0 0) 100%);
+}
+
+/* ── CAPA 2 · la textura ──────────────────────────────────────────────────
+   Dos retículas de paso y opacidad distintos. Una sola se lee como rejilla;
+   dos desfasadas se leen como azar. Está para que el desenfoque del cristal
+   tenga algo FINO que deshacer — sobre un degradado liso no se nota. */
+.espacio__estrellas {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 18% 22%, oklch(1 0 0 / 0.50), transparent 60%),
+    radial-gradient(1px 1px at 62% 14%, oklch(1 0 0 / 0.36), transparent 60%),
+    radial-gradient(1px 1px at 33% 71%, oklch(1 0 0 / 0.30), transparent 60%),
+    radial-gradient(1px 1px at 8% 56%, oklch(1 0 0 / 0.24), transparent 60%),
+    radial-gradient(oklch(1 0 0 / 0.050) 0.6px, transparent 0.6px),
+    radial-gradient(oklch(1 0 0 / 0.032) 0.5px, transparent 0.5px);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 137px 137px, 89px 89px;
+  background-position: 0 0, 0 0, 0 0, 0 0, 0 0, 44px 31px;
+}
+
+/* ── CAPA 3 · la luz ──────────────────────────────────────────────────────
+   El filo de un cuerpo enorme que queda casi todo fuera de cuadro. Sin línea
+   marcada: llevaba una, y al cruzar la pantalla competía con el limbo del
+   planeta — dos arcos brillantes y ninguno se leía como lo que era. */
+.espacio__arco {
+  position: absolute;
+  top: -64vw;
+  left: -34vw;
+  width: 92vw;
+  height: 92vw;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 64% 70%,
+    oklch(0.17 0 0 / 0.50),
+    oklch(0.11 0 0 / 0.28) 66%,
+    transparent 74%
+  );
+}
+
+/* ── CAPA 4 · el planeta ──────────────────────────────────────────────────
+   Lo ÚNICO que es una imagen. Anclado abajo a la derecha y dimensionado en
+   `vmin` para que su tamaño dependa del lado corto: con `vw` crecía con el
+   ancho y en un monitor panorámico cruzaba la pantalla entera. */
+.espacio__planeta {
+  position: absolute;
+  right: -14vmin;
+  bottom: -34vmin;
+  width: clamp(700px, 104vmin, 1460px);
+  /* `height: auto` vía la imagen: la proporción la manda el asset, no esta
+     hoja. Fijar las dos medidas es cómo se deforma un planeta. */
+  display: block;
+  pointer-events: none;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    /* Se mezcla con el lienzo por LUZ. El disco sigue siendo opaco por su
+       alfa; lo que esto arregla es el borde del resplandor, que con
+       composición normal deja un escalón visible contra el negro. */
+    mix-blend-mode: screen;
+    user-select: none;
+  }
+}
+
+/* ── CAPA 3b · la viñeta ──────────────────────────────────────────────────
+   Va DESPUÉS del planeta: rebaja las esquinas y, de paso, aparta el
+   resplandor de donde luego se lee. Sin ella, el filo atmosférico pasa justo
+   por detrás del formulario y le resta contraste al texto. */
+.espacio__vineta {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    130% 110% at 50% 45%,
+    transparent 38%,
+    oklch(0.04 0 0 / 0.30) 78%,
+    oklch(0.03 0 0 / 0.55) 100%
+  );
+}
+
+@include r.hasta(tableta) {
+  /**
+   * En vertical el planeta SE RETIRA.
+   *
+   * No es sólo que estorbe: en un teléfono la tarjeta ocupa casi todo el
+   * ancho, y el filo atmosférico —que es la parte más clara de toda la
+   * pantalla— quedaría justo detrás de los campos. Aquí manda leer.
+   */
+  .espacio__planeta {
+    right: -30vmin;
+    bottom: -14vmin;
+    width: clamp(420px, 105vmin, 760px);
+    opacity: 0.55;
+  }
+
+  .espacio__arco { display: none; }
+}
+
+@include r.hasta(movil-pequeno) {
+  /* A 320–375 px se retira aún más: queda como una insinuación en la esquina. */
+  .espacio__planeta { opacity: 0.38; right: -42vmin; }
+}
+
+/* Quien pide menos movimiento no pide menos imagen, así que el planeta se
+   queda. Lo que nunca hubo aquí es animación: una rotación continua mantiene
+   la GPU despierta en una pantalla donde sólo se teclean dos campos. */

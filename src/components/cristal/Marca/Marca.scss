@@ -1,0 +1,38 @@
+@use "../../../design/material" as m;
+
+.marca-cgp {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.marca-cgp__escudo {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+}
+
+.marca-cgp__texto { display: flex; flex-direction: column; gap: 3px; }
+
+.marca-cgp__nombre {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+/* Tracking ancho y cuerpo pequeño: el recurso tipográfico que hace que una
+   palabra corta se lea como un sello y no como texto. */
+.marca-cgp__coletilla {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  color: var(--text-muted);
+  line-height: 1;
+}

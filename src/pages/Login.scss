@@ -1,0 +1,44 @@
+.acceso {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--s-5), 3vw, var(--s-6));
+}
+
+.acceso__cabecera { display: flex; flex-direction: column; gap: var(--s-2); }
+
+/* El rótulo de sección: cuerpo pequeño y tracking ancho. Dice dónde estás sin
+   competir con el titular. */
+.acceso__rotulo {
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+}
+
+.acceso__titulo {
+  font-size: clamp(26px, 3.2vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.acceso__sub {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+.acceso__campos { display: flex; flex-direction: column; gap: var(--s-4); }
+
+.acceso__error {
+  font-size: 13px;
+  color: var(--danger);
+  line-height: 1.5;
+}
+
+/* El botón de entrar es más alto que el resto: es LA acción de la pantalla. */
+.acceso__enviar {
+  min-height: 52px;
+  margin-top: var(--s-2);
+  font-size: 15px;
+}
