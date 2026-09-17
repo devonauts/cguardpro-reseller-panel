@@ -50,9 +50,18 @@ if (sucios.length) {
 
 // Y que la base sea la correcta: con `/` los recursos los serviría el CRM.
 const html = fs.readFileSync(path.join(DIST, "index.html"), "utf8");
-if (!/(src|href)="\/panel\//.test(html)) {
-  console.error('✗ index.html no referencia "/panel/" — ¿se perdió `base`?');
+/* El panel vive en su PROPIO anfitrión (`partners.cguardpro.com`), así que sus
+   recursos cuelgan de la raíz. Lo que se comprueba es que `base` siga siendo
+   absoluta: con rutas relativas, un enlace profundo como
+   `/domains` pediría `domains/assets/...` y no cargaría nada. */
+if (!/(src|href)="\/assets\//.test(html)) {
+  console.error('✗ index.html no referencia "/assets/" — ¿se perdió `base`?');
   process.exit(1);
 }
 
-console.log("✓ paquete limpio y servido desde /panel/");
+if (/(src|href)="\/panel\//.test(html)) {
+  console.error('✗ quedan recursos bajo "/panel/": el panel ya no vive ahí.');
+  process.exit(1);
+}
+
+console.log("✓ paquete limpio y servido desde la raíz de su anfitrión");
