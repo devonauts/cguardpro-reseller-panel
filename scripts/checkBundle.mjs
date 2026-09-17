@@ -137,4 +137,31 @@ if (cssEntrada) {
   }
 }
 
+/* ── Y QUE NO SE PUBLIQUE APUNTANDO A UN BACKEND DE PRUEBAS ───────────────
+   La app instalada lleva la dirección del backend HORNEADA en su paquete: no
+   hay un anfitrión del que deducirla como en la web. Un `.env` olvidado con
+   `VITE_API_URL=http://localhost:3001/api` produce una app que compila, se
+   firma, se sube y no habla con nada — y no se nota hasta que la abre un
+   cliente.
+
+   Ya pasó en `mi-seguridad-app`: lo que el repo tenía commiteado era la URL
+   LOCAL, así que «dejarlo como estaba» no era volver a lo que dice git. Se
+   publicó en las dos tiendas una app hablando con `10.0.2.2`.
+
+   La comprobación que vale es mirar el ARTEFACTO, no el código. Esto lo hace
+   sobre todos los trozos, que es donde acaba la cadena de verdad. */
+const LOCALES = /https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|10\.0\.2\.2|192\.168\.\d+\.\d+)(:\d+)?[^"'`\s]*api/gi;
+const apuntanMal = [];
+for (const f of archivos(DIST).filter((f) => f.endsWith(".js"))) {
+  for (const m of fs.readFileSync(f, "utf8").matchAll(LOCALES)) {
+    apuntanMal.push(`${path.basename(f)}: ${m[0]}`);
+  }
+}
+if (apuntanMal.length) {
+  console.error("✗ el paquete apunta a un backend que no es producción:");
+  for (const a of apuntanMal) console.error(`  · ${a}`);
+  console.error("  ¿quedó un VITE_API_URL en un .env?");
+  process.exit(1);
+}
+
 console.log("✓ paquete limpio y servido desde la raíz de su anfitrión");

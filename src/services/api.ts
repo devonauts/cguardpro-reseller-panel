@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-import { almacenDeCredenciales } from "@/plataforma";
+import { almacenDeCredenciales, esNativo } from "@/plataforma";
 
 import { t } from "@/i18n/idioma";
 
@@ -22,7 +22,33 @@ import { t } from "@/i18n/idioma";
  * mandarlo invitaría a alguien, algún día, a empezar a hacerle caso.
  */
 
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) || "/api";
+/**
+ * ── DÓNDE ESTÁ EL BACKEND ─────────────────────────────────────────────────
+ * En el navegador, `/api` y ya: el panel y su API salen del MISMO anfitrión
+ * (`partners.cguardpro.com`), así que una ruta relativa es la respuesta
+ * correcta y además la única que sigue funcionando si mañana cambia el
+ * dominio.
+ *
+ * En la app instalada no hay tal anfitrión. El WebView carga desde
+ * `capacitor://localhost` (iOS) o `https://localhost` (Android), y ahí `/api`
+ * apunta al propio paquete de la app: no existe. Hace falta la dirección
+ * completa.
+ *
+ * ── Y POR QUÉ LA DE PRODUCCIÓN VA ESCRITA AQUÍ ──
+ * Porque lo que está commiteado tiene que ser lo que se publica. En
+ * `mi-seguridad-app` esto se hizo al revés —el repo guardaba la URL LOCAL y
+ * había que acordarse de cambiarla antes de archivar— y se publicó en las dos
+ * tiendas una app que hablaba con `10.0.2.2`, o sea con nada. No se nota hasta
+ * que la abre un cliente.
+ *
+ * Aquí no hay nada que recordar: el valor por defecto es producción. Para
+ * apuntar a otro sitio se pone `VITE_API_URL` en un `.env` que NO se commitea,
+ * y si alguien se olvida de quitarlo, `checkBundle` mira el paquete construido
+ * —no el código— y lo rechaza.
+ */
+const API_URL =
+  (import.meta.env.VITE_API_URL as string | undefined)
+  || (esNativo ? "https://api.cguardpro.com/api" : "/api");
 
 /**
  * EL TOKEN EN MEMORIA, Y SU COPIA EN EL ALMACÉN.

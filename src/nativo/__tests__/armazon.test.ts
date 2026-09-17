@@ -61,7 +61,19 @@ describe("el armazón de la app instalada", () => {
     /* La app del vigilante acabó con 49 comprobaciones sueltas y ningún sitio
        donde entender qué se ve en cada plataforma. Aquí la rama se toma una
        vez, en el armazón, y las páginas no saben en qué corren. */
-    const permitido = ["layouts/AppLayout.tsx"];
+    /* Los DOS sitios donde la plataforma cambia algo de verdad, y por qué:
+     *
+     *   · AppLayout  — la FORMA del armazón. Instalada lleva pestañas abajo;
+     *                  en un navegador, raíl al lado. Es una rama, no quince.
+     *   · api.ts     — DÓNDE está el backend. En web, `/api` relativo, porque
+     *                  el panel y su API comparten anfitrión. En la app no hay
+     *                  tal anfitrión y `/api` apuntaría al propio paquete.
+     *
+     * Ninguno de los dos es «esta pantalla se ve distinta en móvil»: eso lo
+     * resuelven las consultas de medios, que no necesitan saber la plataforma.
+     * Añadir una tercera entrada aquí debería costar una explicación igual de
+     * concreta, o estamos volviendo a las 49 comprobaciones sueltas. */
+    const permitido = ["layouts/AppLayout.tsx", "services/api.ts"];
     const usan = TODAS
       .filter((f) => !rel(f).startsWith("plataforma/"))
       .filter((f) => !permitido.includes(rel(f)))
