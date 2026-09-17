@@ -1,3 +1,5 @@
+@use "sass:map";
+
 ////
 /// Los cortes de pantalla, en UN sitio.
 ///
@@ -14,13 +16,13 @@ $cortes: (
 );
 
 @mixin hasta($nombre) {
-  $v: map-get($cortes, $nombre);
+  $v: map.get($cortes, $nombre);
   @if $v == null { @error "corte desconocido: #{$nombre}"; }
   @media (max-width: $v) { @content; }
 }
 
 @mixin desde($nombre) {
-  $v: map-get($cortes, $nombre);
+  $v: map.get($cortes, $nombre);
   @if $v == null { @error "corte desconocido: #{$nombre}"; }
   @media (min-width: $v + 1px) { @content; }
 }

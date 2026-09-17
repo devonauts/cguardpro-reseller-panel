@@ -348,6 +348,25 @@ export const teamService = {
     post<{ member: MiembroDelEquipo }>(`/reseller/team/${membershipId}/reinvite`, {}),
 };
 
+/**
+ * Pedir el enlace para poner una contraseña nueva.
+ *
+ * ── ES EL ENDPOINT QUE YA EXISTE, NO UNO NUEVO ────────────────────────────
+ * `/auth/send-password-reset-email` lleva años en pie y lo usa el CRM. Aquí no
+ * se reimplementa nada de autenticación: se llama a lo que hay.
+ *
+ * NO se manda `tenantId`. Un socio no pertenece a ninguna empresa —esa es toda
+ * la idea de la capa comercial—, y mandar uno inventado lo buscaría en el sitio
+ * equivocado.
+ *
+ * El resultado se trata SIEMPRE igual, exista el correo o no: esta pantalla no
+ * puede convertirse en un comprobador de qué cuentas existen.
+ */
+export const recuperacionService = {
+  pedirEnlace: (email: string) =>
+    post<boolean>("/auth/send-password-reset-email", { email }),
+};
+
 export const portalService = {
   contrato: () => get<{ contract: ContratoDelSocio | null }>("/reseller/contract"),
   derechos: () => get<DerechosDelSocio>("/reseller/entitlements"),

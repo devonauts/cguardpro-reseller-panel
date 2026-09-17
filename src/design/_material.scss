@@ -106,6 +106,43 @@
   }
 }
 
+/// LA LUZ DE ESTUDIO.
+///
+/// Un foco blando reflejándose en el canto SUPERIOR, más intenso hacia el
+/// centro. Es el detalle que separa «un rectángulo con borde» de «una lámina de
+/// cristal puesta debajo de una luz»: en un objeto real el brillo del canto no
+/// es uniforme — tiene un punto caliente donde le da la lámpara y se apaga
+/// hacia los lados.
+///
+/// Va en una capa propia y no dentro de `canto()` porque ahí es un BORDE
+/// enmascarado: un degradado radial sobre esa máscara se recortaría al filo de
+/// un píxel y no se vería el desvanecido.
+@mixin luz-de-estudio($fuerza: 1) {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    /* Dos cosas a la vez: el punto caliente del canto y el reflejo interior
+       que cae desde él hacia dentro del cristal. */
+    background:
+      radial-gradient(60% 1.4px at 50% 0,
+        oklch(1 0 0 / calc(0.75 * #{$fuerza})),
+        oklch(1 0 0 / calc(0.10 * #{$fuerza})) 58%,
+        transparent 100%),
+      radial-gradient(78% 42% at 50% -6%,
+        oklch(1 0 0 / calc(0.055 * #{$fuerza})),
+        transparent 72%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* El contenido queda POR ENCIMA del reflejo. Sin esto el velo blanco pasa por
+     delante del texto y le come contraste justo arriba, que es donde está el
+     titular. */
+  > * { position: relative; z-index: 1; }
+}
+
 /// Lo contrario del cristal: un hueco excavado en él.
 ///
 /// Para valores que se copian y para campos. SIN desenfoque — va dentro de un

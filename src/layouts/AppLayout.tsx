@@ -177,7 +177,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
               <div className="cuenta__correo">{me?.user.email}</div>
               {/* El idioma se cambia SIN salir: no se toca la sesión. */}
               <div className="cuenta__idioma">
-                <SelectorDeIdioma compacto />
+                <SelectorDeIdioma variante="segmentado" />
               </div>
               <Boton variante="fantasma" bloque role="menuitem" onClick={salir}>
                 {t("armazon.cerrarSesion")}

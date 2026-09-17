@@ -1,9 +1,14 @@
-@use "../design/material" as m;
 @use "../design/medios" as r;
 
 /**
- * La entrada. Todo se apoya sobre `FondoEspacial`, que va en `z-index: 0`;
- * lo demás sube a 1 para quedar por encima del planeta.
+ * La COMPOSICIÓN de la entrada, y sólo eso.
+ *
+ * El material de cada pieza vive en el SCSS de su componente: la tarjeta, el
+ * selector de idioma y el panel de marca traen el suyo. Aquí se decide dónde
+ * va cada uno y cómo se recolocan al estrecharse.
+ *
+ * Todo se apoya sobre `FondoEspacial`, que ocupa `z-index: 0`; el resto sube a
+ * 1 para quedar por encima del planeta.
  */
 .entrada {
   position: relative;
@@ -16,21 +21,9 @@
 
 .entrada > *:not(.espacio) { position: relative; z-index: 1; }
 
-/* ── El idioma, arriba a la derecha ───────────────────────────────────── */
-.entrada__idioma {
-  @include m.cristal(estandar);
-  @include m.sin-cristal(var(--surface-raised));
-  align-self: flex-end;
-  display: flex;
-  align-items: center;
-  gap: var(--s-2);
-  padding: 5px 5px 5px var(--s-3);
-  border-radius: var(--r-full);
-}
+/* El selector trae su propio material: aquí sólo se decide DÓNDE va. */
+.entrada__idioma { align-self: flex-end; }
 
-.entrada__globo { color: var(--text-muted); display: grid; place-items: center; }
-
-/* ── La rejilla de dos columnas ───────────────────────────────────────── */
 .entrada__rejilla {
   flex: 1;
   display: grid;
@@ -45,106 +38,16 @@
   padding: var(--s-6) 0;
 }
 
-/* ── Columna de presentación ──────────────────────────────────────────── */
-.portada {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(var(--s-5), 3vw, var(--s-6));
-  max-width: 460px;
-}
-
-.portada__titulo {
-  display: flex;
-  flex-direction: column;
-  font-size: clamp(34px, 4.4vw, 52px);
-  font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.035em;
-  color: var(--text-primary);
-}
-
-.portada__titulo--tenue { color: var(--text-muted); }
-
-.portada__lema {
-  font-size: clamp(14px, 1.3vw, 15.5px);
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-
-.portada__ventajas {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-4);
-}
-
-.ventaja { display: flex; align-items: flex-start; gap: var(--s-4); }
-
-/* La baldosa del icono: un objeto de cristal pequeño, del mismo material que
-   todo lo demás. */
-.ventaja__icono {
-  @include m.cristal(estandar);
-  @include m.sin-cristal(var(--surface-raised));
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: var(--r-md);
-  color: var(--text-primary);
-}
-
-.ventaja__texto { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.ventaja__titulo { font-size: 14.5px; font-weight: 500; color: var(--text-primary); }
-.ventaja__nota {
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  max-width: 30ch;
-}
-
-.portada__pie {
-  padding-top: var(--s-5);
-  border-top: 1px solid var(--glass-border);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.3em;
-  color: var(--text-muted);
-}
-
-/* ── La lámina de cristal ─────────────────────────────────────────────── */
-/**
- * Material ESTÁNDAR y no elevado, y es una decisión, no un descuido.
- *
- * El elevado es más opaco porque debajo suele haber TEXTO, y un menú a través
- * del cual se lee lo de atrás no se puede leer él. Aquí debajo no hay texto:
- * hay espacio. Dejar que el filo del planeta se vea cruzando por detrás es
- * justo lo que demuestra que la lámina es de cristal — con el 88 % del
- * elevado, la tarjeta se leía como una caja negra apoyada encima.
- */
-.entrada__caja {
-  @include m.cristal(estandar);
-  @include m.sin-cristal(var(--surface-raised));
-  width: 100%;
-  border-radius: var(--r-xl);
-  padding: clamp(var(--s-5), 3.4vw, var(--s-7));
-}
-
-/* ── Valores y pie ────────────────────────────────────────────────────── */
-/**
+/* ── Valores y pie ───────────────────────────────────────────────────────
  * EL VELO DE LEGIBILIDAD.
  *
  * Detrás de este bloque no hay un color: hay una IMAGEN, y encima una que se
  * mueve con el tamaño de la ventana. Medido sobre lo renderizado, «PEOPLE»
- * caía justo sobre el filo atmosférico —la zona más clara de la pantalla— con
- * un contraste de 2.3:1. Las otras dos líneas, dos centímetros más abajo y ya
- * sobre el disco oscuro, daban 5.6:1.
+ * caía sobre el filo atmosférico con 2.3:1; las otras dos líneas, dos
+ * centímetros más abajo y ya sobre el disco oscuro, daban 5.6:1.
  *
- * Por eso el arreglo no puede ser moverlo: a otra anchura el planeta se
- * coloca distinto y le toca a otra línea. El velo VIAJA CON EL TEXTO, así que
- * el contraste deja de depender de dónde haya quedado el planeta.
+ * Por eso el arreglo no puede ser moverlo —a otra anchura le toca a otra
+ * línea—: el velo VIAJA CON EL TEXTO.
  */
 .entrada__valores {
   position: relative;
@@ -158,25 +61,25 @@
   font-weight: 500;
   letter-spacing: 0.3em;
   color: var(--text-muted);
-}
 
-.entrada__valores::before {
-  content: "";
-  position: absolute;
-  inset: -14px -18px -20px -40px;
-  z-index: -1;
-  border-radius: var(--r-lg);
-  background: radial-gradient(120% 140% at 82% 50%,
-    oklch(0.03 0 0 / 0.78), oklch(0.03 0 0 / 0.45) 52%, transparent 76%);
-  pointer-events: none;
-}
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -14px -18px -20px -40px;
+    z-index: -1;
+    border-radius: var(--r-lg);
+    background: radial-gradient(120% 140% at 82% 50%,
+      oklch(0.03 0 0 / 0.78), oklch(0.03 0 0 / 0.45) 52%, transparent 76%);
+    pointer-events: none;
+  }
 
-.entrada__valores::after {
-  content: "";
-  width: 34px;
-  height: 1px;
-  background: var(--glass-border-highlight);
-  margin-top: var(--s-1);
+  &::after {
+    content: "";
+    width: 34px;
+    height: 1px;
+    background: var(--glass-border-highlight);
+    margin-top: var(--s-1);
+  }
 }
 
 .entrada__legal {
@@ -184,54 +87,42 @@
   text-align: center;
   font-size: 12px;
   color: var(--text-muted);
+
+  /* Mismo motivo: centrado abajo, según la anchura le puede tocar el
+     resplandor. Ancho y muy difuminado — un velo corto y denso se ve como una
+     BANDA cruzando el pie, que es peor que el problema que resuelve. */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -22px -12%;
+    z-index: -1;
+    background: radial-gradient(46% 180% at 50% 50%,
+      oklch(0.03 0 0 / 0.60), oklch(0.03 0 0 / 0.26) 46%, transparent 82%);
+    pointer-events: none;
+  }
 }
 
-/* Mismo motivo que arriba: centrado abajo, según la anchura le puede tocar el
-   resplandor. */
-.entrada__legal::before {
-  content: "";
-  position: absolute;
-  /* Ancho y muy difuminado: un velo corto y denso se ve como una BANDA
-     cruzando el pie, que es peor que el problema que resuelve. */
-  inset: -22px -12%;
-  z-index: -1;
-  background: radial-gradient(46% 180% at 50% 50%,
-    oklch(0.03 0 0 / 0.60), oklch(0.03 0 0 / 0.26) 46%, transparent 82%);
-  pointer-events: none;
-}
-
-/* ── Tableta y teléfono ───────────────────────────────────────────────── */
+/* ── Tableta y teléfono ──────────────────────────────────────────────────
+   La presentación se retira (lo decide su propio componente) y queda el
+   emblema sobre la tarjeta, que pasa a una sola columna centrada. */
 @include r.hasta(tableta) {
-  /**
-   * La presentación se retira ENTERA y queda el emblema sobre la tarjeta.
-   *
-   * Encogerla no serviría: un titular de 52 px y tres ventajas apiladas encima
-   * del formulario dejan el primer campo por debajo del pliegue, y quien abre
-   * esto en un teléfono viene a teclear, no a leer.
-   */
   .entrada__rejilla {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     padding: var(--s-5) 0;
   }
 
-  .portada {
-    max-width: 480px;
-    width: 100%;
-    gap: var(--s-4);
-  }
-
-  .portada__titulo,
-  .portada__lema,
-  .portada__ventajas,
-  .portada__pie { display: none; }
-
-  .entrada__caja { max-width: 480px; }
-
+  .tarjeta-acceso { max-width: 480px; }
   .entrada__valores { display: none; }
 }
 
 @include r.hasta(movil) {
   .entrada { padding: var(--s-4); }
   .entrada__rejilla { gap: var(--s-4); }
+}
+
+@include r.hasta(movil-pequeno) {
+  /* A 320 px el respiro exterior baja al mínimo: cada píxel de ancho que se
+     le quita al marco se lo gana el campo de dentro. */
+  .entrada { padding: var(--s-3); }
 }

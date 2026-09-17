@@ -1,0 +1,65 @@
+@use "../../../design/medios" as r;
+
+.panel-marca {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--s-5), 3vw, var(--s-6));
+  max-width: 460px;
+}
+
+.panel-marca__titulo {
+  display: flex;
+  flex-direction: column;
+  font-size: clamp(34px, 4.4vw, 52px);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+  color: var(--text-primary);
+}
+
+.panel-marca__titulo--tenue { color: var(--text-muted); }
+
+.panel-marca__lema {
+  font-size: clamp(14px, 1.3vw, 15.5px);
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.panel-marca__puntos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+
+.panel-marca__pie {
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--glass-border);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--text-muted);
+}
+
+/**
+ * En pantalla estrecha se retira TODO menos el emblema.
+ *
+ * Encogerlo no serviría: un titular de 52 px y tres puntos apilados encima del
+ * formulario dejan el primer campo por debajo del pliegue, y quien abre esto en
+ * un teléfono viene a teclear, no a leer. El emblema se queda porque en dos
+ * segundos hay que saber dónde se está metiendo la contraseña.
+ */
+@include r.hasta(tableta) {
+  .panel-marca {
+    max-width: 480px;
+    width: 100%;
+    gap: var(--s-4);
+  }
+
+  .panel-marca__titulo,
+  .panel-marca__lema,
+  .panel-marca__puntos,
+  .panel-marca__pie { display: none; }
+}
