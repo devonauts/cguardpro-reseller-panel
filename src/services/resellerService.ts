@@ -1,4 +1,4 @@
-import { del, get, patch, post, subirArchivo } from "@/services/api";
+import { del, get, patch, post, put, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -339,7 +339,13 @@ export const teamService = {
   listar: () => get<EquipoDelSocio>("/reseller/team"),
   roles: () => get<{ roles: RolDeSocio[] }>("/reseller/team/roles"),
   invitar: (data: { email: string; role: string; firstName?: string; lastName?: string }) =>
-    post<{ member: MiembroDelEquipo; needsPasswordSetup: boolean }>("/reseller/team", data),
+    post<{
+      member: MiembroDelEquipo;
+      needsPasswordSetup: boolean;
+      /** Si el correo con el enlace salió de verdad. Quien invita pregunta
+       *  «¿le llegó?», y hasta que existió el correo nadie podía contestar. */
+      invitationSent: boolean;
+    }>("/reseller/team", data),
   cambiarRol: (membershipId: string, role: string) =>
     patch<{ member: MiembroDelEquipo }>(`/reseller/team/${membershipId}/role`, { role }),
   darDeBaja: (membershipId: string) =>
@@ -363,8 +369,52 @@ export const teamService = {
  * puede convertirse en un comprobador de qué cuentas existen.
  */
 export const recuperacionService = {
+  /**
+   * `app: 'reseller'` NO es decorativo. Sin él, el servidor no sabía de qué
+   * puerta venía la petición y armaba el enlace hacia `app.cguardpro.com` —el
+   * CRM— o, si ese correo además era usuario de alguna empresa, hacia el
+   * anfitrión de ESA empresa. Un socio que olvidaba su contraseña recibía un
+   * enlace a una pantalla donde no tiene cuenta. Es el mismo parámetro y el
+   * mismo motivo que en `signIn`.
+   */
   pedirEnlace: (email: string) =>
-    post<boolean>("/auth/send-password-reset-email", { email }),
+    post<boolean>("/auth/send-password-reset-email", { email, app: "reseller" }),
+
+  /** Poner la contraseña nueva con el testigo del correo. */
+  restablecer: (token: string, password: string) =>
+    put<boolean>("/auth/password-reset", { token, password }),
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LA INVITACIÓN — ACTIVAR LA CUENTA
+
+   Las dos ÚNICAS llamadas del panel que no llevan sesión, porque quien las hace
+   todavía no puede tener una: acaba de recibir el correo y aún no tiene
+   contraseña. El testigo del enlace es lo único que autoriza, y el servidor lo
+   vuelve a comprobar en las dos.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface InvitacionDeSocio {
+  /** El correo al que se mandó. Se enseña para no activar la cuenta ajena. */
+  email: string | null;
+  firstName: string | null;
+  resellerName: string | null;
+  role: string | null;
+  /** `false` cuando esa persona ya tiene contraseña: entra con la suya. */
+  needsPassword: boolean;
+}
+
+export const invitacionService = {
+  ver: (token: string) =>
+    get<{ invitation: InvitacionDeSocio }>(
+      `/public/reseller-invitation/${encodeURIComponent(token)}`,
+    ),
+
+  aceptar: (token: string, password: string) =>
+    post<{ accepted: boolean; email: string | null }>(
+      `/public/reseller-invitation/${encodeURIComponent(token)}/accept`,
+      { password },
+    ),
 };
 
 export const portalService = {

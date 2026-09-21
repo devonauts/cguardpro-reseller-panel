@@ -98,10 +98,16 @@ export function Equipo() {
     setError(null);
     try {
       const r = await teamService.invitar({ email: email.trim(), role: rol });
-      setAviso(t(
-        r.needsPasswordSetup ? "equipo.invitadoSinContrasena" : "equipo.invitadoConContrasena",
-        { correo: email.trim() },
-      ));
+      /* Tres desenlaces, y se distinguen: la invitación salió y esa persona
+         tiene que crear su contraseña; salió y ya tiene una; o la membresía se
+         creó pero el correo NO salió — y eso hay que decirlo, porque si no
+         quien invita se queda esperando a alguien que no ha recibido nada. */
+      const clave = !r.invitationSent
+        ? "equipo.invitadoSinCorreo"
+        : r.needsPasswordSetup
+          ? "equipo.invitadoSinContrasena"
+          : "equipo.invitadoConContrasena";
+      setAviso(t(clave, { correo: email.trim() }));
       setEmail("");
       setAbierto(false);
       await cargar();

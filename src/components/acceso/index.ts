@@ -10,3 +10,4 @@
 export { TarjetaDeAcceso } from "./TarjetaDeAcceso";
 export { PanelDeMarca } from "./PanelDeMarca";
 export { Ventaja } from "./Ventaja";
+export { CamposDeClave, claveCompleta, evaluarClave } from "./CamposDeClave";

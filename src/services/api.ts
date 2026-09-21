@@ -135,6 +135,12 @@ export async function patch<T>(url: string, body?: any): Promise<T> {
   return desenvolver<T>(r.data);
 }
 
+/** `PUT` existe por UNA ruta: `/auth/password-reset`, que es un PUT de siempre. */
+export async function put<T>(url: string, body?: any): Promise<T> {
+  const r = await api.put(url, body);
+  return desenvolver<T>(r.data);
+}
+
 /**
  * Sube UN archivo como multipart.
  *

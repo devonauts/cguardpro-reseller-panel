@@ -9,6 +9,8 @@ import Cuenta from "@/pages/Cuenta";
 import Equipo from "@/pages/Equipo";
 import AuthLayout from "@/layouts/AuthLayout";
 import Login from "@/pages/Login";
+import Invitacion from "@/pages/Invitacion";
+import RestablecerContrasena from "@/pages/RestablecerContrasena";
 import Dashboard from "@/pages/Dashboard";
 import Branding from "@/pages/Branding";
 import Companies from "@/pages/Companies";
@@ -47,6 +49,22 @@ export default function App() {
             : <AuthLayout><Login /></AuthLayout>
         }
       />
+      {/* ── LAS DOS PUERTAS SIN SESIÓN ──────────────────────────────────────
+          Fuera de `ProtectedRoute` a propósito, y no es un descuido: quien
+          llega a activar su cuenta todavía no tiene contraseña —así que no
+          puede tener sesión— y quien llega a restablecerla la ha perdido.
+          Protegerlas las volvería inalcanzables justo para quien las necesita.
+
+          Tampoco rebotan a `/dashboard` cuando SÍ hay sesión: alguien puede
+          abrir el enlace de invitación de un compañero desde su propio
+          navegador, y mandarlo a su panel le ocultaría que ese enlace no era
+          para él. */}
+      <Route path="/invitacion" element={<AuthLayout><Invitacion /></AuthLayout>} />
+      <Route
+        path="/auth/password-reset"
+        element={<AuthLayout><RestablecerContrasena /></AuthLayout>}
+      />
+
       <Route
         path="/"
         element={<Navigate to={enAlta ? "/onboarding" : "/dashboard"} replace />}
