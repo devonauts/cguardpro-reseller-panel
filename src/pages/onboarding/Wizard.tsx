@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
 import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/cristal";
@@ -43,7 +42,6 @@ const TITULO: Record<PasoDelAlta, Clave> = {
 };
 
 export function Wizard() {
-  const navigate = useNavigate();
   const t = useT();
   const [est, setEst] = useState<EstadoDelAlta | null>(null);
   const [cargando, setCargando] = useState(true);
@@ -58,13 +56,12 @@ export function Wizard() {
       const r = await onboardingService.estado();
       setEst(r);
       setBorrador({});
-      if (r.completed) navigate("/dashboard", { replace: true });
     } catch (e: any) {
       setError(e?.message || t("alta.noCargo"));
     } finally {
       setCargando(false);
     }
-  }, [navigate, t]);
+  }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -79,10 +76,27 @@ export function Wizard() {
       if (paso === "publish") {
         const r = await onboardingService.completar();
         setEst(r);
-        navigate("/dashboard", { replace: true });
         return;
       }
-      const r = await onboardingService.avanzar(paso, borrador);
+      /* ── LO QUE SE VE ES LO QUE SE MANDA ──────────────────────────────
+         El paso de los colores EXIGE tono e intensidad, y el formulario ya
+         enseña los de fábrica (222 / 0.15) con la vista previa aplicada. Pero
+         si el socio no tocaba los deslizadores, el borrador iba vacío y el
+         servidor contestaba «Elige un color de marca» sobre una pantalla que
+         mostraba un color elegido. Quedarse mirando qué falta ahí es fácil.
+
+         Se manda lo que está a la vista. Son los MISMOS valores por defecto que
+         pinta `BrandingForm`: si algún día cambian allí, cambian aquí — por eso
+         el comentario nombra el archivo. */
+      const aEnviar = paso === "appearance"
+        ? {
+          brandHue: marca?.brandHue ?? 222,
+          brandChroma: marca?.brandChroma ?? 0.15,
+          ...borrador,
+        }
+        : borrador;
+
+      const r = await onboardingService.avanzar(paso, aEnviar);
       setEst(r);
       setBorrador({});
     } catch (e: any) {
@@ -117,7 +131,9 @@ export function Wizard() {
       </div>
       <div className="alta__caja">
         <EstadoDeDatos cargando={cargando} error={!est ? error : null} onReintentar={cargar}>
-          {est && paso && paso !== "completed" && marca && (
+          {est && est.completed && <Final est={est} />}
+
+          {est && !est.completed && paso && paso !== "completed" && marca && (
             <>
               <header className="alta__cabecera">
                 <p className="alta__contador">
@@ -163,6 +179,52 @@ export function Wizard() {
         </EstadoDeDatos>
       </div>
     </main>
+  );
+}
+
+/* ── El final ────────────────────────────────────────────────────────────── */
+
+/**
+ * LO QUE VE EL SOCIO CUANDO TERMINA, y por qué hacía falta.
+ *
+ * El asistente terminaba con `navigate("/dashboard")`. Pero terminar el alta NO
+ * activa comercialmente al socio —eso lo decide CGuardPro, y es deliberado—, así
+ * que su estado sigue siendo `pending`; y con `pending`, `App.tsx` manda de
+ * vuelta a `/onboarding`, que al ver el alta completada volvía a `/dashboard`.
+ * Un bucle, y en pantalla un «Cargando…» que no se iba nunca. Justo en el
+ * último clic del alta, que es el peor sitio donde dejar a alguien tirado.
+ *
+ * Ahora el asistente se cierra él mismo: enseña qué quedó publicado, dice qué
+ * falta —que lo activemos— y a dónde escribir. Cuando superadmin lo active, el
+ * estado deja de ser `pending`, `App.tsx` ya no manda aquí y el socio entra a su
+ * panel sin tener que hacer nada.
+ */
+function Final({ est }: { est: EstadoDelAlta }) {
+  const t = useT();
+  const anfitrion = est.platformHostname;
+
+  return (
+    <>
+      <header className="alta__cabecera">
+        <p className="alta__contador">{t("alta.finalRotulo")}</p>
+        <h1 className="alta__titulo">{t("alta.finalTitulo")}</h1>
+        <div className="alta__barra" aria-hidden="true">
+          <span className="alta__progreso" style={{ width: "100%" }} />
+        </div>
+      </header>
+
+      <div className="alta__cuerpo">
+        <p className="alta__texto">{t("alta.finalSub")}</p>
+
+        <dl className="alta__datos">
+          <Dato etiqueta={t("alta.finalNombre")} valor={est.branding.platformName} />
+          {anfitrion && <Dato etiqueta={t("alta.finalDireccion")} valor={anfitrion} />}
+          <Dato etiqueta={t("alta.finalSoporte")} valor={est.branding.supportEmail} />
+        </dl>
+
+        <p className="alta__apunte">{t("alta.finalQueSigue")}</p>
+      </div>
+    </>
   );
 }
 
