@@ -322,7 +322,7 @@ export const en = {
   "marca.campoSaludo": "How it greets",
   "marca.campoSaludoAyuda": "The line in the empty window, before the first message. Screen text only.",
   "marca.tonoLeyenda": "How it speaks",
-  "marca.tonoAyuda": "Changes the register and the shape of the answers. It never changes what the assistant can do or what data it reaches: each person's permissions decide that.",
+  "marca.tonoAyuda": "Changes the register and the shape of the answers. Pick none and it speaks the way it always has. It never changes what the assistant can do or what data it reaches: each person's permissions decide that.",
   "marca.tono.cercano": "Warm",
   "marca.tono.formal": "Formal",
   "marca.tono.directo": "Direct",

@@ -312,7 +312,7 @@ export const es: Record<Clave, string> = {
   "marca.campoSaludo": "Con qué recibe",
   "marca.campoSaludoAyuda": "La frase de la ventana vacía, antes del primer mensaje. Es sólo texto de pantalla.",
   "marca.tonoLeyenda": "Cómo habla",
-  "marca.tonoAyuda": "Cambia el trato y la forma de las respuestas. Nunca cambia lo que el asistente puede hacer ni a qué datos llega: eso lo deciden los permisos de cada persona.",
+  "marca.tonoAyuda": "Cambia el trato y la forma de las respuestas. Si no eliges ninguno, habla como viene de fábrica. Nunca cambia lo que el asistente puede hacer ni a qué datos llega: eso lo deciden los permisos de cada persona.",
   "marca.tono.cercano": "Cercano",
   "marca.tono.formal": "Formal",
   "marca.tono.directo": "Directo",

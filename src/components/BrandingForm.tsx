@@ -159,7 +159,12 @@ export function BrandingForm({
                   type="radio"
                   name="tono-del-agente"
                   value={tono}
-                  checked={(marca.agentTone ?? "cercano") === tono}
+                  /* Sin fallback a «cercano». Preseleccionarlo pintaba una
+                     opción marcada que NO estaba guardada: el socio leía
+                     «Cercano» y el asistente hablaba como siempre, porque sin
+                     tono el prompt no lleva línea de tono. Un radio marcado
+                     tiene que significar que alguien lo marcó. */
+                  checked={marca.agentTone === tono}
                   disabled={deshabilitado}
                   onChange={() => onCambio({ agentTone: tono })}
                 />

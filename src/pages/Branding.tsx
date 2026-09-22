@@ -133,6 +133,15 @@ export function Branding() {
                 <BrandingForm
                   marca={borrador}
                   onCambio={cambiar}
+                  /* La lista es OBLIGATORIA aquí, no un adorno: sin ella el
+                     formulario pinta TODO lo editable, y al añadir los campos
+                     del asistente salieron dos veces — una en esta tarjeta y
+                     otra en la suya. Nombrar lo que entra hace que el próximo
+                     campo nuevo aparezca sólo donde alguien lo ponga. */
+                  campos={[
+                    "platformName", "loginTagline", "brandHue", "brandChroma",
+                    "supportEmail", "supportPhone", "supportUrl",
+                  ]}
                   ranuras={["logo", "favicon", "emailLogo"]}
                   onImagenSubida={setBorrador}
                   deshabilitado={publicando}
