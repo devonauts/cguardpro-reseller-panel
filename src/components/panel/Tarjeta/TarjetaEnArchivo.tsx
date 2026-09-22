@@ -3,7 +3,7 @@ import { loadStripe, type Stripe, type StripeCardElement } from "@stripe/stripe-
 
 import { Boton, Icono, Panel } from "@/components/cristal";
 import { billingService, type TarjetaDelSocio } from "@/services/resellerService";
-import { useT } from "@/i18n/IdiomaProvider";
+import { useIdioma } from "@/i18n/IdiomaProvider";
 import "./TarjetaEnArchivo.scss";
 
 /**
@@ -43,7 +43,7 @@ const MARCAS: Record<string, string> = {
 };
 
 export function TarjetaEnArchivo() {
-  const t = useT();
+  const { t, idioma } = useIdioma();
   const [tarjeta, setTarjeta] = useState<TarjetaDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +97,11 @@ export function TarjetaEnArchivo() {
       if (!stripe) throw new Error(t("tarjeta.noStripe"));
       stripeRef.current = stripe;
 
-      const elements = stripe.elements();
+      /* El idioma del campo lo pone Stripe, y por defecto lo saca del
+         navegador: un socio con Chrome en inglés veía «Card number» dentro de
+         un panel en español. Se le pasa el del PANEL, que es el que la persona
+         eligió. */
+      const elements = stripe.elements({ locale: idioma });
       const campo = elements.create("card", {
         hidePostalCode: true,
         /* El iframe de Stripe no hereda nuestras hojas: los colores se le pasan
