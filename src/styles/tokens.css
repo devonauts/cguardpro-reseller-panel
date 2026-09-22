@@ -168,6 +168,18 @@
   --danger-line: oklch(0.68 0.19 25 / 0.32);
   --danger-hover: oklch(0.68 0.19 25 / 0.24);
 
+  /* ── El oro ──────────────────────────────────────────────────────────────
+     El dorado de C-Guard Pro (#C8860A), subido de luminosidad para que sobre
+     el grafito del panel se lea como ORO y no como marrón: a 0.67 —el valor
+     exacto de la marca, pensado para papel y para correo sobre blanco— un
+     icono de 18 px se apaga contra `--surface-raised`.
+
+     NO es un estado, y por eso no vive con `--ok`/`--warn`/`--danger`: no
+     avisa de nada. Es distinción — la corona del socio. Usarlo para un aviso
+     lo gastaría, y el día que todo es oro nada lo es. */
+  --gold: oklch(0.80 0.13 80);
+  --gold-soft: oklch(0.80 0.13 80 / 0.16);
+
   /* ── Ritmo ─────────────────────────────────────────────────────────────── */
   /* Radios en escala, no a ojo. Lo grande se redondea más que lo pequeño:
      es lo que hace que un conjunto parezca fabricado y no dibujado. La forma

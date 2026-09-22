@@ -100,7 +100,9 @@
   border-radius: var(--r-md);
 }
 
-.rail__socio-icono { color: var(--text-secondary); display: grid; place-items: center; }
+/* La corona va en ORO: es la única pieza del panel que distingue a quien lo
+   usa, y en gris de texto se leía como un icono de lista más. */
+.rail__socio-icono { color: var(--gold); display: grid; place-items: center; }
 .rail__socio-texto { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 
 .rail__socio-rotulo {
