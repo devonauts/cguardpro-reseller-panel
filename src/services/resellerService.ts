@@ -621,6 +621,18 @@ export interface TotalPorMoneda {
   outstandingCents: number;
 }
 
+/** Lo que el panel sabe de la tarjeta. Nunca el número. */
+export interface TarjetaDelSocio {
+  hasCard: boolean;
+  brand: string | null;
+  last4: string | null;
+  expMonth: number | null;
+  expYear: number | null;
+  validatedAt: string | null;
+  /** `true` cuando ya no se puede quitar, sólo sustituir. */
+  locked: boolean;
+}
+
 export const billingService = {
   list: (params: { limit?: number } = {}) =>
     get<{
@@ -632,6 +644,26 @@ export const billingService = {
 
   detail: (invoiceId: string) =>
     get<FacturaDetallada>(`/reseller/billing/invoices/${invoiceId}`),
+
+  /* ── LA TARJETA EN ARCHIVO ───────────────────────────────────────────────
+     El número NUNCA pasa por aquí: lo recoge Stripe en su propio iframe y a
+     nosotros nos vuelve una referencia (`pm_…`) que es la que se confirma. */
+
+  tarjeta: () => get<{ card: TarjetaDelSocio }>("/reseller/billing/payment-method"),
+
+  /** Abre el permiso para guardar una tarjeta. Devuelve lo que Stripe.js pide. */
+  intentoDeGuardado: () =>
+    post<{ clientSecret: string; customerId: string; publishableKey: string }>(
+      "/reseller/billing/payment-method/setup-intent", {},
+    ),
+
+  confirmarTarjeta: (paymentMethodId: string) =>
+    post<{ card: TarjetaDelSocio }>(
+      "/reseller/billing/payment-method/confirm", { paymentMethodId },
+    ),
+
+  /** El servidor lo RECHAZA si la tarjeta ya fue validada. */
+  quitarTarjeta: () => del<{ removed: boolean }>("/reseller/billing/payment-method"),
 
   /** La dirección del PDF. Se abre; no se descarga por JavaScript. */
   pdfUrl: (invoiceId: string) =>

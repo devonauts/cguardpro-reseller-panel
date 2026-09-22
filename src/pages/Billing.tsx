@@ -9,6 +9,7 @@ import {
   type FacturaDetallada, type FacturaEnLista, type LineaDeFactura,
   type TerminosVigentes, type TotalPorMoneda,
 } from "@/services/resellerService";
+import { TarjetaEnArchivo } from "@/components/panel/Tarjeta";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 /* El formateador de dinero es el de `lib/dinero`, no uno propio.
@@ -108,6 +109,13 @@ export function Billing() {
           <p className="cabecera__sub">{t("facturacion.sub")}</p>
         </div>
       </header>
+
+      {/* ── LA TARJETA, FUERA DEL ESTADO DE DATOS ──────────────────────────
+          Va antes del `EstadoDeDatos` a propósito: es lo único de esta pantalla
+          que sigue teniendo sentido cuando todavía NO hay facturas. Dentro, un
+          socio recién dado de alta —el que más falta le hace dejar la tarjeta—
+          vería el vacío de facturas y ningún sitio donde ponerla. */}
+      <TarjetaEnArchivo />
 
       <EstadoDeDatos
         cargando={cargando}

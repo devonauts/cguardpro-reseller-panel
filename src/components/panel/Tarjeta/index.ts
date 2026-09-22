@@ -1,0 +1,1 @@
+export { TarjetaEnArchivo } from "./TarjetaEnArchivo";
