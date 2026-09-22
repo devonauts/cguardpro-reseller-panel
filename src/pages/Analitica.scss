@@ -1,0 +1,13 @@
+.analitica { display: flex; flex-direction: column; gap: var(--s-4); max-width: 46ch; }
+
+.analitica__donde,
+.analitica__eventos {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.analitica__error { font-size: 13px; color: var(--danger); }
+.analitica__aviso { font-size: 13px; color: var(--ok); }
+
+.analitica__pie { display: flex; justify-content: flex-start; }

@@ -417,6 +417,24 @@ export const invitacionService = {
     ),
 };
 
+export interface AnaliticaDelSocio {
+  ga4MeasurementId: string | null;
+  gtmContainerId: string | null;
+}
+
+/* ── LA MEDICIÓN ───────────────────────────────────────────────────────────
+   Se guarda el IDENTIFICADOR, nunca una etiqueta ni un script: el `<script>`
+   lo compone el CRM a partir de él. Lo contrario sería poder inyectar código
+   en un anfitrión que sirve CGuardPro. */
+export const analiticaService = {
+  leer: () =>
+    get<{ analytics: AnaliticaDelSocio; appliesTo: string | null }>("/reseller/analytics"),
+
+  /** Cadena vacía en cualquiera de los dos lo BORRA. */
+  guardar: (datos: AnaliticaDelSocio) =>
+    patch<{ analytics: AnaliticaDelSocio }>("/reseller/analytics", datos),
+};
+
 export const portalService = {
   contrato: () => get<{ contract: ContratoDelSocio | null }>("/reseller/contract"),
   derechos: () => get<DerechosDelSocio>("/reseller/entitlements"),

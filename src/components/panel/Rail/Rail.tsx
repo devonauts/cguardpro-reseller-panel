@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 
 import { Icono, Marca, type NombreDeIcono } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
@@ -31,6 +32,14 @@ interface Entrada {
   icono: NombreDeIcono;
   texto: Clave;
   /**
+   * Las secciones que cuelgan de ésta.
+   *
+   * Un grupo NO es un enlace: pulsarlo abre o cierra, no navega. Por eso su
+   * `a` sirve sólo de prefijo para saber si alguno de sus hijos está activo —
+   * y por eso el grupo se pinta como `<button>` y no como `<NavLink>`.
+   */
+  hijos?: Entrada[];
+  /**
    * El icono va en ORO en vez del gris de la navegación. Es distinción, no
    * estado: el oro aquí no avisa de nada — ver `--gold` en tokens.css.
    */
@@ -48,22 +57,42 @@ interface Entrada {
 const NAV: Entrada[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
-  { a: "/domains", icono: "globo", texto: "nav.dominios" },
-  { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },
   { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
 ];
 
+/**
+ * ── POR QUÉ MARCA Y DOMINIOS BAJAN A AJUSTES ──────────────────────────────
+ * Las dos son CONFIGURACIÓN de la cuenta: se tocan al montar el negocio y
+ * luego casi nunca. Arriba competían a diario con las cuatro que sí se usan
+ * —tablero, empresas, equipo, facturación— y alargaban la lista principal a
+ * seis entradas de peso desigual.
+ *
+ * El grupo conserva `/account` como destino de su propia pantalla; lo que
+ * cuelga son las otras tres.
+ */
 const NAV_SECUNDARIA: Entrada[] = [
   { a: "/usage", icono: "grafico", texto: "nav.consumo" },
   { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/contract", icono: "escudo", texto: "nav.contrato" },
   { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
-  { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
+  {
+    a: "/account",
+    icono: "engranaje",
+    texto: "nav.ajustesCorto",
+    hijos: [
+      { a: "/account", icono: "engranaje", texto: "nav.cuenta" },
+      { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
+      { a: "/domains", icono: "globo", texto: "nav.dominios" },
+      { a: "/analytics", icono: "grafico", texto: "nav.analitica" },
+    ],
+  },
 ];
 
 function Enlace({ entrada }: { entrada: Entrada }) {
   const t = useT();
+  if (entrada.hijos?.length) return <Grupo entrada={entrada} />;
+
   return (
     <li>
       <NavLink
@@ -77,6 +106,74 @@ function Enlace({ entrada }: { entrada: Entrada }) {
         />
         <span>{t(entrada.texto)}</span>
       </NavLink>
+    </li>
+  );
+}
+
+/**
+ * Una sección con lo suyo dentro.
+ *
+ * ── SE ABRE SOLO CUANDO ESTÁS DENTRO ──────────────────────────────────────
+ * Si la ruta actual es una de las hijas, el grupo nace abierto: llegar a
+ * «Marca» por un enlace y encontrarse el menú cerrado deja a la persona sin
+ * saber dónde está. A partir de ahí manda lo que ella pulse — por eso el
+ * estado arranca del sitio y no se recalcula en cada render.
+ *
+ * ── EL GRUPO NO NAVEGA ────────────────────────────────────────────────────
+ * Es un `<button>` con `aria-expanded`, no un enlace. Un elemento que a veces
+ * abre y a veces navega enseña a desconfiar de él; y para «Tu cuenta», que es
+ * la pantalla del propio grupo, hay una entrada hija con su nombre.
+ */
+function Grupo({ entrada }: { entrada: Entrada }) {
+  const t = useT();
+  const { pathname } = useLocation();
+  const hijos = entrada.hijos ?? [];
+  const dentro = hijos.some((h) => pathname === h.a || pathname.startsWith(`${h.a}/`));
+  const [abierto, setAbierto] = useState(dentro);
+
+  /* Si la navegación entra en el grupo desde fuera —un enlace del tablero, una
+     URL pegada— se abre. No se cierra solo al salir: cerrarle a alguien el
+     menú que acaba de usar es perderle el sitio. */
+  useEffect(() => { if (dentro) setAbierto(true); }, [dentro]);
+
+  return (
+    <li>
+      <button
+        type="button"
+        className={`rail__enlace rail__grupo${dentro ? " rail__enlace--activo" : ""}`}
+        aria-expanded={abierto}
+        onClick={() => setAbierto((v) => !v)}
+      >
+        <Icono nombre={entrada.icono} tamano={19} />
+        <span>{t(entrada.texto)}</span>
+        <Icono
+          nombre="galon"
+          tamano={16}
+          className={`rail__galon${abierto ? " rail__galon--abierto" : ""}`}
+        />
+      </button>
+
+      {abierto && (
+        <ul className="rail__submenu">
+          {hijos.map((h) => (
+            <li key={h.a}>
+              <NavLink
+                end
+                to={h.a}
+                className={({ isActive }) =>
+                  `rail__enlace rail__subenlace${isActive ? " rail__enlace--activo" : ""}`}
+              >
+                <Icono
+                  nombre={h.icono}
+                  tamano={17}
+                  className={h.dorado ? "icono--oro" : ""}
+                />
+                <span>{t(h.texto)}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   );
 }

@@ -5,6 +5,7 @@ import Contrato from "@/pages/Contrato";
 import Derechos from "@/pages/Derechos";
 import Dominios from "@/pages/Dominios";
 import Actividad from "@/pages/Actividad";
+import Analitica from "@/pages/Analitica";
 import Cuenta from "@/pages/Cuenta";
 import Equipo from "@/pages/Equipo";
 import AuthLayout from "@/layouts/AuthLayout";
@@ -91,6 +92,7 @@ export default function App() {
       <Route path="/domains" element={<ProtectedRoute><Dominios /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Actividad /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><Analitica /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><Equipo /></ProtectedRoute>} />
       <Route path="/companies/new" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
       <Route path="/companies/:tenantId" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
