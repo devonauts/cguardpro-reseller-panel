@@ -1,7 +1,8 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { Boton, Campo } from "@/components/cristal";
 import {
-  brandingService, type Marca, type MarcaEditable, type RanuraDeImagen,
+  brandingService, TONOS_DEL_AGENTE,
+  type Marca, type MarcaEditable, type RanuraDeImagen,
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
@@ -136,6 +137,55 @@ export function BrandingForm({
         />
       )}
 
+      {muestra("agentName") && (
+        <Campo
+          etiqueta={t("marca.campoAgente")}
+          value={marca.agentName ?? ""}
+          maxLength={40}
+          disabled={deshabilitado}
+          ayuda={t("marca.campoAgenteAyuda")}
+          onChange={(e) => onCambio({ agentName: e.target.value })}
+        />
+      )}
+
+      {muestra("agentTone") && (
+        <fieldset className="marca-form__grupo">
+          <legend className="marca-form__leyenda">{t("marca.tonoLeyenda")}</legend>
+          <p className="marca-form__ayuda">{t("marca.tonoAyuda")}</p>
+          <div className="marca-form__tonos">
+            {TONOS_DEL_AGENTE.map((tono) => (
+              <label key={tono} className="marca-form__tono">
+                <input
+                  type="radio"
+                  name="tono-del-agente"
+                  value={tono}
+                  checked={(marca.agentTone ?? "cercano") === tono}
+                  disabled={deshabilitado}
+                  onChange={() => onCambio({ agentTone: tono })}
+                />
+                <span className="marca-form__tono-nombre">
+                  {t(`marca.tono.${tono}` as Clave)}
+                </span>
+                <span className="marca-form__tono-ejemplo">
+                  {t(`marca.tonoEjemplo.${tono}` as Clave)}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
+
+      {muestra("agentGreeting") && (
+        <Campo
+          etiqueta={t("marca.campoSaludo")}
+          value={marca.agentGreeting ?? ""}
+          maxLength={120}
+          disabled={deshabilitado}
+          ayuda={t("marca.campoSaludoAyuda")}
+          onChange={(e) => onCambio({ agentGreeting: e.target.value })}
+        />
+      )}
+
       {ranuras.map((r) => (
         <SubidaDeImagen
           key={r}
@@ -195,6 +245,7 @@ const ETIQUETA_RANURA: Record<RanuraDeImagen, { titulo: Clave; nota: Clave }> = 
   markDark: { titulo: "marca.ranuraMarkDark", nota: "marca.ranuraMarkDarkNota" },
   favicon: { titulo: "marca.ranuraFavicon", nota: "marca.ranuraFaviconNota" },
   emailLogo: { titulo: "marca.ranuraEmailLogo", nota: "marca.ranuraEmailLogoNota" },
+  agentAvatar: { titulo: "marca.ranuraAgentAvatar", nota: "marca.ranuraAgentAvatarNota" },
 };
 
 function SubidaDeImagen({

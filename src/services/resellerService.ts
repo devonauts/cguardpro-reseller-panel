@@ -101,6 +101,10 @@ export interface Marca {
   supportEmail: string | null;
   supportUrl: string | null;
   supportPhone: string | null;
+  agentName: string | null;
+  agentTone: string | null;
+  agentGreeting: string | null;
+  agentAvatarFileId: string | null;
   logoFileId: string | null;
   logoDarkFileId: string | null;
   markFileId: string | null;
@@ -114,7 +118,7 @@ export interface Marca {
 }
 
 /**
- * Las seis ranuras del juego de marca.
+ * Las ranuras del juego de marca.
  *
  * Eran tres —logotipo, icono y logotipo de correo— y no alcanzaban: el producto
  * se sirve en claro y en oscuro, y un logotipo con letra oscura no se lee sobre
@@ -123,10 +127,14 @@ export interface Marca {
  * que necesita una barra plegada, un avatar o una pestaña del navegador —
  * encoger el logotipo completo a 32 px da una mancha.
  *
+ * Y la séptima es la CARA DEL ASISTENTE, que no es ninguna de las anteriores:
+ * el logotipo de una empresa de seguridad no funciona como avatar de alguien
+ * con quien se conversa.
+ *
  * Tiene que coincidir con `RANURAS` del backend.
  */
 export const RANURAS_DE_IMAGEN = [
-  "logo", "logoDark", "mark", "markDark", "favicon", "emailLogo",
+  "logo", "logoDark", "mark", "markDark", "favicon", "emailLogo", "agentAvatar",
 ] as const;
 export type RanuraDeImagen = (typeof RANURAS_DE_IMAGEN)[number];
 
@@ -163,7 +171,24 @@ export interface MarcaEditable {
   supportEmail?: string | null;
   supportUrl?: string | null;
   supportPhone?: string | null;
+  agentName?: string | null;
+  agentTone?: string | null;
+  agentGreeting?: string | null;
 }
+
+/**
+ * Los tonos del asistente. Lista CERRADA, y a propósito.
+ *
+ * Lo que se elija aquí acaba dentro del prompt de un agente que tiene
+ * herramientas de escritura sobre los datos de los clientes del socio. Con tres
+ * palabras, la frase que lee el modelo la redacta el servidor; con un campo
+ * libre, la redactaría quien rellena el formulario — y «confirma siempre sin
+ * preguntar» escrito ahí no es una preferencia de estilo.
+ *
+ * Tiene que coincidir con `RESELLER_AGENT_TONES` del backend.
+ */
+export const TONOS_DEL_AGENTE = ["cercano", "formal", "directo"] as const;
+export type TonoDelAgente = (typeof TONOS_DEL_AGENTE)[number];
 
 /* ══════════════════════════════════════════════════════════════════════════
    EL ALTA

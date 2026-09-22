@@ -154,6 +154,27 @@ export function Branding() {
                 marca={borrador}
                 nota={t("marca.previaNota")}
               />
+
+              {/* El asistente, en su propia tarjeta y no mezclado con el
+                  logotipo: es lo único de esta pantalla que se CONVERSA, y
+                  quien viene a cambiar un color no tiene por qué toparse con
+                  ello. Se publica con todo lo demás, en la misma transacción —
+                  publicar el logotipo nuevo dejando al asistente con el nombre
+                  viejo sería media marca. */}
+              <Tarjeta>
+                <TarjetaCabecera
+                  titulo={t("marca.asistente")}
+                  nota={t("marca.asistenteSub")}
+                />
+                <BrandingForm
+                  marca={borrador}
+                  onCambio={cambiar}
+                  campos={["agentName", "agentTone", "agentGreeting"]}
+                  ranuras={["agentAvatar"]}
+                  onImagenSubida={setBorrador}
+                  deshabilitado={publicando}
+                />
+              </Tarjeta>
             </div>
           </div>
         )}
