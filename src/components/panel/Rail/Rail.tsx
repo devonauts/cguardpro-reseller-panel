@@ -30,6 +30,11 @@ interface Entrada {
   a: string;
   icono: NombreDeIcono;
   texto: Clave;
+  /**
+   * El icono va en ORO en vez del gris de la navegación. Es distinción, no
+   * estado: el oro aquí no avisa de nada — ver `--gold` en tokens.css.
+   */
+  dorado?: boolean;
 }
 
 /**
@@ -53,7 +58,7 @@ const NAV_SECUNDARIA: Entrada[] = [
   { a: "/usage", icono: "grafico", texto: "nav.consumo" },
   { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/contract", icono: "escudo", texto: "nav.contrato" },
-  { a: "/entitlements", icono: "corona", texto: "nav.derechos" },
+  { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
   { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
 ];
 
@@ -65,7 +70,11 @@ function Enlace({ entrada }: { entrada: Entrada }) {
         to={entrada.a}
         className={({ isActive }) => `rail__enlace${isActive ? " rail__enlace--activo" : ""}`}
       >
-        <Icono nombre={entrada.icono} tamano={19} />
+        <Icono
+          nombre={entrada.icono}
+          tamano={19}
+          className={entrada.dorado ? "icono--oro" : ""}
+        />
         <span>{t(entrada.texto)}</span>
       </NavLink>
     </li>

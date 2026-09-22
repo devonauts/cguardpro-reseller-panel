@@ -133,3 +133,9 @@ a:hover { text-decoration-color: var(--text-primary); }
   border: 2px solid var(--canvas);
 }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* ── EL ICONO EN ORO ────────────────────────────────────────────────────────
+   Lo llevan las entradas de navegación que lo declaran (`dorado`) y el bloque
+   del socio en el raíl. Es distinción, no estado: el oro no avisa de nada aquí,
+   y por eso no se pinta con `--warn`. Ver `--gold` en tokens.css. */
+.icono--oro { color: var(--gold); }

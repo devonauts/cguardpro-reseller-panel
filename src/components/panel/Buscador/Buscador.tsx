@@ -26,7 +26,14 @@ import "./Buscador.scss";
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-interface Seccion { a: string; icono: NombreDeIcono; texto: Clave; }
+interface Seccion {
+  a: string;
+  icono: NombreDeIcono;
+  texto: Clave;
+  /** Mismo oro que en el raíl: la sección se ve igual se llegue por donde se
+   *  llegue. Ver `--gold`. */
+  dorado?: boolean;
+}
 
 const SECCIONES: Seccion[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
@@ -38,7 +45,7 @@ const SECCIONES: Seccion[] = [
   { a: "/usage", icono: "grafico", texto: "nav.consumo" },
   { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/contract", icono: "escudo", texto: "nav.contrato" },
-  { a: "/entitlements", icono: "corona", texto: "nav.derechos" },
+  { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
   { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
 ];
 
@@ -125,7 +132,11 @@ export function Buscador() {
                   <p className="buscador__grupo">{t("buscador.secciones")}</p>
                   {secciones.map((s) => (
                     <button key={s.a} type="button" className="buscador__item" onClick={() => ir(s.a)}>
-                      <Icono nombre={s.icono} tamano={17} />
+                      <Icono
+                        nombre={s.icono}
+                        tamano={17}
+                        className={s.dorado ? "icono--oro" : ""}
+                      />
                       {t(s.texto)}
                     </button>
                   ))}
