@@ -121,7 +121,13 @@ export function mesDelPeriodo(label: string | null | undefined): string {
  * más despacio que «$1,500». Aquí se usa el símbolo corto del idioma y los
  * decimales sólo cuando los hay.
  */
-export function precio(cents: number | null | undefined, moneda = "USD"): string {
+export function precio(
+  cents: number | null | undefined,
+  moneda = "USD",
+  /** Con el código («MXN 60») en vez del símbolo: cuando conviven dos monedas
+      con el mismo «$», el símbolo solo no dice cuál es. */
+  conCodigo = false,
+): string {
   if (cents === null || cents === undefined) return "—";
   const n = Number(cents);
   if (!Number.isFinite(n)) return "—";
@@ -130,7 +136,7 @@ export function precio(cents: number | null | undefined, moneda = "USD"): string
     return new Intl.NumberFormat(etiquetaIntl(), {
       style: "currency",
       currency: moneda,
-      currencyDisplay: "narrowSymbol",
+      currencyDisplay: conCodigo ? "code" : "narrowSymbol",
       minimumFractionDigits: entero ? 0 : 2,
       maximumFractionDigits: entero ? 0 : 2,
     }).format(n / 100);

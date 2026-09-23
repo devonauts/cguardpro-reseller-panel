@@ -226,10 +226,18 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
 
 /* ── 2. Los precios ──────────────────────────────────────────────────────── */
 
+/**
+ * Los precios del socio, EN SU MONEDA, y cómo cuadran con lo que paga a la
+ * plataforma en la del contrato. Todo se convierte al tipo de REFERENCIA del
+ * día que manda el servidor: lo que recibe de verdad lo fija su pasarela.
+ */
 function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestiona: boolean; onCambio: () => void }) {
   const t = useT();
   const p = datos.pricing;
   const min = datos.minimums;
+  const fx = datos.fx;
+  const base = fx?.base ?? min.currency;
+  const monedas = datos.currencies?.length ? datos.currencies : [min.currency];
   const [f, setF] = useState(() => ({
     currency: p?.currency ?? min.currency,
     perUser: aTexto(p?.perUserCents ?? min.perUserCents),
@@ -242,13 +250,30 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
 
+  /* La conversión, mientras escribe. `tasa` = unidades de su moneda por 1 del contrato. */
+  const tasa = f.currency === base ? 1 : (fx?.rates?.[f.currency] ?? null);
+  const aBase = (c: number | null) => (c == null || !tasa ? null : Math.round(c / tasa));
+  const enSuMoneda = (c: number) => (tasa ? Math.ceil(c * tasa) : null);
+  const minPorUsuario = enSuMoneda(min.perUserCents);
+  const minMensual = enSuMoneda(min.monthlyFeeCents);
+  const otraMoneda = f.currency !== base;
+  // Con dos monedas en pantalla, siempre con su código: «MXN 60», «USD 2.50».
+  const $b = (c: number | null) => (c == null ? "—" : precio(c, base, otraMoneda));
+  const $m = (c: number | null) => (c == null ? "—" : precio(c, f.currency, otraMoneda));
+
+  const porUsuario = aCentavos(f.perUser);
+  const mensual = aCentavos(f.monthly);
+  const plataforma = datos.platform;
+  const margen = porUsuario != null && !Number.isNaN(porUsuario) && plataforma && tasa
+    ? aBase(porUsuario)! - plataforma.perUserCents : null;
+
   const guardar = async () => {
     setError(null);
     setAviso(null);
     const cuerpo: PreciosAEmpresas = {
-      currency: f.currency.toUpperCase(),
-      perUserCents: aCentavos(f.perUser) ?? 0,
-      monthlyFeeCents: aCentavos(f.monthly) ?? 0,
+      currency: f.currency,
+      perUserCents: porUsuario ?? 0,
+      monthlyFeeCents: mensual ?? 0,
       setupFeeCents: aCentavos(f.setup) ?? 0,
       trialDays: Number(f.trialDays) || 0,
       graceDays: Number(f.graceDays) || 0,
@@ -275,6 +300,15 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
     disabled: !gestiona,
   });
 
+  /* «Mínimo: MXN 45.00 (USD 2.50)» — en su moneda, y en la del contrato si es otra. */
+  const ayudaMinimo = (enMoneda: number | null, enBase: number) => (
+    enBase <= 0 ? t("cobros.sinMinimo")
+      : otraMoneda
+        ? t("cobros.minimoConvertido", { p: $m(enMoneda), b: $b(enBase) })
+        : t("cobros.minimo", { p: $b(enBase) })
+  );
+  const equivalente = (c: number | null) => (otraMoneda && c != null && !Number.isNaN(c) ? ` · ≈ ${$b(aBase(c))}` : "");
+
   return (
     <section className="bloque" aria-labelledby="cobros-precios">
       <header className="bloque__cabecera">
@@ -282,16 +316,78 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
       </header>
       <p className="bloque__nota">{t("cobros.preciosSub")}</p>
 
+      {datos.belowMinimum && (
+        <p role="alert" className="cobros__alerta">{t("cobros.debajoDelMinimo")}</p>
+      )}
+
       <div className="cobros-precios">
+        <label className="cobros-moneda">
+          <span className="cobros-moneda__etiqueta">{t("cobros.moneda")}</span>
+          <select
+            className="cobros-moneda__control"
+            value={f.currency}
+            disabled={!gestiona}
+            onChange={(e) => setF((v) => ({ ...v, currency: e.target.value }))}
+          >
+            {monedas.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+          {otraMoneda && (
+            <span className="cobros-moneda__tasa">
+              {tasa ? t("cobros.tasa", { b: base, x: tasa.toFixed(tasa >= 100 ? 0 : 2), m: f.currency }) : t("cobros.sinTasa")}
+            </span>
+          )}
+        </label>
         <Campo etiqueta={t("cobros.porUsuario")} inputMode="decimal" {...campo("perUser")}
-          ayuda={t("cobros.minimo", { p: precio(min.perUserCents, min.currency) })} />
+          ayuda={ayudaMinimo(minPorUsuario, min.perUserCents) + equivalente(porUsuario)} />
         <Campo etiqueta={t("cobros.cuotaMensual")} inputMode="decimal" {...campo("monthly")}
-          ayuda={min.monthlyFeeCents > 0 ? t("cobros.minimo", { p: precio(min.monthlyFeeCents, min.currency) }) : t("cobros.sinMinimo")} />
-        <Campo etiqueta={t("cobros.cuotaAlta")} inputMode="decimal" {...campo("setup")} ayuda={t("cobros.cuotaAltaAyuda")} />
-        <Campo etiqueta={t("cobros.moneda")} maxLength={3} {...campo("currency")} />
+          ayuda={ayudaMinimo(minMensual, min.monthlyFeeCents) + equivalente(mensual)} />
+        <Campo etiqueta={t("cobros.cuotaAlta")} inputMode="decimal" {...campo("setup")}
+          ayuda={t("cobros.cuotaAltaAyuda") + equivalente(aCentavos(f.setup))} />
         <Campo etiqueta={t("cobros.diasPrueba")} inputMode="numeric" {...campo("trialDays")} />
         <Campo etiqueta={t("cobros.diasGracia")} inputMode="numeric" {...campo("graceDays")} ayuda={t("cobros.diasGraciaAyuda")} />
       </div>
+
+      {/* ── CÓMO CUADRA ─────────────────────────────────────────────────── */}
+      {plataforma && (
+        <div className="cuadre">
+          <h3 className="cuadre__titulo">{t("cobros.cuadreTitulo")}</h3>
+          <ul className="cuadre__lineas">
+            <li>
+              <span>{t("cobros.cuadreCobras")}</span>
+              <strong>{$m(porUsuario)}{otraMoneda ? ` ≈ ${$b(aBase(porUsuario))}` : ""}</strong>
+            </li>
+            <li>
+              <span>{t("cobros.cuadreNosPagas")}</span>
+              <strong>{$b(plataforma.perUserCents)}</strong>
+            </li>
+            <li className={`cuadre__total${margen != null && margen < 0 ? " cuadre__total--negativo" : ""}`}>
+              <span>{t("cobros.cuadreTeQueda")}</span>
+              <strong>
+                {margen == null ? "—" : `≈ ${$b(margen)}`}
+                {margen != null && otraMoneda ? ` (${$m(enSuMoneda(margen))})` : ""}
+              </strong>
+            </li>
+          </ul>
+          <p className="cuadre__nota">
+            {plataforma.monthlyFeeFreeUntilSeats > 0
+              ? t("cobros.cuadreCuotaUmbral", { c: $b(plataforma.monthlyFeeCents), n: plataforma.monthlyFeeFreeUntilSeats })
+              : t("cobros.cuadreCuota", { c: $b(plataforma.monthlyFeeCents) })}
+            {" "}
+            {mensual != null && !Number.isNaN(mensual) && mensual > 0 && tasa
+              ? t("cobros.cuadreEmpresas", {
+                c: $m(mensual), n: Math.max(1, Math.ceil(plataforma.monthlyFeeCents / Math.max(1, aBase(mensual) ?? 1))),
+              })
+              : ""}
+          </p>
+          {otraMoneda && (
+            <p className="cuadre__nota">
+              {t("cobros.cuadreReferencia", {
+                f: fx?.updatedAt ? fechaCorta(fx.updatedAt) : "—", s: fx?.source ?? "",
+              })}
+            </p>
+          )}
+        </div>
+      )}
 
       {error && <p role="alert" className="cobros__error">{error}</p>}
       {aviso && <p role="status" className="cobros__aviso">{aviso}</p>}

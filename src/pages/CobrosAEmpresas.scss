@@ -147,3 +147,62 @@
   .cobros-tabla__fila > :nth-child(3), .cobros-tabla__fila > :nth-child(4), .cobros-tabla__fila > :nth-child(5) { display: none; }
   .cobros-tabla__fila--cabecera { display: none; }
 }
+
+.cobros__alerta {
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--r-md);
+  background: var(--warn-soft);
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+/* El selector de moneda, con la misma forma que un `Campo`. */
+.cobros-moneda { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.cobros-moneda__etiqueta { font-size: 13px; color: var(--text-secondary); }
+
+.cobros-moneda__control {
+  height: 44px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.cobros-moneda__tasa { font-size: 12px; color: var(--text-muted); }
+
+/* ── Cómo cuadra ─────────────────────────────────────────────────────────── */
+.cuadre {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface-raised);
+}
+
+.cuadre__titulo { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.cuadre__lineas { list-style: none; margin: 0; padding: 0; }
+
+.cuadre__lineas li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+
+  strong { color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+}
+
+.cuadre__total { border-bottom: 0 !important; }
+.cuadre__total strong { color: var(--ok) !important; font-size: 15px; }
+.cuadre__total--negativo strong { color: var(--danger) !important; }
+.cuadre__nota { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }

@@ -990,6 +990,16 @@ export interface EmpresaCobrada {
 }
 
 export interface CobroAEmpresas {
+  /** Las monedas en que puede cobrar a sus empresas. */
+  currencies?: string[];
+  /** Tipos de cambio: 1 unidad de `base` (la del contrato) = `rates[X]` de X. */
+  fx?: { base: string; rates: Record<string, number | null>; updatedAt: string | null; source: string };
+  /** Lo que el socio paga a la plataforma, en la moneda del contrato. */
+  platform?: { currency: string; perUserCents: number; monthlyFeeCents: number; monthlyFeeFreeUntilSeats: number };
+  /** El mínimo convertido a la moneda en que cobra. */
+  minimumsInPricingCurrency?: { perUserCents: number; monthlyFeeCents: number } | null;
+  /** El tipo de cambio de hoy dejó sus precios por debajo del mínimo. */
+  belowMinimum?: boolean;
   catalog: PasarelaDelCatalogo[];
   gateway: PasarelaConectada | null;
   pricing: PreciosAEmpresas | null;
