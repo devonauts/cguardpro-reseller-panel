@@ -1011,3 +1011,37 @@ export const cobroAEmpresasService = {
     setupFeeCents: number | null; monthlyFeeCents: number | null; perUserCents: number | null; exempt: boolean;
   }>) => patch<unknown>(`/reseller/company-billing/companies/${tenantId}`, datos),
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MÓDULOS ADICIONALES DE UNA EMPRESA (reventa)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface ModuloDeEmpresa {
+  key: string;
+  name: string;
+  description: string;
+  minPriceCents: number;
+  currency: string;
+  platformPercent: number;
+  canActivate: boolean;
+  status: "pending_payment" | "active" | "comp" | "revoked" | null;
+  source: string | null;
+  resellerPriceCents: number | null;
+  purchasedAt: string | null;
+}
+
+export interface ResultadoDeActivacion {
+  status: string;
+  invoiceNumber: string;
+  royaltyCents: number;
+  currency: string;
+  charged: boolean;
+  reason: string | null;
+}
+
+export const modulosDeEmpresaService = {
+  list: (tenantId: string) =>
+    get<{ rows: ModuloDeEmpresa[] }>(`/reseller/companies/${tenantId}/addons`),
+  activar: (tenantId: string, key: string, priceCents: number) =>
+    post<ResultadoDeActivacion>(`/reseller/companies/${tenantId}/addons/${key}`, { priceCents }),
+};

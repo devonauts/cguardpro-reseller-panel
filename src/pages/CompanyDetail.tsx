@@ -7,6 +7,7 @@ import {
 import { companiesService, type Empresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fecha } from "@/lib/dinero";
+import { ModulosDeLaEmpresa } from "@/components/empresas/ModulosDeLaEmpresa";
 import "./CompanyForm.scss";
 
 /**
@@ -19,8 +20,10 @@ import "./CompanyForm.scss";
  *
  * ── LO QUE SE PUEDE CORREGIR Y LO QUE NO ──────────────────────────────────
  * Se corrigen los datos de contacto y de identificación. No se toca el plan, ni
- * la facturación, ni la suspensión, ni los módulos: el servidor los ignoraría
- * igualmente, y ofrecer el control enseñaría que el formulario miente.
+ * la facturación, ni la suspensión: el servidor los ignoraría igualmente, y
+ * ofrecer el control enseñaría que el formulario miente. Los MÓDULOS
+ * ADICIONALES sí se activan aquí, en su propia tarjeta, si la plataforma le ha
+ * habilitado al socio revenderlos (`ModulosDeLaEmpresa`).
  *
  * La suspensión se MUESTRA porque el socio necesita saber si su cliente está
  * parado; pero es una palanca de la plataforma y se opera desde allí.
@@ -142,6 +145,8 @@ export function CompanyDetail() {
                   </p>
                 </Tarjeta>
               )}
+
+              {!empresa.suspendedAt && <ModulosDeLaEmpresa tenantId={tenantId} />}
             </div>
           </div>
         )}
