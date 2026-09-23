@@ -23,7 +23,9 @@
   color: var(--text-secondary);
 }
 
-.cabecera__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+/* `center` y no el `stretch` por defecto: con él, el botón de alta se estiraba
+   hasta la altura de la ficha de fecha y quedaba como un bloque de 75 px. */
+.cabecera__acciones { display: flex; align-items: center; gap: var(--s-2); flex-wrap: wrap; }
 
 /* ── El tablero ─────────────────────────────────────────────────────────── */
 /* ── El ritmo ───────────────────────────────────────────────────────────────
@@ -313,11 +315,12 @@
 }
 
 /* La ficha de fecha y el botón de alta de la cabecera. */
-.cabecera__fecha {
+.cabecera__acciones .cabecera__fecha {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-3) var(--s-4);
+  padding: var(--s-2) var(--s-3);
   border-radius: var(--r-lg);
 }
 
