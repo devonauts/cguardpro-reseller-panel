@@ -468,6 +468,32 @@ export const portalService = {
   cuenta: () => get<CuentaDelSocio>("/reseller/settings"),
 };
 
+/* ══════════════════════════════════════════════════════════════════════════
+   LA ACTIVACIÓN — el socio paga la cuota de alta para empezar
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface EstadoDeActivacion {
+  required: boolean;
+  paid: boolean;
+  paidAt: string | null;
+  anchorDate: string | null;
+  amountCents: number;
+  currency: string;
+  waived: boolean;
+  hasContract: boolean;
+  hasCard: boolean;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
+}
+
+export const activacionService = {
+  estado: () => get<EstadoDeActivacion>("/reseller/billing/activation"),
+  pagar: (opciones: { otraTarjeta?: boolean } = {}) =>
+    post<PagoDeFactura>("/reseller/billing/activation/pay", opciones),
+  confirmar: (paymentIntentId: string) =>
+    post<PagoDeFactura>("/reseller/billing/activation/pay/confirm", { cargo: paymentIntentId }),
+};
+
 export const onboardingService = {
   estado: () => get<EstadoDelAlta>("/reseller/onboarding"),
   /** `step` es «de qué paso vengo», no «a dónde quiero ir»: el servidor lo
@@ -835,7 +861,9 @@ export const billingService = {
 
   /** Tras terminar con Stripe en el navegador: el servidor lo comprueba allí. */
   confirmarPago: (invoiceId: string, paymentIntentId: string) =>
-    post<PagoDeFactura>(`/reseller/billing/invoices/${invoiceId}/pay/confirm`, { paymentIntentId }),
+    /* El campo se llama `cargo` en el servidor: la ruta no nombra la pasarela.
+       Mandar `paymentIntentId` aquí dejaba la confirmación sin identificador. */
+    post<PagoDeFactura>(`/reseller/billing/invoices/${invoiceId}/pay/confirm`, { cargo: paymentIntentId }),
 
   /** La dirección del PDF. Se abre; no se descarga por JavaScript. */
   pdfUrl: (invoiceId: string) =>

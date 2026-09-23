@@ -3,8 +3,12 @@ import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
 import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/cristal";
 import {
-  onboardingService, type EstadoDelAlta, type MarcaEditable, type PasoDelAlta,
+  activacionService, onboardingService,
+  type EstadoDeActivacion, type EstadoDelAlta, type MarcaEditable, type PasoDelAlta,
 } from "@/services/resellerService";
+import { useNavigate } from "react-router-dom";
+import { useResellerAuth } from "@/auth/ResellerAuthContext";
+import { Activacion } from "./Activacion";
 import { useT } from "@/i18n/IdiomaProvider";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import type { Clave } from "@/i18n/idioma";
@@ -48,11 +52,19 @@ export function Wizard() {
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [borrador, setBorrador] = useState<MarcaEditable>({});
+  /* PRIMERO SE PAGA EL ALTA. Si falta, el asistente enseña la activación en
+     su mismo marco; el servidor no le abriría los pasos de todas formas. */
+  const [activacion, setActivacion] = useState<EstadoDeActivacion | null>(null);
+  const { recargar } = useResellerAuth();
+  const navigate = useNavigate();
 
   const cargar = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
+      const a = await activacionService.estado().catch(() => null);
+      setActivacion(a);
+      if (a?.required) return;
       const r = await onboardingService.estado();
       setEst(r);
       setBorrador({});
@@ -130,7 +142,27 @@ export function Wizard() {
         <SelectorDeIdioma compacto />
       </div>
       <div className="alta__caja">
-        <EstadoDeDatos cargando={cargando} error={!est ? error : null} onReintentar={cargar}>
+        <EstadoDeDatos
+          cargando={cargando}
+          error={!est && !activacion?.required ? error : null}
+          onReintentar={cargar}
+        >
+          {activacion?.required && (
+            <Activacion
+              estado={activacion}
+              onPagada={async () => {
+                /* El pago movió el estado del socio (a `onboarding`, o a
+                   `active` si ya había terminado el asistente): se relee `/me`
+                   y, si ya está activo, se le lleva a su panel. */
+                await recargar();
+                const a = await activacionService.estado().catch(() => null);
+                setActivacion(a);
+                await cargar();
+                navigate("/", { replace: true });
+              }}
+            />
+          )}
+
           {est && est.completed && <Final est={est} />}
 
           {est && !est.completed && paso && paso !== "completed" && marca && (

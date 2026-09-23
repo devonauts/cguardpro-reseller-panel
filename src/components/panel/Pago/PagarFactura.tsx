@@ -29,7 +29,7 @@ import "./Pago.scss";
  * ════════════════════════════════════════════════════════════════════════════
  */
 export function PagarFactura({
-  invoiceId, saldoCents, currency, tieneTarjeta, onPagada,
+  invoiceId, saldoCents, currency, tieneTarjeta, onPagada, pagarCon, confirmarCon, etiqueta,
 }: {
   invoiceId: string;
   saldoCents: number;
@@ -37,6 +37,11 @@ export function PagarFactura({
   /** Si hay tarjeta guardada, se ofrece también pagar con otra. */
   tieneTarjeta: boolean;
   onPagada: (r: PagoDeFactura) => void;
+  /** Otro cobro con el mismo flujo (la activación). Por defecto, la factura. */
+  pagarCon?: (opciones: { otraTarjeta?: boolean }) => Promise<PagoDeFactura>;
+  confirmarCon?: (paymentIntentId: string) => Promise<PagoDeFactura>;
+  /** El texto del botón; por defecto «Pagar {importe} ahora». */
+  etiqueta?: string;
 }) {
   const { t, idioma } = useIdioma();
   const [trabajando, setTrabajando] = useState(false);
@@ -61,7 +66,9 @@ export function PagarFactura({
 
   /** El servidor comprueba en Stripe y, si está cobrado, lo anota. */
   const confirmar = async (paymentIntentId: string) => {
-    const r = await billingService.confirmarPago(invoiceId, paymentIntentId);
+    const r = confirmarCon
+      ? await confirmarCon(paymentIntentId)
+      : await billingService.confirmarPago(invoiceId, paymentIntentId);
     if (r.estado === "pagada") {
       cerrarCampo();
       onPagada(r);
@@ -91,7 +98,9 @@ export function PagarFactura({
     setTrabajando(true);
     setError(null);
     try {
-      const r = await billingService.pagar(invoiceId, { otraTarjeta });
+      const r = pagarCon
+        ? await pagarCon({ otraTarjeta })
+        : await billingService.pagar(invoiceId, { otraTarjeta });
 
       if (r.estado === "pagada") {
         onPagada(r);
@@ -138,7 +147,7 @@ export function PagarFactura({
       {!conCampo ? (
         <div className="pago__botones">
           <Boton onClick={() => pagar(false)} cargando={trabajando}>
-            {t("pago.pagarImporte", { importe })}
+            {etiqueta ?? t("pago.pagarImporte", { importe })}
           </Boton>
           {tieneTarjeta && (
             <Boton variante="fantasma" onClick={() => pagar(true)} disabled={trabajando}>
@@ -156,7 +165,7 @@ export function PagarFactura({
               {t("comun.cancelar")}
             </Boton>
             <Boton onClick={pagarConCampo} cargando={trabajando}>
-              {t("pago.pagarImporte", { importe })}
+              {etiqueta ?? t("pago.pagarImporte", { importe })}
             </Boton>
           </div>
         </div>
