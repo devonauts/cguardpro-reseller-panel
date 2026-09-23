@@ -1,12 +1,22 @@
-.empresas__cifras {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: var(--s-4);
-  margin-bottom: var(--s-5);
+/**
+ * El ritmo de la página.
+ *
+ * Aquí había una `.empresas__cifras` con su `margin-bottom` que NADIE aplicaba:
+ * la pantalla pinta el componente `<Cifras>`, que trae su propia rejilla y
+ * ningún margen. El resultado era la lista pegada a las tarjetas, sin un
+ * milímetro — y peor, un hueco que cambiaba según qué bloques opcionales se
+ * pintaran, porque sólo los avisos traían margen propio.
+ *
+ * Con el contenedor, el hueco lo pone el padre y es el mismo siempre. Es el
+ * patrón de `Facturación`, que ya lo hacía así.
+ */
+.empresas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
 }
 
 .empresas__aviso {
-  margin-bottom: var(--s-4);
   padding: var(--s-3) var(--s-4);
   background: var(--warn-soft);
   border: 1px solid var(--warn-line);

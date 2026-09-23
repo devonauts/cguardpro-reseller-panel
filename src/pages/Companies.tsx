@@ -91,63 +91,71 @@ export function Companies() {
         }
       />
 
-      {cupo && (
-        <Cifras>
-          <Cifra etiqueta={t("empresas.titulo")} valor={cupo.used} />
-          <Cifra
-            etiqueta={t("empresas.tuLimite")}
-            valor={cupo.unlimited ? t("comun.sinLimite") : cupo.max}
-          />
-          <Cifra
-            etiqueta={t("empresas.teQuedan")}
-            /* `null` es SIN LÍMITE. Pintar «0» aquí sería decirle a quien no
-               tiene límite que no le queda ninguna. */
-            valor={cupo.unlimited ? t("comun.sinLimite") : cupo.remaining}
-          />
-        </Cifras>
-      )}
+      {/* ── EL RITMO DE LA PÁGINA ──────────────────────────────────────────
+          Las cifras, los avisos y la lista eran hermanos sueltos de un
+          fragmento, así que la separación entre ellos dependía de QUÉ bloques
+          se pintaran: `<Cifras>` no trae margen, y la lista acababa pegada a
+          las tarjetas sin un milímetro. Con el contenedor, el hueco es el mismo
+          haya cupo o no, haya aviso o no. Es el mismo patrón de Facturación. */}
+      <div className="empresas">
+        {cupo && (
+          <Cifras>
+            <Cifra etiqueta={t("empresas.titulo")} valor={cupo.used} />
+            <Cifra
+              etiqueta={t("empresas.tuLimite")}
+              valor={cupo.unlimited ? t("comun.sinLimite") : cupo.max}
+            />
+            <Cifra
+              etiqueta={t("empresas.teQuedan")}
+              /* `null` es SIN LÍMITE. Pintar «0» aquí sería decirle a quien no
+                 tiene límite que no le queda ninguna. */
+              valor={cupo.unlimited ? t("comun.sinLimite") : cupo.remaining}
+            />
+          </Cifras>
+        )}
 
-      {cupo && !cupo.unlimited && !cupo.canCreate && (
-        <div className="empresas__aviso">
-          {t(cupo.max === 1 ? "empresas.topeUno" : "empresas.topeVarios", { n: cupo.max ?? 0 })}
-        </div>
-      )}
+        {cupo && !cupo.unlimited && !cupo.canCreate && (
+          <div className="empresas__aviso">
+            {t(cupo.max === 1 ? "empresas.topeUno" : "empresas.topeVarios", { n: cupo.max ?? 0 })}
+          </div>
+        )}
 
-      {!activo && (
-        <div className="empresas__aviso">{t("empresas.noActiva")}</div>
-      )}
+        {!activo && (
+          <div className="empresas__aviso">{t("empresas.noActiva")}</div>
+        )}
 
-      <EstadoDeDatos
-        cargando={cargando}
-        error={error}
-        vacio={!cargando && filas.length === 0}
-        etiquetaVacio={t("empresas.vacio")}
-        onReintentar={cargar}
-      >
-        <Lista>
-          {filas.map((e) => (
-            <ListaFila key={e.id} como={Link} to={`/companies/${e.id}`} className="empresa">
-              <div className="empresa__principal">
-                <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
-                {e.businessTitle && e.businessTitle !== e.name && (
-                  <span className="empresa__razon">{e.businessTitle}</span>
-                )}
-              </div>
-              <div className="empresa__meta">
-                {[e.city, e.country].filter(Boolean).join(", ") || "—"}
-              </div>
-              <div className="empresa__meta">{t("empresas.altaFecha", { f: fechaCorta(e.createdAt) })}</div>
-              <div>
-                {e.suspendedAt ? (
-                  <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
-                ) : (
-                  <Pildora tono="ok">{t("empresas.activa")}</Pildora>
-                )}
-              </div>
-            </ListaFila>
-          ))}
-        </Lista>
-      </EstadoDeDatos>
+        <EstadoDeDatos
+          cargando={cargando}
+          error={error}
+          vacio={!cargando && filas.length === 0}
+          etiquetaVacio={t("empresas.vacio")}
+          onReintentar={cargar}
+        >
+          <Lista>
+            {filas.map((e) => (
+              <ListaFila key={e.id} como={Link} to={`/companies/${e.id}`} className="empresa">
+                <div className="empresa__principal">
+                  <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
+                  {e.businessTitle && e.businessTitle !== e.name && (
+                    <span className="empresa__razon">{e.businessTitle}</span>
+                  )}
+                </div>
+                <div className="empresa__meta">
+                  {[e.city, e.country].filter(Boolean).join(", ") || "—"}
+                </div>
+                <div className="empresa__meta">{t("empresas.altaFecha", { f: fechaCorta(e.createdAt) })}</div>
+                <div>
+                  {e.suspendedAt ? (
+                    <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
+                  ) : (
+                    <Pildora tono="ok">{t("empresas.activa")}</Pildora>
+                  )}
+                </div>
+              </ListaFila>
+            ))}
+          </Lista>
+        </EstadoDeDatos>
+      </div>
     </>
   );
 }
