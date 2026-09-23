@@ -19,7 +19,7 @@ export type NombreDeIcono =
   | "globo" | "galon" | "flecha" | "grafico"
   | "casa" | "edificio" | "paleta" | "personas" | "tarjeta" | "engranaje"
   | "lupa" | "corona" | "libro" | "auriculares" | "bocadillo" | "mas"
-  | "sol" | "puntos" | "visto";
+  | "sol" | "puntos" | "visto" | "moneda";
 
 const TRAZOS: Record<NombreDeIcono, JSX.Element> = {
   escudo: <path d="M12 3 4.5 6v5.5c0 4.3 3.1 8.2 7.5 9.5 4.4-1.3 7.5-5.2 7.5-9.5V6L12 3Z" />,
@@ -120,6 +120,12 @@ const TRAZOS: Record<NombreDeIcono, JSX.Element> = {
     </>
   ),
   visto: <path d="m5 12.5 4.5 4.5L19 7.5" />,
+  moneda: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M14.8 9.2c-.5-.9-1.6-1.4-2.8-1.4-1.6 0-2.8.8-2.8 2.1 0 3 5.8 1.6 5.8 4.3 0 1.3-1.3 2.1-3 2.1-1.3 0-2.5-.6-3-1.5M12 6.2v1.6M12 16.3v1.5" />
+    </>
+  ),
   puntos: (
     <>
       <circle cx="5.5" cy="12" r="1.3" />

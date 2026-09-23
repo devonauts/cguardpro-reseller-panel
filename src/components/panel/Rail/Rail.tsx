@@ -57,6 +57,7 @@ interface Entrada {
 const NAV: Entrada[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
+  { a: "/company-billing", icono: "moneda", texto: "nav.cobros" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },
   { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
 ];

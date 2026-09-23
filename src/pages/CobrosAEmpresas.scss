@@ -1,0 +1,149 @@
+@use "../design/material" as m;
+@use "../design/medios" as r;
+
+/* Reutiliza `.bloque` de Facturación: mismas superficies, misma cabecera. */
+@import "./Billing";
+
+.cobros { display: flex; flex-direction: column; gap: var(--s-4); }
+
+.cobros__resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--s-4);
+}
+
+.cobros-ficha {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-4) var(--s-5);
+  border-radius: var(--r-lg);
+}
+
+.cobros-ficha__etiqueta { font-size: 12.5px; color: var(--text-secondary); }
+.cobros-ficha__valor { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.cobros-ficha__nota { font-size: 12.5px; color: var(--text-muted); }
+
+.cobros__error { font-size: 13px; color: var(--danger); }
+.cobros__aviso { font-size: 13px; color: var(--ok); }
+
+.cobros__legal {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.cobros-pasarela {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.cobros-pasarela__icono { color: var(--text-secondary); display: grid; place-items: center; }
+.cobros-pasarela__datos { display: flex; flex-direction: column; flex: 1; min-width: 12ch; font-size: 12.5px; color: var(--text-muted); }
+.cobros-pasarela__datos strong { font-size: 14px; color: var(--text-primary); }
+.cobros-pasarela__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+
+.cobros-catalogo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  gap: var(--s-3);
+}
+
+.cobros-opcion {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-1);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover:not(:disabled) { border-color: var(--brand); }
+  &:disabled { cursor: default; opacity: 0.55; }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.cobros-opcion--elegida { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+.cobros-opcion__paises { font-size: 15px; letter-spacing: 2px; }
+.cobros-opcion__pronto { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+
+.cobros-formulario { display: flex; flex-direction: column; gap: var(--s-3); max-width: 560px; }
+.cobros-formulario__botones { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--s-2); }
+
+.cobros-precios {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-3) var(--s-4);
+}
+
+@include r.hasta(tableta) { .cobros-precios { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@include r.hasta(movil) { .cobros-precios { grid-template-columns: minmax(0, 1fr); } }
+
+.cobros-tabla { display: flex; flex-direction: column; }
+.cobros-tabla__grupo { display: flex; flex-direction: column; }
+
+.cobros-tabla__fila {
+  appearance: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.8fr);
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) var(--s-2);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.cobros-tabla__fila--cabecera {
+  cursor: default;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+
+  &:hover { background: none; }
+}
+
+.cobros-tabla__fila--abierta { background: var(--glass-interactive); }
+.cobros-tabla__nombre { font-weight: 600; color: var(--text-primary); overflow-wrap: anywhere; }
+.cobros-tabla__derecha { text-align: right; justify-self: end; font-variant-numeric: tabular-nums; }
+
+.cobros-ajuste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-2) var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+
+@include r.hasta(movil) {
+  .cobros-tabla__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .cobros-tabla__fila > :nth-child(3), .cobros-tabla__fila > :nth-child(4), .cobros-tabla__fila > :nth-child(5) { display: none; }
+  .cobros-tabla__fila--cabecera { display: none; }
+}

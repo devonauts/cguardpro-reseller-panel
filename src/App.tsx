@@ -20,6 +20,7 @@ import Billing from "@/pages/Billing";
 import CompanyCreate from "@/pages/CompanyCreate";
 import CompanyDetail from "@/pages/CompanyDetail";
 import Wizard from "@/pages/onboarding/Wizard";
+import CobrosAEmpresas from "@/pages/CobrosAEmpresas";
 import NotFound from "@/pages/NotFound";
 
 /**
@@ -82,6 +83,7 @@ export default function App() {
       {/* «new» antes que «:tenantId»: si no, la ruta con parámetro se queda con
           el alta y busca una empresa que se llame así. */}
       <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
+      <Route path="/company-billing" element={<ProtectedRoute><CobrosAEmpresas /></ProtectedRoute>} />
       <Route path="/usage" element={<ProtectedRoute><Usage /></ProtectedRoute>} />
       <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
       {/* Las cuatro de la etapa D.1. Todas de lectura. */}

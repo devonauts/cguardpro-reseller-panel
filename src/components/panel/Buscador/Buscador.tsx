@@ -38,6 +38,7 @@ interface Seccion {
 const SECCIONES: Seccion[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
+  { a: "/company-billing", icono: "moneda", texto: "nav.cobros" },
   { a: "/domains", icono: "globo", texto: "nav.dominios" },
   { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },

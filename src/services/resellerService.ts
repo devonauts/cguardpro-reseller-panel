@@ -946,3 +946,68 @@ export const domainsService = {
   desactivar: (id: string) => post<DominioDelSocio>(`/reseller/domains/${id}/disable`, {}),
   quitar: (id: string) => del<{ removed: boolean; hostname: string }>(`/reseller/domains/${id}`),
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FASE D — EL SOCIO COBRA A SUS EMPRESAS CON SU PROPIA PASARELA
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export interface PasarelaDelCatalogo {
+  provider: string;
+  name: string;
+  countries: string[];
+  available: boolean;
+  fields: Array<{ clave: string; etiqueta: string; secreto: boolean }>;
+}
+
+export interface PasarelaConectada {
+  provider: string;
+  name: string;
+  mode: "test" | "live" | string;
+  status: "pending" | "connected" | "error" | string;
+  accountLabel: string | null;
+  lastError: string | null;
+  verifiedAt: string | null;
+}
+
+export interface PreciosAEmpresas {
+  currency: string;
+  setupFeeCents: number;
+  monthlyFeeCents: number;
+  perUserCents: number;
+  trialDays: number;
+  graceDays: number;
+}
+
+export interface EmpresaCobrada {
+  tenantId: string;
+  name: string | null;
+  status: "trialing" | "active" | "past_due" | "paused" | "exempt" | string;
+  trialEndsAt: string | null;
+  anchorAt: string | null;
+  hasCard: boolean;
+  override: { setupFeeCents: number | null; monthlyFeeCents: number | null; perUserCents: number | null } | null;
+  outstandingCents: number;
+}
+
+export interface CobroAEmpresas {
+  catalog: PasarelaDelCatalogo[];
+  gateway: PasarelaConectada | null;
+  pricing: PreciosAEmpresas | null;
+  minimums: { currency: string; perUserCents: number; monthlyFeeCents: number };
+  collectedLast30Cents: number;
+  outstandingCents: number;
+  companies: EmpresaCobrada[];
+}
+
+export const cobroAEmpresasService = {
+  leer: () => get<CobroAEmpresas>("/reseller/company-billing"),
+  /** Las credenciales van una vez y no vuelven: el servidor nunca las devuelve. */
+  conectar: (provider: string, credentials: Record<string, string>) =>
+    put<PasarelaConectada>("/reseller/company-billing/gateway", { provider, credentials }),
+  desconectar: () => del<{ removed: boolean }>("/reseller/company-billing/gateway"),
+  guardarPrecios: (precios: PreciosAEmpresas) =>
+    put<PreciosAEmpresas>("/reseller/company-billing/pricing", precios),
+  ajustarEmpresa: (tenantId: string, datos: Partial<{
+    setupFeeCents: number | null; monthlyFeeCents: number | null; perUserCents: number | null; exempt: boolean;
+  }>) => patch<unknown>(`/reseller/company-billing/companies/${tenantId}`, datos),
+};
