@@ -544,6 +544,64 @@ export const companiesService = {
 };
 
 /* ══════════════════════════════════════════════════════════════════════════
+   QUIÉN ENTRA AL CRM DE CADA EMPRESA
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Una membresía: la persona Y su acceso a ESTA empresa.
+ *
+ * `id` es el de la MEMBRESÍA, no el de la persona. Es lo que se toca: la misma
+ * persona puede llevar dos empresas, y quitarle el acceso en una no la borra
+ * de la otra.
+ */
+export interface PersonaDeLaEmpresa {
+  id: string;
+  nombre: string;
+  email: string;
+  roles: string[];
+  status: string;
+  invitadaDesde: string | null;
+  desde: string | null;
+}
+
+export interface PersonasDeLaEmpresa {
+  conAcceso: PersonaDeLaEmpresa[];
+  /** Vigilantes y supervisores: sólo cuántos. Nunca quiénes. */
+  enCampo: number;
+  /** Los roles que el panel deja conceder. Los decide el servidor. */
+  rolesDisponibles: string[];
+}
+
+export const personasService = {
+  list: (tenantId: string) =>
+    get<PersonasDeLaEmpresa>(`/reseller/companies/${tenantId}/users`),
+
+  invitar: (tenantId: string, data: {
+    email: string; firstName?: string; lastName?: string; rol: string;
+  }) => post<{ invited: string; rol: string }>(
+    `/reseller/companies/${tenantId}/users`, data,
+  ),
+
+  cambiarRol: (tenantId: string, membershipId: string, rol: string) =>
+    patch<{ membership: { id: string; roles: string[] } }>(
+      `/reseller/companies/${tenantId}/users/${membershipId}`, { rol },
+    ),
+
+  /* Quitar el acceso ARCHIVA: no hay borrado, y no lo hay a propósito. Quien
+     firmó turnos o reportó novedades deja un historial que no puede quedarse
+     huérfano en el CRM de un cliente. */
+  quitarAcceso: (tenantId: string, membershipId: string) =>
+    post<{ membership: { id: string; status: string } }>(
+      `/reseller/companies/${tenantId}/users/${membershipId}/revoke`, {},
+    ),
+
+  devolverAcceso: (tenantId: string, membershipId: string) =>
+    post<{ membership: { id: string; status: string } }>(
+      `/reseller/companies/${tenantId}/users/${membershipId}/restore`, {},
+    ),
+};
+
+/* ══════════════════════════════════════════════════════════════════════════
    EL CONSUMO CONTADO (fase 9)
    ══════════════════════════════════════════════════════════════════════════ */
 

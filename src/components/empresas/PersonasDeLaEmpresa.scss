@@ -1,0 +1,114 @@
+/**
+ * Quién entra al CRM de una empresa, dentro del acordeón.
+ *
+ * Va HUNDIDO respecto a la fila de la empresa —fondo más oscuro y un filete
+ * arriba— y no elevado: lo desplegado pertenece a la fila de encima, y una
+ * tarjeta flotando dentro de otra rompe esa pertenencia justo cuando es lo
+ * único que hay que entender.
+ */
+.personas {
+  padding: var(--s-4);
+  background: var(--glass-sunken);
+  border-top: 1px solid var(--glass-border);
+}
+
+.personas__resumen {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--s-3);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Los de campo, apagados: son un dato de tamaño, no una lista en la que entrar. */
+.personas__campo { color: var(--text-muted); }
+
+.personas__vacio { font-size: 13px; color: var(--text-muted); }
+
+.personas__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+
+.persona {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2) var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+/* Sólo reacciona si de verdad se puede abrir: una fila que se ilumina sin
+   llevar a ningún sitio promete un clic que no existe. */
+button.persona {
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); }
+  &:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: -2px; }
+}
+
+.persona__principal { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.persona__nombre { font-weight: 500; overflow-wrap: anywhere; }
+.persona__correo { font-size: 12px; color: var(--text-muted); overflow-wrap: anywhere; }
+.persona__rol { font-size: 13px; color: var(--text-secondary); overflow-wrap: anywhere; }
+.persona__galon { color: var(--text-muted); }
+
+@media (max-width: 760px) {
+  .persona {
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: var(--s-1);
+  }
+  .persona__rol { grid-column: 1 / -1; }
+}
+
+/* ── La ficha ────────────────────────────────────────────────────────────── */
+
+.persona-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: min(420px, 82vw);
+}
+
+.persona-ficha__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+
+  h2 { font-size: 17px; font-weight: 600; margin: 0; overflow-wrap: anywhere; }
+  p { margin: 2px 0 0; font-size: 13px; color: var(--text-muted); overflow-wrap: anywhere; }
+}
+
+.persona-ficha__dos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+}
+
+.persona-ficha__nota { font-size: 12px; line-height: 1.5; color: var(--text-muted); margin: 0; }
+.persona-ficha__error { font-size: 13px; color: var(--danger); margin: 0; }
+
+.persona-ficha__acciones {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 520px) {
+  .persona-ficha__dos { grid-template-columns: 1fr; }
+}

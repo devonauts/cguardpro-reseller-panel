@@ -27,13 +27,70 @@
 
 .empresas__nota { font-size: 13px; color: var(--text-secondary); max-width: 60ch; }
 
-/* La lista es un `<Lista>`: el material lo pone el componente. Aquí sólo vive
-   la REJILLA, que es lo único propio de esta pantalla. */
+/**
+ * Cada empresa es un acordeón: la fila abre, y debajo sale quién entra a su
+ * CRM. `<Lista>` pone el material; aquí vive la rejilla de la fila y lo que el
+ * despliegue añade.
+ */
+.empresa-acordeon {
+  /* El filete lo pone la fila, no el `<li>`: si lo pusiera el `<li>`, la línea
+     quedaría DEBAJO de lo desplegado y separaría la empresa de su propia
+     gente. */
+  &:last-child .empresa { border-bottom: 0; }
+}
+
+.empresa-acordeon__pie {
+  padding: 0 var(--s-4) var(--s-4);
+  background: var(--glass-sunken);
+  font-size: 13px;
+
+  a { color: var(--accent-solid); }
+}
+
+.personas__sinPermiso {
+  margin: 0;
+  padding: var(--s-4);
+  background: var(--glass-sunken);
+  border-top: 1px solid var(--glass-border);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* La rejilla de la fila, que es lo único propio de esta pantalla. */
 .empresa {
   display: grid;
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--s-4);
+}
+
+/* La fila como botón: se le quita lo que el navegador le pone y se le deja lo
+   que ya tenía de `lista__fila`. */
+button.empresa--abrible {
+  width: 100%;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); }
+  &:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: -2px; }
+}
+
+.empresa__estado { display: flex; align-items: center; gap: var(--s-3); }
+
+.empresa__galon {
+  color: var(--text-muted);
+  transition: transform var(--motion) var(--ease);
+}
+.empresa__galon--abierto { transform: rotate(90deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .empresa__galon { transition: none; }
 }
 
 .empresa__principal { display: flex; flex-direction: column; gap: 2px; min-width: 0; }

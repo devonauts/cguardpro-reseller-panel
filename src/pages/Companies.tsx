@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Cifra, Cifras, EstadoDeDatos, Lista, ListaFila, Panel, Pildora,
+  Boton, Cifra, Cifras, EstadoDeDatos, Icono, Lista, Panel, Pildora,
 } from "@/components/cristal";
 import { companiesService, type Cupo, type Empresa } from "@/services/resellerService";
+import PersonasDeLaEmpresa from "@/components/empresas/PersonasDeLaEmpresa";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta } from "@/lib/dinero";
 import "./Companies.scss";
@@ -33,6 +34,10 @@ export function Companies() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bloqueadoPorEstado, setBloqueadoPorEstado] = useState<string | null>(null);
+  /* UNA abierta a la vez. Con varias, la pantalla se vuelve una lista de
+     listas y se pierde de vista cuál es cuál — y además cada una pide sus
+     personas al servidor. */
+  const [abierta, setAbierta] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -57,6 +62,11 @@ export function Companies() {
      botón que va a fallar. */
   const activo = String(me?.reseller.status || "") === "active";
   const puedeCrear = puede("reseller.company.create") && activo && (cupo?.canCreate ?? false);
+  /* Ver quién entra al CRM y poder cambiarlo son DOS permisos: soporte mira,
+     no toca. Si no tiene ni el de ver, el acordeón lo dice en vez de abrirse
+     vacío — un panel en blanco se lee como un fallo. */
+  const puedeVerPersonas = puede("reseller.company.users.view");
+  const puedeGestionarPersonas = puede("reseller.company.users.manage") && activo;
 
   if (bloqueadoPorEstado) {
     return (
@@ -131,28 +141,66 @@ export function Companies() {
           etiquetaVacio={t("empresas.vacio")}
           onReintentar={cargar}
         >
-          <Lista>
-            {filas.map((e) => (
-              <ListaFila key={e.id} como={Link} to={`/companies/${e.id}`} className="empresa">
-                <div className="empresa__principal">
-                  <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
-                  {e.businessTitle && e.businessTitle !== e.name && (
-                    <span className="empresa__razon">{e.businessTitle}</span>
+          {/* `como="ul"`: ahora cada empresa es un `<li>` que contiene su fila
+              Y lo desplegado, y un `<li>` suelto dentro de un `<div>` no es
+              marcado válido. La hoja ya venía preparada (`list-style: none`). */}
+          <Lista como="ul">
+            {filas.map((e) => {
+              const desplegada = abierta === e.id;
+              return (
+                <li key={e.id} className="empresa-acordeon">
+                  {/* La fila ABRE, no navega. La ficha de la empresa sigue a un
+                      clic —el enlace de dentro—, pero lo que se viene a hacer a
+                      esta pantalla es ver quién hay en cada una: pedir dos
+                      pantallas para eso era el paso de más. */}
+                  <button
+                    type="button"
+                    className="empresa lista__fila empresa--abrible"
+                    aria-expanded={desplegada}
+                    aria-controls={`personas-${e.id}`}
+                    onClick={() => setAbierta(desplegada ? null : e.id)}
+                  >
+                    <div className="empresa__principal">
+                      <span className="empresa__nombre">{e.name || t("empresas.sinNombre")}</span>
+                      {e.businessTitle && e.businessTitle !== e.name && (
+                        <span className="empresa__razon">{e.businessTitle}</span>
+                      )}
+                    </div>
+                    <div className="empresa__meta">
+                      {[e.city, e.country].filter(Boolean).join(", ") || "—"}
+                    </div>
+                    <div className="empresa__meta">{t("empresas.altaFecha", { f: fechaCorta(e.createdAt) })}</div>
+                    <div className="empresa__estado">
+                      {e.suspendedAt ? (
+                        <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
+                      ) : (
+                        <Pildora tono="ok">{t("empresas.activa")}</Pildora>
+                      )}
+                      <Icono
+                        nombre="galon"
+                        tamano={16}
+                        className={`empresa__galon${desplegada ? " empresa__galon--abierto" : ""}`}
+                      />
+                    </div>
+                  </button>
+
+                  {/* Sólo se monta lo desplegado: montar las cuarenta y
+                      esconderlas con CSS haría cuarenta peticiones. */}
+                  {desplegada && (
+                    <div id={`personas-${e.id}`}>
+                      {puedeVerPersonas ? (
+                        <PersonasDeLaEmpresa tenantId={e.id} puedeGestionar={puedeGestionarPersonas} />
+                      ) : (
+                        <p className="personas__sinPermiso">{t("personas.sinPermiso")}</p>
+                      )}
+                      <div className="empresa-acordeon__pie">
+                        <Link to={`/companies/${e.id}`}>{t("empresas.verFicha")}</Link>
+                      </div>
+                    </div>
                   )}
-                </div>
-                <div className="empresa__meta">
-                  {[e.city, e.country].filter(Boolean).join(", ") || "—"}
-                </div>
-                <div className="empresa__meta">{t("empresas.altaFecha", { f: fechaCorta(e.createdAt) })}</div>
-                <div>
-                  {e.suspendedAt ? (
-                    <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
-                  ) : (
-                    <Pildora tono="ok">{t("empresas.activa")}</Pildora>
-                  )}
-                </div>
-              </ListaFila>
-            ))}
+                </li>
+              );
+            })}
           </Lista>
         </EstadoDeDatos>
       </div>
