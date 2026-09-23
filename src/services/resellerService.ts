@@ -734,6 +734,20 @@ export interface TarjetaDelSocio {
   locked: boolean;
 }
 
+/** Lo que contesta el servidor al pagar. */
+export interface PagoDeFactura {
+  estado: "pagada" | "requiere_accion" | "requiere_tarjeta" | "rechazada";
+  invoiceId: string;
+  amountCents: number;
+  currency: string;
+  paymentIntentId?: string | null;
+  clientSecret?: string | null;
+  publishableKey?: string | null;
+  motivo?: string;
+  /** `true` cuando el pago sacó a la cuenta de la mora. */
+  restablecido?: boolean;
+}
+
 export const billingService = {
   list: (params: { limit?: number } = {}) =>
     get<{
@@ -765,6 +779,18 @@ export const billingService = {
 
   /** El servidor lo RECHAZA si la tarjeta ya fue validada. */
   quitarTarjeta: () => del<{ removed: boolean }>("/reseller/billing/payment-method"),
+
+  /* ── PAGAR AHORA ─────────────────────────────────────────────────────────
+     Ninguna de las dos manda un importe: cuánto se cobra lo decide el servidor
+     a partir de la factura. Aquí sólo se dice CUÁL. */
+
+  /** Intenta el cargo. Con tarjeta guardada, en el acto. */
+  pagar: (invoiceId: string, opciones: { otraTarjeta?: boolean } = {}) =>
+    post<PagoDeFactura>(`/reseller/billing/invoices/${invoiceId}/pay`, opciones),
+
+  /** Tras terminar con Stripe en el navegador: el servidor lo comprueba allí. */
+  confirmarPago: (invoiceId: string, paymentIntentId: string) =>
+    post<PagoDeFactura>(`/reseller/billing/invoices/${invoiceId}/pay/confirm`, { paymentIntentId }),
 
   /** La dirección del PDF. Se abre; no se descarga por JavaScript. */
   pdfUrl: (invoiceId: string) =>

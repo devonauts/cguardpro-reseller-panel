@@ -5,6 +5,7 @@ import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import StatusPill from "@/components/StatusPill";
 import { FondoEspacial } from "@/components/cristal";
 import { BarraSuperior, Rail } from "@/components/panel";
+import { AvisoDePago } from "@/components/panel/Pago";
 import { nombreDeRol } from "@/lib/rolDeSocio";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./AppLayout.scss";
@@ -76,6 +77,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
         />
 
         <main id="contenido" className="contenido" tabIndex={-1}>
+          {/* Arriba de todo, en todas las pantallas, mientras se deba algo. */}
+          <AvisoDePago />
           {children}
         </main>
       </div>

@@ -1,1 +1,1 @@
-export { TarjetaEnArchivo } from "./TarjetaEnArchivo";
+export { TarjetaEnArchivo, estiloDelCampo } from "./TarjetaEnArchivo";

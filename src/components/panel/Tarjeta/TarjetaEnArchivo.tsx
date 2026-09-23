@@ -247,7 +247,7 @@ export function TarjetaEnArchivo() {
  * Escribirlos a mano aquí crearía una segunda paleta —la del iframe— que se
  * quedaría vieja en cuanto alguien tocara `tokens.css`.
  */
-function estiloDelCampo(): Record<string, string> {
+export function estiloDelCampo(): Record<string, string> {
   const raiz = typeof document !== "undefined"
     ? getComputedStyle(document.documentElement)
     : null;

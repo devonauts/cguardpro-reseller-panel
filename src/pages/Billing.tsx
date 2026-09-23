@@ -10,6 +10,8 @@ import {
   type TerminosVigentes, type TotalPorMoneda,
 } from "@/services/resellerService";
 import { TarjetaEnArchivo } from "@/components/panel/Tarjeta";
+import { EVENTO_PAGO, PagarFactura } from "@/components/panel/Pago";
+import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 /* El formateador de dinero es el de `lib/dinero`, no uno propio.
@@ -92,6 +94,15 @@ export function Billing() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
+  /* Pagar desde el aviso de arriba cambia esta pantalla: totales, estado de la
+     factura. Se recarga en vez de parchear a mano lo que el servidor ya sabe. */
+  const [version, setVersion] = useState(0);
+  useEffect(() => {
+    const alPagar = () => { cargar(); setVersion((v) => v + 1); };
+    window.addEventListener(EVENTO_PAGO, alPagar);
+    return () => window.removeEventListener(EVENTO_PAGO, alPagar);
+  }, [cargar]);
+
   useEffect(() => {
     let vivo = true;
     if (!abierta) { setDetalle(null); return; }
@@ -99,7 +110,7 @@ export function Billing() {
       .then((d) => { if (vivo) setDetalle(d); })
       .catch(() => { if (vivo) setDetalle(null); });
     return () => { vivo = false; };
-  }, [abierta]);
+  }, [abierta, version]);
 
   return (
     <>
@@ -172,7 +183,12 @@ export function Billing() {
             ))}
           </Lista>
 
-          {detalle && <Detalle factura={detalle} />}
+          {detalle && (
+            <Detalle
+              factura={detalle}
+              onPagada={() => window.dispatchEvent(new CustomEvent(EVENTO_PAGO))}
+            />
+          )}
         </div>
       </EstadoDeDatos>
     </>
@@ -209,8 +225,13 @@ function Terminos({ terminos }: { terminos: TerminosVigentes }) {
   );
 }
 
-function Detalle({ factura }: { factura: FacturaDetallada }) {
+function Detalle({
+  factura, onPagada,
+}: { factura: FacturaDetallada; onPagada: () => void }) {
   const t = useT();
+  const { puede } = useResellerAuth();
+  const saldo = factura.totalCents - factura.amountPaidCents;
+  const pagable = (factura.status === "open" || factura.status === "sent") && saldo > 0;
   const base = factura.lines.filter((l) => !l.isAdjustment);
   const ajustes = factura.lines.filter((l) => l.isAdjustment);
 
@@ -286,6 +307,20 @@ function Detalle({ factura }: { factura: FacturaDetallada }) {
           </div>
         )}
       </div>
+
+      {/* Pagar, en la propia factura. El importe es el saldo que calculó el
+          servidor; el botón no decide ninguna cifra. */}
+      {pagable && puede("reseller.billing.manage") && (
+        <div className="factura__pagar">
+          <PagarFactura
+            invoiceId={factura.id}
+            saldoCents={saldo}
+            currency={factura.currency}
+            tieneTarjeta={false}
+            onPagada={onPagada}
+          />
+        </div>
+      )}
 
       {factura.immutable ? (
         <div className="factura__acciones">
