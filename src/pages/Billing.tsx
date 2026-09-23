@@ -1,43 +1,41 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Cifra, Cifras, EstadoDeDatos, Lista, ListaFila, Pildora, Tarjeta,
-  TarjetaCabecera, TodaviaNo, type Tono,
+  EstadoDeDatos, Icono, Pildora, TodaviaNo, type Tono,
 } from "@/components/cristal";
 import {
   billingService,
   type FacturaDetallada, type FacturaEnLista, type LineaDeFactura,
-  type PlanDeCobro, type TotalPorMoneda,
+  type PlanDeCobro, type TarjetaDelSocio,
 } from "@/services/resellerService";
-import { ComoTeCobramos } from "./ComoTeCobramos";
 import { TarjetaEnArchivo } from "@/components/panel/Tarjeta";
 import { EVENTO_PAGO, PagarFactura } from "@/components/panel/Pago";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
-/* El formateador de dinero es el de `lib/dinero`, no uno propio.
-   Esta pantalla tenía el suyo y escribía la coma decimal A MANO, así que en
-   inglés pintaba «833,80 USD» — el formato castellano dentro de una pantalla
-   inglesa, y sin separador de miles. El compartido saca los separadores del
-   idioma elegido, que es justo lo que hace falta aquí. */
-import { dinero, fechaCorta, mesDelPeriodo } from "@/lib/dinero";
+/* El formateador de dinero es el de `lib/dinero`, no uno propio: saca los
+   separadores del idioma elegido. `precio` es la versión corta para leer de
+   un vistazo («$1,500»); `dinero` la exacta, para las líneas de factura. */
+import { dinero, fechaCorta, mesDelPeriodo, precio } from "@/lib/dinero";
+import { TuPlan, EsteMes, ComoFunciona } from "./ComoTeCobramos";
 import "./Billing.scss";
 
 /**
- * Lo que CGuardPro le cobra al socio.
+ * ════════════════════════════════════════════════════════════════════════════
+ * FACTURACIÓN — LO QUE EL SOCIO NECESITA SABER, EN EL ORDEN EN QUE LO PREGUNTA
  *
- * ── SÓLO LECTURA, Y NO POR JERARQUÍA ──────────────────────────────────────
+ *   1. ¿Debo algo? ¿Cuánto me van a cobrar y cuándo? ¿Con qué tarjeta?
+ *      → tres fichas arriba del todo, con el botón para pagar.
+ *   2. ¿Por qué? → «Tu plan»: los tres conceptos del contrato en una tabla.
+ *   3. ¿Cómo va este mes? → el recibo estimado y los usuarios por empresa.
+ *   4. Las facturas, en una tabla; el detalle se abre en la fila.
+ *   5. Cómo funciona el ciclo, plegado: está para quien lo busque.
+ *
+ * ── SÓLO LECTURA, SALVO PAGAR ─────────────────────────────────────────────
  * Aquí no hay ni un botón que cambie una cifra. Una factura es una reclamación
  * de una parte sobre la otra, y la parte a la que se le reclama no puede
- * editarla: si pudiera, el documento no serviría de respaldo para ninguna de las
- * dos. Lo que sí hay es todo el detalle — de dónde sale cada importe y sobre qué
- * recuento se calculó— para que no haga falta fiarse de nadie.
- *
- * ── CONSUMO Y FACTURACIÓN CONTESTAN PREGUNTAS DISTINTAS ───────────────────
- * Consumo: «¿cuántos usuarios se contaron y por qué ésos?». Facturación: «¿qué
- * me cobraron por eso?». Se enlazan pero no se mezclan, y aquí no se vuelve a
- * contar nada: cada línea de regalías enseña el recuento CONGELADO del que
- * salió.
+ * editarla. Lo que sí puede es PAGARLA: el importe lo pone el servidor.
+ * ════════════════════════════════════════════════════════════════════════════
  */
 
 const ESTADO: Record<string, { texto: Clave; tono: Tono }> = {
@@ -69,27 +67,31 @@ const MOTIVO: Record<string, Clave> = {
 
 export function Billing() {
   const t = useT();
+  const { puede } = useResellerAuth();
   const [facturas, setFacturas] = useState<FacturaEnLista[]>([]);
   const [plan, setPlan] = useState<PlanDeCobro | null>(null);
-  const [totales, setTotales] = useState<TotalPorMoneda[]>([]);
+  const [tarjeta, setTarjeta] = useState<TarjetaDelSocio | null>(null);
+  const [gestionarTarjeta, setGestionarTarjeta] = useState(false);
   const [abierta, setAbierta] = useState<string | null>(null);
   const [detalle, setDetalle] = useState<FacturaDetallada | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [version, setVersion] = useState(0);
 
   const cargar = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      /* El plan no puede tumbar la pantalla: si falla, las facturas siguen. */
-      const [r, p] = await Promise.all([
+      /* El plan y la tarjeta no pueden tumbar la pantalla: si fallan, las
+         facturas siguen. */
+      const [r, p, c] = await Promise.all([
         billingService.list({ limit: 24 }),
         billingService.plan().catch(() => null),
+        billingService.tarjeta().catch(() => null),
       ]);
-      setPlan(p);
       setFacturas(r.invoices ?? []);
-      setTotales(r.totalsByCurrency ?? []);
-      setAbierta(r.invoices?.[0]?.id ?? null);
+      setPlan(p);
+      setTarjeta(c?.card ?? null);
     } catch (e: any) {
       setError(e?.message || t("facturacion.noCargo"));
     } finally {
@@ -99,9 +101,6 @@ export function Billing() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  /* Pagar desde el aviso de arriba cambia esta pantalla: totales, estado de la
-     factura. Se recarga en vez de parchear a mano lo que el servidor ya sabe. */
-  const [version, setVersion] = useState(0);
   useEffect(() => {
     const alPagar = () => { cargar(); setVersion((v) => v + 1); };
     window.addEventListener(EVENTO_PAGO, alPagar);
@@ -117,6 +116,18 @@ export function Billing() {
     return () => { vivo = false; };
   }, [abierta, version]);
 
+  const pagadaDesdeAqui = () => window.dispatchEvent(new CustomEvent(EVENTO_PAGO));
+
+  /* Lo que se debe: facturas cerradas con saldo, la más antigua primero. */
+  const debidas = facturas
+    .filter((f) => (f.status === "open" || f.status === "sent") && f.totalCents > f.amountPaidCents)
+    .sort((a, b) => String(a.dueAt ?? "").localeCompare(String(b.dueAt ?? "")));
+  const moneda = plan?.contract?.currency ?? facturas[0]?.currency ?? "USD";
+  const debe = debidas.reduce((n, f) => n + f.totalCents - f.amountPaidCents, 0);
+  const primera = debidas[0];
+  const vencida = !!primera?.dueAt && new Date(primera.dueAt).getTime() < Date.now();
+  const mes = plan?.currentMonth ?? null;
+
   return (
     <>
       <header className="cabecera">
@@ -126,84 +137,150 @@ export function Billing() {
         </div>
       </header>
 
-      <div className="facturacion">
-        {/* De arriba abajo: cómo te cobramos → cómo va este mes → cuándo se
-            cobra → con qué tarjeta → las facturas. Lo primero contesta el
-            «¿por qué?» que la lista de facturas sola no contestaba. */}
-        {plan && <ComoTeCobramos plan={plan} />}
-
-        {/* ── LA TARJETA, FUERA DEL ESTADO DE DATOS ──────────────────────
-            Tiene sentido aunque todavía NO haya facturas: un socio recién dado
-            de alta es el que más falta le hace dejarla puesta. */}
-        <TarjetaEnArchivo />
-
-        <section className="facturacion__facturas" aria-labelledby="tus-facturas">
-          <h2 id="tus-facturas" className="facturacion__titulo">{t("facturacion.tusFacturas")}</h2>
-          <EstadoDeDatos
-            cargando={cargando}
-            error={error}
-            vacio={!cargando && facturas.length === 0}
-            etiquetaVacio={t("facturacion.vacio")}
-            onReintentar={cargar}
-          >
-            <div className="facturacion__lista">
-              {totales.map((x) => (
-                <Cifras key={x.currency}>
-                  <Cifra
-                    etiqueta={t("facturacion.facturado", { m: x.currency })}
-                    valor={dinero(x.billedCents, x.currency)}
-                    nota={t(
-                      x.invoiceCount === 1 ? "facturacion.facturaUna" : "facturacion.facturasVarias",
-                      { n: x.invoiceCount },
-                    )}
-                  />
-                  <Cifra
-                    etiqueta={t("facturacion.cobrado", { m: x.currency })}
-                    valor={dinero(x.paidCents, x.currency)}
-                  />
-                  <Cifra
-                    etiqueta={t("facturacion.pendiente", { m: x.currency })}
-                    valor={dinero(x.outstandingCents, x.currency)}
-                  />
-                </Cifras>
-              ))}
-
-              {totales.length > 1 && (
-                <p className="facturacion__nota">{t("facturacion.variasMonedas")}</p>
+      <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
+        <div className="facturacion">
+          {/* ── 1. EL RESUMEN ─────────────────────────────────────────── */}
+          <div className="resumen">
+            <section className={`saldo-ficha${debe > 0 ? (vencida ? " saldo-ficha--peligro" : " saldo-ficha--aviso") : ""}`}>
+              <span className="saldo-ficha__etiqueta">{t("facturacion.saldoPendiente")}</span>
+              <span className="saldo-ficha__valor">{precio(debe, moneda)}</span>
+              {debe > 0 && primera ? (
+                <>
+                  <span className="saldo-ficha__nota">
+                    {t(vencida ? "facturacion.saldoVencida" : "facturacion.saldoVence", {
+                      n: primera.number, f: fechaCorta(primera.dueAt),
+                    })}
+                  </span>
+                  {puede("reseller.billing.manage") && (
+                    <div className="saldo-ficha__accion">
+                      <PagarFactura
+                        key={primera.id}
+                        invoiceId={primera.id}
+                        saldoCents={primera.totalCents - primera.amountPaidCents}
+                        currency={primera.currency}
+                        tieneTarjeta={!!tarjeta?.hasCard}
+                        onPagada={pagadaDesdeAqui}
+                      />
+                    </div>
+                  )}
+                </>
+              ) : (
+                <span className="saldo-ficha__nota saldo-ficha__nota--ok">
+                  <Icono nombre="visto" tamano={14} />{t("facturacion.alDia")}
+                </span>
               )}
+            </section>
 
-              <Lista como="nav" aria-label={t("facturacion.tusFacturas")}>
+            <section className="saldo-ficha">
+              <span className="saldo-ficha__etiqueta">{t("facturacion.proximoCobro")}</span>
+              <span className="saldo-ficha__valor">{mes ? precio(mes.totalCents, moneda) : "—"}</span>
+              {mes && (
+                <span className="saldo-ficha__nota">
+                  {t("facturacion.proximoCobroNota", {
+                    f: fechaCorta(`${mes.closesOn}T12:00:00`), n: mes.seats,
+                  })}
+                </span>
+              )}
+            </section>
+
+            <section className="saldo-ficha">
+              <span className="saldo-ficha__etiqueta">{t("facturacion.metodoDePago")}</span>
+              {tarjeta?.hasCard ? (
+                <>
+                  <span className="saldo-ficha__valor saldo-ficha__valor--tarjeta">
+                    <Icono nombre="tarjeta" tamano={20} />
+                    {`${marcaDeTarjeta(tarjeta.brand)} ···· ${tarjeta.last4}`}
+                  </span>
+                  <span className="saldo-ficha__nota">
+                    {t("facturacion.tarjetaCaduca", {
+                      m: String(tarjeta.expMonth ?? "").padStart(2, "0"), a: String(tarjeta.expYear ?? ""),
+                    })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="saldo-ficha__valor saldo-ficha__valor--vacio">{t("facturacion.sinTarjeta")}</span>
+                  <span className="saldo-ficha__nota">{t("facturacion.sinTarjetaNota")}</span>
+                </>
+              )}
+              <button
+                type="button"
+                className="saldo-ficha__enlace"
+                aria-expanded={gestionarTarjeta}
+                onClick={() => setGestionarTarjeta((v) => !v)}
+              >
+                {t(tarjeta?.hasCard ? "facturacion.cambiarTarjeta" : "facturacion.anadirTarjeta")}
+                <Icono nombre="flecha" tamano={14} />
+              </button>
+            </section>
+          </div>
+
+          {gestionarTarjeta && <TarjetaEnArchivo />}
+
+          {/* ── 2 y 3. EL PLAN Y EL MES ───────────────────────────────── */}
+          {plan && <TuPlan plan={plan} />}
+          {plan?.contract && mes && <EsteMes plan={plan} />}
+
+          {/* ── 4. LAS FACTURAS ───────────────────────────────────────── */}
+          <section className="bloque" aria-labelledby="tus-facturas">
+            <header className="bloque__cabecera">
+              <h2 id="tus-facturas" className="bloque__titulo">{t("facturacion.tusFacturas")}</h2>
+            </header>
+            {facturas.length === 0 ? (
+              <p className="bloque__vacio">{t("facturacion.vacio")}</p>
+            ) : (
+              <div className="facturas" role="table" aria-label={t("facturacion.tusFacturas")}>
+                <div className="facturas__fila facturas__fila--cabecera" role="row">
+                  <span role="columnheader">{t("facturacion.colNumero")}</span>
+                  <span role="columnheader">{t("facturacion.colPeriodo")}</span>
+                  <span role="columnheader">{t("facturacion.colVence")}</span>
+                  <span role="columnheader" className="facturas__derecha">{t("facturacion.colImporte")}</span>
+                  <span role="columnheader" className="facturas__derecha">{t("facturacion.colEstado")}</span>
+                </div>
                 {facturas.map((f) => (
-                  <ListaFila
-                    key={f.id}
-                    como="button"
-                    type="button"
-                    className={`factura-fila${f.id === abierta ? " factura-fila--abierta" : ""}`}
-                    onClick={() => setAbierta(f.id)}
-                    aria-current={f.id === abierta}
-                  >
-                    <span className="factura-fila__numero">{f.number}</span>
-                    <span className="factura-fila__periodo">{mesDelPeriodo(f.periodLabel)}</span>
-                    <span className="factura-fila__total">{dinero(f.totalCents, f.currency)}</span>
-                    <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
-                      {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
-                    </Pildora>
-                  </ListaFila>
+                  <div key={f.id} className="facturas__grupo">
+                    <button
+                      type="button"
+                      role="row"
+                      className={`facturas__fila${f.id === abierta ? " facturas__fila--abierta" : ""}`}
+                      aria-expanded={f.id === abierta}
+                      onClick={() => setAbierta((a) => (a === f.id ? null : f.id))}
+                    >
+                      <span role="cell" className="facturas__numero">{f.number}</span>
+                      <span role="cell">{mesDelPeriodo(f.periodLabel)}</span>
+                      <span role="cell">{fechaCorta(f.dueAt)}</span>
+                      <span role="cell" className="facturas__derecha facturas__importe">
+                        {dinero(f.totalCents, f.currency)}
+                      </span>
+                      <span role="cell" className="facturas__derecha">
+                        <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
+                          {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
+                        </Pildora>
+                      </span>
+                    </button>
+                    {f.id === abierta && detalle?.id === f.id && (
+                      <Detalle factura={detalle} onPagada={pagadaDesdeAqui} />
+                    )}
+                  </div>
                 ))}
-              </Lista>
+              </div>
+            )}
+          </section>
 
-              {detalle && (
-                <Detalle
-                  factura={detalle}
-                  onPagada={() => window.dispatchEvent(new CustomEvent(EVENTO_PAGO))}
-                />
-              )}
-            </div>
-          </EstadoDeDatos>
-        </section>
-      </div>
+          {/* ── 5. CÓMO FUNCIONA ──────────────────────────────────────── */}
+          {plan?.contract && <ComoFunciona plan={plan} />}
+        </div>
+      </EstadoDeDatos>
     </>
   );
+}
+
+/** Una marca conocida se enseña con su nombre propio; el resto, tal cual. */
+function marcaDeTarjeta(marca: string | null): string {
+  const MARCAS: Record<string, string> = {
+    visa: "Visa", mastercard: "Mastercard", amex: "American Express", discover: "Discover",
+  };
+  return marca ? (MARCAS[marca] ?? marca) : "";
 }
 
 function Detalle({
@@ -217,23 +294,17 @@ function Detalle({
   const ajustes = factura.lines.filter((l) => l.isAdjustment);
 
   return (
-    <Tarjeta>
-      <TarjetaCabecera
-        titulo={factura.number}
-        nota={
-          <>
-            {mesDelPeriodo(factura.period?.label)}
-            {factura.contract
-              && ` · ${t("facturacion.detalleContrato", { v: factura.contract.version })}`}
-            {factura.finalizedAt
-              && ` · ${t("facturacion.detalleEmitida", {
-                f: fechaCorta(factura.issuedAt ?? factura.finalizedAt),
-              })}`}
-            {factura.dueAt
-              && ` · ${t("facturacion.detalleVence", { f: fechaCorta(factura.dueAt) })}`}
-          </>
-        }
-      />
+    <div className="facturas__detalle">
+      {/* El número ya está en la fila: aquí sólo lo que la fila no dice. */}
+      <p className="facturas__meta">
+        {[
+          factura.contract && t("facturacion.detalleContrato", { v: factura.contract.version }),
+          factura.finalizedAt && t("facturacion.detalleEmitida", {
+            f: fechaCorta(factura.issuedAt ?? factura.finalizedAt),
+          }),
+          factura.dueAt && t("facturacion.detalleVence", { f: fechaCorta(factura.dueAt) }),
+        ].filter(Boolean).join(" · ")}
+      </p>
 
       {factura.status === "void" && (
         <p className="factura__anulada">{t("facturacion.anulada")}</p>
@@ -291,8 +362,10 @@ function Detalle({
 
       {/* Pagar, en la propia factura. El importe es el saldo que calculó el
           servidor; el botón no decide ninguna cifra. */}
-      {pagable && puede("reseller.billing.manage") && (
-        <div className="factura__pagar">
+      <div className="facturas__acciones">
+        {/* Pagar, en la propia factura. El importe es el saldo que calculó el
+            servidor; el botón no decide ninguna cifra. */}
+        {pagable && puede("reseller.billing.manage") && (
           <PagarFactura
             invoiceId={factura.id}
             saldoCents={saldo}
@@ -300,22 +373,18 @@ function Detalle({
             tieneTarjeta={false}
             onPagada={onPagada}
           />
-        </div>
-      )}
-
-      {factura.immutable ? (
-        <div className="factura__acciones">
-          {/* Un enlace normal a una ruta que responde con el PDF. Ni descarga
-              por JavaScript ni blob en memoria: el navegador ya sabe hacer esto,
-              y por aquí la sesión viaja como en cualquier otra petición. */}
+        )}
+        {factura.immutable ? (
+          /* Un enlace normal a una ruta que responde con el PDF: el navegador
+             ya sabe hacer esto, y la sesión viaja como en cualquier petición. */
           <a className="btn btn--suave" href={billingService.pdfUrl(factura.id)} target="_blank" rel="noreferrer">
             {t("facturacion.descargarPdf")}
           </a>
-        </div>
-      ) : (
-        <TodaviaNo>{t("facturacion.borradorPdf")}</TodaviaNo>
-      )}
-    </Tarjeta>
+        ) : (
+          <TodaviaNo>{t("facturacion.borradorPdf")}</TodaviaNo>
+        )}
+      </div>
+    </div>
   );
 }
 

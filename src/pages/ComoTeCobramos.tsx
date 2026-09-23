@@ -1,25 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-import { Icono, Panel, Pildora, type NombreDeIcono, type Tono } from "@/components/cristal";
-import { dinero, fechaCorta, mesDelPeriodo } from "@/lib/dinero";
+import { Icono, Pildora, type NombreDeIcono, type Tono } from "@/components/cristal";
+import { fechaCorta, mesDelPeriodo, precio } from "@/lib/dinero";
 import type { PlanDeCobro } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
- * CÓMO TE COBRAMOS — EN TRES BLOQUES QUE SE LEEN DE ARRIBA ABAJO
- *
- *   1. Los tres conceptos del contrato, cada uno con su regla en una frase y
- *      en qué punto está el socio AHORA: la cuota de alta (¿pagada?), la
- *      regalía por usuario (¿cuánto llevo?) y la cuota mensual (¿cuántos
- *      usuarios me faltan para que empiece?).
- *   2. Así va este mes: el recibo del mes en curso, línea a línea.
- *   3. Cuándo se cobra: el ciclo de cada mes, con los plazos del contrato.
+ * TU PLAN · ESTE MES · CÓMO FUNCIONA
  *
  * Todas las cifras vienen del servidor (`/billing/plan`), calculadas con las
- * mismas reglas que la factura. Aquí sólo se cuentan.
+ * mismas reglas que la factura. Aquí sólo se cuentan — y cortas: el socio
+ * quiere leer números, no párrafos. La explicación larga vive plegada al final.
  * ════════════════════════════════════════════════════════════════════════════
  */
 
@@ -35,140 +29,244 @@ const ALTA: Record<PlanDeCobro["setupFee"]["status"], { tono: Tono; texto: Clave
   sin_cuota: { tono: "neutro", texto: "cobro.altaSinCuota" },
 };
 
-export function ComoTeCobramos({ plan }: { plan: PlanDeCobro }) {
+/* ── TU PLAN ─────────────────────────────────────────────────────────────── */
+
+export function TuPlan({ plan }: { plan: PlanDeCobro }) {
   const t = useT();
   const c = plan.contract;
+
   if (!c) {
     return (
-      <Panel titulo={t("cobro.titulo")}>
-        <p className="cobro__vacio">{t("cobro.sinContrato")}</p>
-      </Panel>
+      <section className="bloque">
+        <header className="bloque__cabecera">
+          <h2 className="bloque__titulo">{t("cobro.titulo")}</h2>
+        </header>
+        <p className="bloque__vacio">{t("cobro.sinContrato")}</p>
+      </section>
     );
   }
 
   const m = plan.currentMonth;
-  const $ = (cents: number) => dinero(cents, c.currency);
+  const $ = (cents: number) => precio(cents, c.currency);
   const alta = ALTA[plan.setupFee.status];
   const umbral = c.monthlyFeeFreeUntilSeats;
   const usuarios = m?.seats ?? 0;
 
   return (
-    <>
-      {/* ── 1. LOS TRES CONCEPTOS ─────────────────────────────────────── */}
-      <section className="cobro" aria-labelledby="cobro-titulo">
-        <header className="cobro__cabecera">
-          <h2 id="cobro-titulo" className="cobro__titulo">{t("cobro.titulo")}</h2>
-          <p className="cobro__sub">{t("cobro.sub", { v: c.version, f: dia(c.effectiveFrom) })}</p>
-        </header>
+    <section className="bloque" aria-labelledby="tu-plan">
+      <header className="bloque__cabecera">
+        <h2 id="tu-plan" className="bloque__titulo">{t("cobro.titulo")}</h2>
+        <Link to="/contract" className="bloque__enlace">
+          {t("cobro.contrato", { v: c.version, f: dia(c.effectiveFrom) })}
+          <Icono nombre="flecha" tamano={14} />
+        </Link>
+      </header>
 
-        <div className="cobro__conceptos">
-          <Concepto
-            icono="escudo"
-            paso="1"
-            titulo={t("cobro.altaTitulo")}
-            precio={$(c.setupFeeCents)}
-            unidad={t("cobro.unaVez")}
-            regla={t("cobro.altaRegla")}
-          >
-            <Pildora tono={alta.tono}>
-              {t(alta.texto, {
-                n: plan.setupFee.invoiceNumber ?? "",
-                f: plan.setupFee.paidAt ? fechaCorta(plan.setupFee.paidAt) : "",
-              })}
-            </Pildora>
-          </Concepto>
+      <ul className="plan">
+        <Fila
+          icono="escudo"
+          concepto={t("cobro.altaTitulo")}
+          regla={t("cobro.altaRegla")}
+          importe={$(c.setupFeeCents)}
+          unidad={t("cobro.unaVez")}
+        >
+          <Pildora tono={alta.tono}>
+            {t(alta.texto, {
+              n: plan.setupFee.invoiceNumber ?? "",
+              f: plan.setupFee.paidAt ? fechaCorta(plan.setupFee.paidAt) : "",
+            })}
+          </Pildora>
+        </Fila>
 
-          <Concepto
-            icono="personas"
-            paso="2"
-            titulo={t("cobro.regaliaTitulo")}
-            precio={$(c.royaltyPerUserCents)}
-            unidad={t("cobro.porUsuarioMes")}
-            regla={t("cobro.regaliaRegla")}
-          >
-            {m && (
-              <p className="concepto__estado">
-                {t("cobro.regaliaHoy", { n: usuarios, importe: $(m.royaltyCents) })}
-              </p>
-            )}
-          </Concepto>
+        <Fila
+          icono="personas"
+          concepto={t("cobro.regaliaTitulo")}
+          regla={t("cobro.regaliaRegla")}
+          importe={$(c.royaltyPerUserCents)}
+          unidad={t("cobro.porUsuarioMes")}
+        >
+          {m && (
+            <span className="plan__estado">
+              <strong>{t("cobro.usuarios", { n: usuarios })}</strong>
+              {t("cobro.hoy")}
+            </span>
+          )}
+        </Fila>
 
-          <Concepto
-            icono="corona"
-            paso="3"
-            titulo={t("cobro.mensualTitulo")}
-            precio={$(c.monthlyFeeCents)}
-            unidad={t("cobro.alMes")}
-            regla={umbral > 0
-              ? t("cobro.mensualReglaUmbral", { n: umbral })
-              : t("cobro.mensualReglaSiempre")}
-          >
-            {m && umbral > 0 && (
-              <>
-                <div
-                  className="umbral"
-                  role="progressbar"
-                  aria-valuemin={0}
-                  aria-valuemax={umbral}
-                  aria-valuenow={Math.min(usuarios, umbral)}
-                  aria-label={t("cobro.mensualTitulo")}
-                >
-                  <span style={{ width: `${Math.min(100, (usuarios / umbral) * 100)}%` }} />
-                </div>
-                <p className="concepto__estado">
-                  {m.monthlyFeeApplies
-                    ? t("cobro.mensualYaAplica", { n: usuarios, u: umbral })
-                    : t("cobro.mensualFaltan", { n: usuarios, u: umbral, faltan: m.seatsToMonthlyFee })}
-                </p>
-              </>
-            )}
-          </Concepto>
-        </div>
-      </section>
-
-      {/* ── 2. ASÍ VA ESTE MES ────────────────────────────────────────── */}
-      {m && <EsteMes plan={plan} />}
-
-      {/* ── 3. CUÁNDO SE COBRA ────────────────────────────────────────── */}
-      <Panel titulo={t("cobro.cicloTitulo")} nota={t("cobro.cicloSub")}>
-        <ol className="ciclo">
-          <Paso n="1" titulo={t("cobro.ciclo1")} texto={t("cobro.ciclo1Texto")} />
-          <Paso n="2" titulo={t("cobro.ciclo2")} texto={t("cobro.ciclo2Texto")} />
-          <Paso
-            n="3"
-            titulo={t("cobro.ciclo3", { d: c.paymentTermDays })}
-            texto={t("cobro.ciclo3Texto")}
-          />
-          <Paso
-            n="4"
-            titulo={t("cobro.ciclo4")}
-            texto={t("cobro.ciclo4Texto", { d: c.gracePeriodDays })}
-          />
-        </ol>
-      </Panel>
-    </>
+        <Fila
+          icono="corona"
+          concepto={t("cobro.mensualTitulo")}
+          regla={umbral > 0
+            ? t("cobro.mensualReglaUmbral", { n: umbral })
+            : t("cobro.mensualReglaSiempre")}
+          importe={$(c.monthlyFeeCents)}
+          unidad={t("cobro.alMes")}
+        >
+          {m && umbral > 0 ? (
+            <span className="plan__medidor">
+              <span
+                className="umbral"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={umbral}
+                aria-valuenow={Math.min(usuarios, umbral)}
+                aria-label={t("cobro.mensualTitulo")}
+              >
+                <span style={{ width: `${Math.min(100, (usuarios / umbral) * 100)}%` }} />
+              </span>
+              <span className="plan__estado">
+                {m.monthlyFeeApplies
+                  ? t("cobro.mensualYaAplica", { n: usuarios, u: umbral })
+                  : t("cobro.mensualFaltan", { n: usuarios, u: umbral, faltan: m.seatsToMonthlyFee })}
+              </span>
+            </span>
+          ) : (
+            <Pildora tono="neutro">{t("cobro.mensualCadaMes")}</Pildora>
+          )}
+        </Fila>
+      </ul>
+    </section>
   );
 }
 
-function Concepto({
-  icono, paso, titulo, precio, unidad, regla, children,
+function Fila({
+  icono, concepto, regla, importe, unidad, children,
 }: {
-  icono: NombreDeIcono; paso: string; titulo: string; precio: string; unidad: string;
-  regla: string; children?: React.ReactNode;
+  icono: NombreDeIcono; concepto: string; regla: string; importe: string; unidad: string;
+  children?: React.ReactNode;
 }) {
   return (
-    <article className="concepto">
-      <header className="concepto__cabecera">
-        <span className="concepto__icono"><Icono nombre={icono} tamano={18} /></span>
-        <span className="concepto__paso">{paso}</span>
+    <li className="plan__fila">
+      <span className="plan__icono"><Icono nombre={icono} tamano={18} /></span>
+      <span className="plan__concepto">
+        <strong>{concepto}</strong>
+        <span>{regla}</span>
+      </span>
+      <span className="plan__precio">
+        <strong>{importe}</strong>
+        <span>{unidad}</span>
+      </span>
+      <span className="plan__tuyo">{children}</span>
+    </li>
+  );
+}
+
+/* ── ESTE MES ────────────────────────────────────────────────────────────── */
+
+export function EsteMes({ plan }: { plan: PlanDeCobro }) {
+  const t = useT();
+  const c = plan.contract!;
+  const m = plan.currentMonth!;
+  const $ = (cents: number) => precio(cents, c.currency);
+  const [todas, setTodas] = useState(false);
+  const orden = [...m.companies].sort((a, b) => b.seats - a.seats);
+  const visibles = todas ? orden : orden.slice(0, 6);
+  const mayor = Math.max(1, ...orden.map((e) => e.seats));
+
+  return (
+    <section className="bloque" aria-labelledby="este-mes">
+      <header className="bloque__cabecera">
+        <h2 id="este-mes" className="bloque__titulo">
+          {t("cobro.mesTitulo", { mes: mesDelPeriodo(m.label) })}
+        </h2>
+        <Pildora tono="neutro">{t("cobro.estimacion")}</Pildora>
       </header>
-      <h3 className="concepto__titulo">{titulo}</h3>
-      <p className="concepto__precio">
-        {precio} <span className="concepto__unidad">{unidad}</span>
-      </p>
-      <p className="concepto__regla">{regla}</p>
-      {children && <div className="concepto__pie">{children}</div>}
-    </article>
+      <p className="bloque__nota">{t("cobro.mesSub", { f: dia(m.closesOn) })}</p>
+      {!m.billable && <p className="bloque__nota bloque__nota--aviso">{t("cobro.noFacturable")}</p>}
+
+      <div className="mes">
+        <ul className="recibo">
+          <li className="recibo__linea">
+            <span className="recibo__concepto">
+              {t("cobro.lineaRegalia")}
+              <span className="recibo__detalle">
+                {t("cobro.lineaRegaliaDetalle", { n: m.seats, p: $(c.royaltyPerUserCents) })}
+              </span>
+            </span>
+            <span className="recibo__importe">{$(m.royaltyCents)}</span>
+          </li>
+          <li className="recibo__linea">
+            <span className="recibo__concepto">
+              {t("cobro.lineaMensual")}
+              <span className="recibo__detalle">
+                {m.monthlyFeeApplies
+                  ? t("cobro.lineaMensualAplica")
+                  : t("cobro.lineaMensualGratis", { n: m.seats, u: c.monthlyFeeFreeUntilSeats })}
+              </span>
+            </span>
+            <span className="recibo__importe">{$(m.monthlyFeeCents)}</span>
+          </li>
+          {m.setupFeeCents > 0 && (
+            <li className="recibo__linea">
+              <span className="recibo__concepto">
+                {t("cobro.lineaAlta")}
+                <span className="recibo__detalle">{t("cobro.lineaAltaDetalle")}</span>
+              </span>
+              <span className="recibo__importe">{$(m.setupFeeCents)}</span>
+            </li>
+          )}
+          <li className="recibo__linea recibo__linea--total">
+            <span className="recibo__concepto">{t("cobro.totalEstimado")}</span>
+            <span className="recibo__importe">{$(m.totalCents)}</span>
+          </li>
+        </ul>
+
+        <div className="mes-empresas">
+          <span className="mes-empresas__titulo">{t("cobro.porEmpresa")}</span>
+          {orden.length === 0 ? (
+            <p className="bloque__vacio">{t("empresas.vacio")}</p>
+          ) : (
+            <ul className="mes-empresas__lista">
+              {visibles.map((e) => (
+                <li key={e.tenantId} className="mes-empresas__fila">
+                  <Link to={`/companies/${e.tenantId}`} className="mes-empresas__nombre">
+                    {e.name || t("empresas.sinNombre")}
+                  </Link>
+                  {e.excludedReason ? (
+                    <span className="mes-empresas__fuera">{t("cobro.noCuenta")}</span>
+                  ) : (
+                    <>
+                      <span className="mes-empresas__barra" aria-hidden="true">
+                        <span style={{ width: `${(e.seats / mayor) * 100}%` }} />
+                      </span>
+                      <span className="mes-empresas__usuarios">{e.seats}</span>
+                      <span className="mes-empresas__importe">{$(e.seats * c.royaltyPerUserCents)}</span>
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {orden.length > 6 && (
+            <button type="button" className="bloque__enlace" onClick={() => setTodas((v) => !v)}>
+              {t(todas ? "cobro.verMenos" : "cobro.verTodas", { n: orden.length })}
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── CÓMO FUNCIONA ───────────────────────────────────────────────────────── */
+
+export function ComoFunciona({ plan }: { plan: PlanDeCobro }) {
+  const t = useT();
+  const c = plan.contract!;
+  return (
+    <details className="ciclo-mensual">
+      <summary className="ciclo-mensual__resumen">
+        <Icono nombre="libro" tamano={16} />
+        {t("cobro.cicloTitulo")}
+        <Icono nombre="galon" tamano={15} className="ciclo-mensual__galon" />
+      </summary>
+      <ol className="ciclo">
+        <Paso n="1" titulo={t("cobro.ciclo1")} texto={t("cobro.ciclo1Texto")} />
+        <Paso n="2" titulo={t("cobro.ciclo2")} texto={t("cobro.ciclo2Texto")} />
+        <Paso n="3" titulo={t("cobro.ciclo3", { d: c.paymentTermDays })} texto={t("cobro.ciclo3Texto")} />
+        <Paso n="4" titulo={t("cobro.ciclo4")} texto={t("cobro.ciclo4Texto", { d: c.gracePeriodDays })} />
+      </ol>
+    </details>
   );
 }
 
@@ -183,94 +281,3 @@ function Paso({ n, titulo, texto }: { n: string; titulo: string; texto: string }
     </li>
   );
 }
-
-/** El recibo del mes en curso, como lo vería la factura si el mes cerrara hoy. */
-function EsteMes({ plan }: { plan: PlanDeCobro }) {
-  const t = useT();
-  const [abierto, setAbierto] = useState(false);
-  const c = plan.contract!;
-  const m = plan.currentMonth!;
-  const $ = (cents: number) => dinero(cents, c.currency);
-  const cuentan = m.companies.filter((e) => !e.excludedReason);
-
-  return (
-    <Panel
-      titulo={t("cobro.mesTitulo", { mes: mesDelPeriodo(m.label) })}
-      nota={t("cobro.mesSub", { f: dia(m.closesOn) })}
-      acciones={<Pildora tono="neutro">{t("cobro.estimacion")}</Pildora>}
-    >
-      {!m.billable && <p className="recibo__aviso">{t("cobro.noFacturable")}</p>}
-
-      <ul className="recibo">
-        <li className="recibo__linea">
-          <span className="recibo__concepto">
-            {t("cobro.lineaRegalia")}
-            <span className="recibo__detalle">
-              {t("cobro.lineaRegaliaDetalle", { n: m.seats, p: $(c.royaltyPerUserCents) })}
-            </span>
-          </span>
-          <span className="recibo__importe">{$(m.royaltyCents)}</span>
-        </li>
-        <li className="recibo__linea">
-          <span className="recibo__concepto">
-            {t("cobro.lineaMensual")}
-            <span className="recibo__detalle">
-              {m.monthlyFeeApplies
-                ? t("cobro.lineaMensualAplica")
-                : t("cobro.lineaMensualGratis", { n: m.seats, u: c.monthlyFeeFreeUntilSeats })}
-            </span>
-          </span>
-          <span className="recibo__importe">{$(m.monthlyFeeCents)}</span>
-        </li>
-        {m.setupFeeCents > 0 && (
-          <li className="recibo__linea">
-            <span className="recibo__concepto">
-              {t("cobro.lineaAlta")}
-              <span className="recibo__detalle">{t("cobro.lineaAltaDetalle")}</span>
-            </span>
-            <span className="recibo__importe">{$(m.setupFeeCents)}</span>
-          </li>
-        )}
-        <li className="recibo__linea recibo__linea--total">
-          <span className="recibo__concepto">{t("cobro.totalEstimado")}</span>
-          <span className="recibo__importe">{$(m.totalCents)}</span>
-        </li>
-      </ul>
-
-      {m.companies.length > 0 && (
-        <>
-          <button
-            type="button"
-            className="recibo__desglose-boton"
-            aria-expanded={abierto}
-            onClick={() => setAbierto((v) => !v)}
-          >
-            {t(abierto ? "cobro.ocultarEmpresas" : "cobro.verEmpresas", { n: cuentan.length })}
-            <Icono nombre="galon" tamano={15} />
-          </button>
-          {abierto && (
-            <ul className="mes-empresas">
-              {m.companies.map((e) => (
-                <li key={e.tenantId} className="mes-empresas__fila">
-                  <Link to={`/companies/${e.tenantId}`} className="mes-empresas__nombre">
-                    {e.name || t("empresas.sinNombre")}
-                  </Link>
-                  {e.excludedReason ? (
-                    <span className="mes-empresas__fuera">{t("cobro.noCuenta")}</span>
-                  ) : (
-                    <>
-                      <span className="mes-empresas__usuarios">{t("cobro.usuarios", { n: e.seats })}</span>
-                      <span className="mes-empresas__importe">{$(e.seats * c.royaltyPerUserCents)}</span>
-                    </>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
-    </Panel>
-  );
-}
-
-export default ComoTeCobramos;

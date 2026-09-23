@@ -163,44 +163,148 @@
 .factura__pagar { margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--line); }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   CÓMO TE COBRAMOS
+   FACTURACIÓN — resumen, plan, mes, facturas y ciclo
    ══════════════════════════════════════════════════════════════════════════ */
 
-.facturacion__facturas { display: flex; flex-direction: column; gap: var(--s-3); }
-.facturacion__lista { display: flex; flex-direction: column; gap: var(--s-4); }
-.facturacion__titulo,
-.cobro__titulo {
-  font-size: clamp(16px, 2.2vw, 18px);
-  letter-spacing: -0.015em;
-  color: var(--text-primary);
-}
+.facturacion { gap: var(--s-4); }
 
-.cobro { display: flex; flex-direction: column; gap: var(--s-3); }
-.cobro__cabecera { display: flex; flex-direction: column; gap: var(--s-1); }
-.cobro__sub { font-size: 13px; color: var(--text-muted); }
-.cobro__vacio { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); }
-
-/* Los tres conceptos, lado a lado: se comparan de un vistazo. */
-.cobro__conceptos {
+/* ── Las tres fichas del resumen ───────────────────────────────────────── */
+.resumen {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
   gap: var(--s-4);
 }
 
-.concepto {
+.saldo-ficha {
   @include m.cristal(estandar);
   @include m.sin-cristal(var(--surface-raised));
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
-  padding: var(--s-5);
+  gap: var(--s-1);
+  padding: var(--s-4) var(--s-5);
   border-radius: var(--r-lg);
+  border: 1px solid transparent;
   min-width: 0;
 }
 
-.concepto__cabecera { display: flex; align-items: center; justify-content: space-between; }
+.saldo-ficha--aviso { border-color: var(--warn-line); background: var(--warn-soft); }
+.saldo-ficha--peligro { border-color: var(--danger-line); background: var(--danger-soft); }
 
-.concepto__icono {
+.saldo-ficha__etiqueta { font-size: 12.5px; color: var(--text-secondary); }
+
+.saldo-ficha__valor {
+  font-size: clamp(26px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.saldo-ficha__valor--tarjeta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 18px;
+  letter-spacing: 0;
+  padding: 7px 0;
+}
+
+.saldo-ficha__valor--vacio { font-size: 18px; letter-spacing: 0; padding: 7px 0; color: var(--text-muted); }
+
+.saldo-ficha__nota { font-size: 12.5px; color: var(--text-muted); }
+
+.saldo-ficha__nota--ok {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ok);
+}
+
+.saldo-ficha__accion { margin-top: var(--s-3); }
+
+.saldo-ficha__enlace {
+  appearance: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: var(--s-2) 0 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
+}
+
+/* ── Un bloque de la página: título a la izquierda, acción a la derecha ─ */
+.bloque {
+  @include m.cristal(sutil);
+  @include m.sin-cristal(var(--surface));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  min-width: 0;
+}
+
+.bloque__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+.bloque__titulo {
+  &::first-letter { text-transform: uppercase; }
+  font-size: 17px;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.bloque__nota { margin-top: calc(var(--s-2) * -1); font-size: 12.5px; color: var(--text-muted); }
+.bloque__nota--aviso { margin-top: 0; color: var(--warn); }
+.bloque__vacio { font-size: 13px; color: var(--text-muted); }
+
+.bloque__enlace {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); text-decoration: none; }
+}
+
+/* ── Tu plan: una fila por concepto ────────────────────────────────────── */
+.plan { list-style: none; margin: 0; padding: 0; }
+
+.plan__fila {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1.6fr) minmax(110px, 0.7fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+
+  &:last-child { border-bottom: 0; padding-bottom: 0; }
+  &:first-child { padding-top: 0; }
+}
+
+.plan__icono {
   display: grid;
   place-items: center;
   width: 36px;
@@ -210,45 +314,40 @@
   color: var(--text-primary);
 }
 
-.concepto__paso {
-  font-size: 11px;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
-}
-
-.concepto__titulo { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
-
-.concepto__precio {
-  font-size: clamp(24px, 3vw, 30px);
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
-}
-
-.concepto__unidad {
-  font-size: 13px;
-  font-weight: 400;
-  letter-spacing: 0;
-  color: var(--text-muted);
-}
-
-.concepto__regla { font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
-
-/* El estado de HOY va al pie, separado de la regla: una cosa es el acuerdo y
-   otra dónde estás tú. */
-.concepto__pie {
-  margin-top: auto;
-  padding-top: var(--s-3);
-  border-top: 1px solid var(--line);
+.plan__concepto {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
+  gap: 2px;
+  min-width: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-muted);
+
+  strong { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 }
 
-.concepto__estado { font-size: 13px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.plan__precio {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: var(--text-muted);
+
+  strong {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+}
+
+.plan__tuyo { display: flex; justify-content: flex-end; min-width: 0; }
+.plan__estado { font-size: 13px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.plan__estado strong { color: var(--text-primary); font-weight: 600; }
+.plan__medidor { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 260px; }
 
 .umbral {
+  display: block;
   height: 8px;
   border-radius: var(--r-full);
   background: var(--line);
@@ -263,7 +362,21 @@
   }
 }
 
-/* ── El recibo del mes ─────────────────────────────────────────────────── */
+@include r.hasta(tableta) {
+  .plan__fila { grid-template-columns: 36px minmax(0, 1fr) auto; }
+  .plan__tuyo { grid-column: 2 / 4; justify-content: flex-start; }
+}
+
+/* ── El mes: recibo a la izquierda, empresas a la derecha ──────────────── */
+.mes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--s-5);
+  align-items: start;
+}
+
+@include r.hasta(tableta) { .mes { grid-template-columns: minmax(0, 1fr); } }
+
 .recibo { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 
 .recibo__linea {
@@ -275,55 +388,137 @@
   border-bottom: 1px solid var(--line);
 }
 
-.recibo__linea--total {
-  border-bottom: 0;
-  font-weight: 600;
-  font-size: 15px;
-}
-
+.recibo__linea--total { border-bottom: 0; font-weight: 600; font-size: 16px; }
 .recibo__concepto { display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: var(--text-primary); }
 .recibo__detalle { font-size: 12.5px; font-weight: 400; color: var(--text-muted); }
 .recibo__importe { font-variant-numeric: tabular-nums; color: var(--text-primary); white-space: nowrap; }
-.recibo__aviso { margin-bottom: var(--s-3); font-size: 13px; color: var(--text-secondary); }
 
-.recibo__desglose-boton {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--s-2);
-  margin-top: var(--s-3);
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: 13px;
-  color: var(--text-secondary);
-  cursor: pointer;
-
-  &:hover { color: var(--text-primary); }
-  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
-  &[aria-expanded="true"] svg { transform: rotate(180deg); }
-}
-
-.mes-empresas { list-style: none; margin: var(--s-2) 0 0; padding: 0; }
+.mes-empresas { display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
+.mes-empresas__titulo { font-size: 12.5px; color: var(--text-secondary); }
+.mes-empresas__lista { list-style: none; margin: 0; padding: 0; }
 
 .mes-empresas__fila {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: var(--s-4);
-  padding: var(--s-2) 0;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: minmax(0, 1fr) minmax(40px, 90px) 36px 64px;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 7px 0;
   font-size: 13px;
-
-  &:last-child { border-bottom: 0; }
 }
 
-.mes-empresas__nombre { color: var(--text-primary); text-decoration: none; overflow-wrap: anywhere; }
-.mes-empresas__usuarios { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
-.mes-empresas__importe { color: var(--text-primary); font-variant-numeric: tabular-nums; text-align: right; }
-.mes-empresas__fuera { grid-column: 2 / 4; color: var(--text-muted); text-align: right; }
+.mes-empresas__nombre {
+  color: var(--text-primary);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
-/* ── El ciclo de cada mes ──────────────────────────────────────────────── */
+  &:hover { text-decoration: underline; }
+}
+
+.mes-empresas__barra {
+  display: block;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--line);
+  overflow: hidden;
+
+  span { display: block; height: 100%; border-radius: inherit; background: var(--text-muted); }
+}
+
+.mes-empresas__usuarios { color: var(--text-secondary); font-variant-numeric: tabular-nums; text-align: right; }
+.mes-empresas__importe { color: var(--text-primary); font-variant-numeric: tabular-nums; text-align: right; }
+.mes-empresas__fuera { grid-column: 2 / 5; color: var(--text-muted); text-align: right; }
+
+/* ── Las facturas: una tabla; el detalle se abre dentro ────────────────── */
+.facturas { display: flex; flex-direction: column; }
+.facturas__grupo { display: flex; flex-direction: column; }
+
+.facturas__fila {
+  appearance: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3) var(--s-2);
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.facturas__fila--cabecera {
+  cursor: default;
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+
+  &:hover { background: none; }
+}
+
+.facturas__fila--abierta { background: var(--glass-interactive); }
+.facturas__numero { font-weight: 600; color: var(--text-primary); }
+.facturas__importe { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.facturas__derecha { text-align: right; justify-self: end; }
+
+.facturas__meta { font-size: 12.5px; color: var(--text-muted); margin-bottom: var(--s-2); }
+
+.facturas__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--s-2);
+  margin-top: var(--s-4);
+
+  .btn { text-decoration: none; }
+}
+
+.facturas__detalle {
+  padding: var(--s-4) var(--s-2) var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+
+@include r.hasta(movil) {
+  .facturas__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .facturas__fila > :nth-child(2), .facturas__fila > :nth-child(3) { display: none; }
+  .facturas__fila--cabecera { display: none; }
+}
+
+/* ── Cómo funciona: plegado ────────────────────────────────────────────── */
+.ciclo-mensual {
+  @include m.cristal(sutil);
+  @include m.sin-cristal(var(--surface));
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s-3) var(--s-4);
+}
+
+.ciclo-mensual__resumen {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  list-style: none;
+
+  &::-webkit-details-marker { display: none; }
+  &:hover { color: var(--text-primary); }
+}
+
+.ciclo-mensual__galon { margin-left: auto; transition: transform var(--motion) var(--ease); }
+.ciclo-mensual[open] .ciclo-mensual__galon { transform: rotate(180deg); }
+.ciclo-mensual[open] .ciclo-mensual__resumen { margin-bottom: var(--s-4); }
+
 .ciclo {
   list-style: none;
   margin: 0;

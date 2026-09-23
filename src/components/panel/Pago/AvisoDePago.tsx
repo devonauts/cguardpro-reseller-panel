@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { Icono } from "@/components/cristal";
@@ -37,7 +38,10 @@ export function AvisoDePago() {
   const [tieneTarjeta, setTieneTarjeta] = useState(false);
   const [hecho, setHecho] = useState<PagoDeFactura | null>(null);
 
-  const ve = puede("reseller.billing.view");
+  /* En Facturación el saldo ya sale en su ficha, con su botón: el aviso
+     repetido encima diría lo mismo dos veces en la misma pantalla. */
+  const enFacturacion = useLocation().pathname.startsWith("/billing");
+  const ve = puede("reseller.billing.view") && !enFacturacion;
   const paga = puede("reseller.billing.manage");
 
   const cargar = useCallback(async () => {

@@ -112,3 +112,29 @@ export function mesDelPeriodo(label: string | null | undefined): string {
   if (!(n >= 1 && n <= 12)) return label;
   return t("mes.de", { mes: t(`mes.${n}` as never), anio: m[1] });
 }
+
+/**
+ * Un importe para LEER de un vistazo: «$1,500», «$2.50», «$499».
+ *
+ * `dinero` escribe siempre la moneda en código y los dos decimales, que es lo
+ * correcto en una línea de factura. En un resumen pesa: «1,500.00 USD» se lee
+ * más despacio que «$1,500». Aquí se usa el símbolo corto del idioma y los
+ * decimales sólo cuando los hay.
+ */
+export function precio(cents: number | null | undefined, moneda = "USD"): string {
+  if (cents === null || cents === undefined) return "—";
+  const n = Number(cents);
+  if (!Number.isFinite(n)) return "—";
+  const entero = Math.trunc(n) % 100 === 0;
+  try {
+    return new Intl.NumberFormat(etiquetaIntl(), {
+      style: "currency",
+      currency: moneda,
+      currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: entero ? 0 : 2,
+      maximumFractionDigits: entero ? 0 : 2,
+    }).format(n / 100);
+  } catch {
+    return dinero(n, moneda);
+  }
+}

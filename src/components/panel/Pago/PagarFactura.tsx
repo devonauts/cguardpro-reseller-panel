@@ -3,7 +3,7 @@ import { loadStripe, type Stripe, type StripeCardElement } from "@stripe/stripe-
 
 import { Boton } from "@/components/cristal";
 import { estiloDelCampo } from "@/components/panel/Tarjeta";
-import { dinero } from "@/lib/dinero";
+import { precio } from "@/lib/dinero";
 import { billingService, type PagoDeFactura } from "@/services/resellerService";
 import { useIdioma } from "@/i18n/IdiomaProvider";
 import "./Pago.scss";
@@ -57,7 +57,7 @@ export function PagarFactura({
 
   useEffect(() => cerrarCampo, [cerrarCampo]);
 
-  const importe = dinero(saldoCents, currency);
+  const importe = precio(saldoCents, currency);
 
   /** El servidor comprueba en Stripe y, si está cobrado, lo anota. */
   const confirmar = async (paymentIntentId: string) => {
