@@ -760,8 +760,34 @@ export interface TarjetaDelSocio {
   locked: boolean;
 }
 
+/** El ciclo por aniversario: asientos prepagados de una renovación a la siguiente. */
+export interface CicloDeCobro {
+  start: string;
+  end: string;
+  anchorDay: number;
+  seatsPaid: number;
+  seatsNow: number;
+  newSeats: number;
+  proratedSeatCents: number;
+  renewal: {
+    seats: number;
+    royaltyCents: number;
+    monthlyFeeApplies: boolean;
+    monthlyFeeCents: number;
+    seatsToMonthlyFee: number;
+    totalCents: number;
+  };
+  companies: Array<{
+    tenantId: string; name: string | null; seats: number;
+    excludedReason: string | null; trialEndsOn: string | null;
+  }>;
+}
+
 /** «Cómo te cobramos»: condiciones, cuota de alta y el mes en curso. */
 export interface PlanDeCobro {
+  /** `aniversario`: asientos prepagados por ciclo. `mensual`: cierre de mes (socios de antes). */
+  model?: "aniversario" | "mensual";
+  cycle?: CicloDeCobro | null;
   contract: {
     version: number;
     effectiveFrom: string;

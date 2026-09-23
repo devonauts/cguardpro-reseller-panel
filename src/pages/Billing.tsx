@@ -17,7 +17,7 @@ import type { Clave } from "@/i18n/idioma";
    separadores del idioma elegido. `precio` es la versión corta para leer de
    un vistazo («$1,500»); `dinero` la exacta, para las líneas de factura. */
 import { dinero, fechaCorta, mesDelPeriodo, precio } from "@/lib/dinero";
-import { TuPlan, EsteMes, ComoFunciona } from "./ComoTeCobramos";
+import { TuPlan, EsteMes, EsteCiclo, ComoFunciona } from "./ComoTeCobramos";
 import "./Billing.scss";
 
 /**
@@ -127,6 +127,7 @@ export function Billing() {
   const primera = debidas[0];
   const vencida = !!primera?.dueAt && new Date(primera.dueAt).getTime() < Date.now();
   const mes = plan?.currentMonth ?? null;
+  const ciclo = plan?.cycle ?? null;
 
   return (
     <>
@@ -172,9 +173,20 @@ export function Billing() {
             </section>
 
             <section className="saldo-ficha">
-              <span className="saldo-ficha__etiqueta">{t("facturacion.proximoCobro")}</span>
-              <span className="saldo-ficha__valor">{mes ? precio(mes.totalCents, moneda) : "—"}</span>
-              {mes && (
+              <span className="saldo-ficha__etiqueta">
+                {t(ciclo ? "facturacion.proximaRenovacion" : "facturacion.proximoCobro")}
+              </span>
+              <span className="saldo-ficha__valor">
+                {ciclo ? precio(ciclo.renewal.totalCents, moneda) : mes ? precio(mes.totalCents, moneda) : "—"}
+              </span>
+              {ciclo && (
+                <span className="saldo-ficha__nota">
+                  {t("facturacion.proximaRenovacionNota", {
+                    f: fechaCorta(`${ciclo.end}T12:00:00`), n: ciclo.seatsNow,
+                  })}
+                </span>
+              )}
+              {!ciclo && mes && (
                 <span className="saldo-ficha__nota">
                   {t("facturacion.proximoCobroNota", {
                     f: fechaCorta(`${mes.closesOn}T12:00:00`), n: mes.seats,
@@ -219,7 +231,8 @@ export function Billing() {
 
           {/* ── 2 y 3. EL PLAN Y EL MES ───────────────────────────────── */}
           {plan && <TuPlan plan={plan} />}
-          {plan?.contract && mes && <EsteMes plan={plan} />}
+          {plan?.contract && ciclo && <EsteCiclo plan={plan} />}
+          {plan?.contract && !ciclo && mes && <EsteMes plan={plan} />}
 
           {/* ── 4. LAS FACTURAS ───────────────────────────────────────── */}
           <section className="bloque" aria-labelledby="tus-facturas">
