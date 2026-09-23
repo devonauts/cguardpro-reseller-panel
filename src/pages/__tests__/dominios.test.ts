@@ -25,6 +25,8 @@ const soloCodigo = (src: string) =>
 
 const P = soloCodigo(bruto("../Dominios.tsx"));
 const SRV = soloCodigo(bruto("../../services/resellerService.ts"));
+/* El mapa de estados vive aparte porque el tablero enseña el mismo estado. */
+const ESTADOS = soloCodigo(bruto("../../lib/estadoDeDominio.ts"));
 
 /* El texto que LEE el socio ya no está en la pantalla: está en el catálogo. Las
    afirmaciones sobre cómo se le habla tienen que mirar ahí, y tienen que mirar
@@ -126,9 +128,10 @@ describe("Fase 16 · la pantalla de tu dirección", () => {
       "activo", "pendiente_dns", "verificando", "pendiente_tls",
       "mal_configurado", "desactivado",
     ]) {
-      expect(P).toContain(`${estado}:`);
+      expect(ESTADOS).toContain(`${estado}:`);
     }
-    expect(P).toMatch(/ayuda:/);
+    expect(ESTADOS).toMatch(/ayuda:/);
+    expect(P).toMatch(/estadoDeDominio\(d\.estado\)/);
   });
 
   it("cada campo del registro se puede COPIAR: nadie transcribe un token a mano", () => {

@@ -7,7 +7,7 @@
   justify-content: space-between;
   gap: var(--s-4);
   flex-wrap: wrap;
-  margin-bottom: clamp(var(--s-5), 3vw, var(--s-6));
+  margin-bottom: var(--s-5);
 }
 
 .cabecera__titulo {
@@ -26,13 +26,33 @@
 .cabecera__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 
 /* ── El tablero ─────────────────────────────────────────────────────────── */
-.tablero { display: flex; flex-direction: column; gap: clamp(var(--s-4), 2vw, var(--s-5)); }
+/* ── El ritmo ───────────────────────────────────────────────────────────────
+   UN solo espacio entre bloques, en las dos direcciones: 16 px entre filas y
+   16 px entre columnas. Antes las filas crecían hasta 24 px, los paneles se
+   rellenaban hasta 32 px y su cabecera dejaba otros 24 debajo — sumado, cada
+   panel llevaba casi 60 px de aire antes de su primer dato. */
+.tablero { display: flex; flex-direction: column; gap: var(--s-4); }
+
+.tablero .panel {
+  padding: clamp(var(--s-4), 2vw, var(--s-5));
+  /* Columna flexible: así lo que va al final (acciones, ayuda) se asienta en
+     el borde de abajo cuando el panel vecino es más alto. */
+  display: flex;
+  flex-direction: column;
+}
+
+.tablero .panel__cabecera { margin-bottom: var(--s-4); }
+.tablero .panel__nota { margin-top: var(--s-1); }
+.tablero .metrica { padding: var(--s-4); }
+.tablero .metrica__icono { width: 40px; height: 40px; }
+.tablero .baldosa { min-height: 84px; padding: var(--s-3); gap: var(--s-2); }
+.tablero .grafica__lienzo { height: clamp(120px, 14vw, 150px); }
 
 .tablero__metricas {
   display: grid;
   /* Cuatro → dos → una, sin un solo corte de pantalla. */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 232px), 1fr));
-  gap: clamp(var(--s-3), 1.6vw, var(--s-4));
+  gap: var(--s-4);
 }
 
 /* Dos columnas desiguales: lo ancho a la izquierda, lo estrecho a la derecha.
@@ -41,8 +61,20 @@
 .tablero__dos {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
-  gap: clamp(var(--s-3), 1.6vw, var(--s-4));
-  align-items: start;
+  gap: var(--s-4);
+  /* `stretch` y no `start`: con `start` el panel más corto de cada fila se
+     quedaba flotando con un hueco debajo del tamaño de la diferencia, y era
+     eso —no el margen— lo que hacía que el tablero pareciera despegado. */
+  align-items: stretch;
+}
+
+.tablero__pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  min-width: 0;
+
+  > .panel:last-child { flex: 1; }
 }
 
 .tablero__enlace-panel {
@@ -64,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-3) 0;
+  padding: var(--s-2) 0;
   border-bottom: 1px solid var(--glass-border);
   min-width: 0;
 
@@ -83,6 +115,198 @@
 }
 
 .tablero__vacio { font-size: 13px; color: var(--text-muted); }
+
+/* La ayuda: una línea al pie de las acciones, no un panel propio. */
+.tablero__ayuda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-4);
+  margin-top: auto;
+  padding-top: var(--s-4);
+  font-size: 12.5px;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    text-decoration: none;
+
+    &:hover { color: var(--text-primary); text-decoration: none; }
+  }
+}
+
+.tablero__ayuda-titulo { color: var(--text-muted); }
+
+/* ── Tu plataforma: lo que falta para lanzarla ──────────────────────────── */
+.lanzamiento { min-width: 0; }
+.lanzamiento__cuenta {
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.lanzamiento__barra {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--glass-border);
+  overflow: hidden;
+  margin-bottom: var(--s-3);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+    transition: width var(--motion) var(--ease);
+  }
+}
+
+.lanzamiento__aviso {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  margin-bottom: var(--s-2);
+  border-radius: var(--r-md);
+  background: var(--brand-soft);
+  font-size: 12.5px;
+  color: var(--text-primary);
+  text-decoration: none;
+
+  span { flex: 1; min-width: 12ch; }
+  strong { font-weight: 600; white-space: nowrap; }
+  &:hover { text-decoration: none; }
+}
+
+/* Una columna mientras el panel sea el de la izquierda: así la lista mide lo
+   mismo que la ficha de marca de al lado. En pantallas muy anchas pasa a dos. */
+.lanzamiento__pasos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  column-gap: var(--s-4);
+}
+
+.lanzamiento__paso {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--glass-border);
+  min-width: 0;
+}
+
+.lanzamiento__marca {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--text-muted);
+  color: var(--text-primary);
+}
+
+.lanzamiento__paso--hecho .lanzamiento__marca {
+  border: 0;
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+
+.lanzamiento__texto { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.lanzamiento__titulo { font-size: 13px; color: var(--text-primary); }
+.lanzamiento__paso--hecho .lanzamiento__titulo { color: var(--text-secondary); }
+.lanzamiento__nota { font-size: 11.5px; line-height: 1.4; color: var(--text-muted); }
+.lanzamiento__paso .tablero__enlace-panel { font-size: 12px; white-space: nowrap; }
+
+/* ── Tu marca: lo que ven hoy sus clientes ──────────────────────────────── */
+.ficha-marca { min-width: 0; }
+.ficha-marca__escaparate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  min-height: 84px;
+  padding: var(--s-4);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--glass-border);
+  /* Un filo del color de marca arriba: así la ficha enseña el color en uso
+     y no sólo su número. */
+  box-shadow: inset 0 3px 0 var(--brand);
+  text-align: center;
+}
+
+.ficha-marca__logo { max-width: 100%; max-height: 44px; object-fit: contain; }
+
+.ficha-marca__nombre {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.ficha-marca__lema { font-size: 12px; color: var(--text-muted); }
+
+.ficha-marca__datos { margin: var(--s-3) 0 0; }
+
+.ficha-marca__dato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 12.5px;
+  min-width: 0;
+
+  &:last-child { border-bottom: 0; }
+
+  dt {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    color: var(--text-primary);
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+}
+
+.ficha-marca__host { font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); }
+
+.ficha-marca__color { display: inline-flex; align-items: center; gap: var(--s-2); }
+
+.ficha-marca__muestra {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--brand);
+}
+
+.ficha-marca__falta { color: var(--text-muted); font-style: italic; }
+
+.ficha-marca__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: auto;
+  padding-top: var(--s-4);
+
+  .btn { text-decoration: none; &:hover { text-decoration: none; } }
+}
 
 @include r.hasta(tableta) {
   .tablero__dos { grid-template-columns: minmax(0, 1fr); }

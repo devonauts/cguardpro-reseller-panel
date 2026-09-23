@@ -12,6 +12,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
+import { estadoDeDominio } from "@/lib/estadoDeDominio";
 import "./Dominios.scss";
 
 /**
@@ -36,29 +37,6 @@ import "./Dominios.scss";
  * hace nada es peor que uno apagado que explica por qué.
  * ════════════════════════════════════════════════════════════════════════════
  */
-
-type Tono = "ok" | "aviso" | "peligro" | "neutro";
-
-const ESTADO: Record<string, { texto: Clave; tono: Tono; ayuda: Clave }> = {
-  activo: {
-    texto: "dominios.conectado", tono: "ok", ayuda: "dominios.conectadoAyuda",
-  },
-  pendiente_dns: {
-    texto: "dominios.dnsRequerida", tono: "aviso", ayuda: "dominios.dnsRequeridaAyuda",
-  },
-  verificando: {
-    texto: "dominios.verificando", tono: "aviso", ayuda: "dominios.verificandoAyuda",
-  },
-  pendiente_tls: {
-    texto: "dominios.preparandoSsl", tono: "aviso", ayuda: "dominios.preparandoSslAyuda",
-  },
-  mal_configurado: {
-    texto: "dominios.requiereAtencion", tono: "peligro", ayuda: "dominios.requiereAtencionAyuda",
-  },
-  desactivado: {
-    texto: "dominios.desactivado", tono: "neutro", ayuda: "dominios.desactivadoAyuda",
-  },
-};
 
 /** Un registro: su tipo, su nombre y su valor, en un bloque hundido. */
 function Registro({ paso }: { paso: InstruccionDeDns }) {
@@ -253,7 +231,7 @@ export function Dominios() {
           )}
 
           {propios.map((d) => {
-            const est = ESTADO[d.estado] ?? ESTADO.pendiente_dns;
+            const est = estadoDeDominio(d.estado);
             const abierto = !!detalle[d.id];
 
             return (
