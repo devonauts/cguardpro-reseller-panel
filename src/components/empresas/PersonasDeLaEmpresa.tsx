@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  Boton, Campo, Emergente, EstadoDeDatos, Icono, Pildora, Selector,
+  Boton, Campo, EstadoDeDatos, Icono, Pildora, Selector,
 } from "@/components/cristal";
 import {
   personasService, type PersonaDeLaEmpresa, type PersonasDeLaEmpresa as Datos,
@@ -22,6 +22,16 @@ import "./PersonasDeLaEmpresa.scss";
  * Un socio con cuarenta empresas haría cuarenta peticiones para pintar una
  * lista en la que va a abrir una. Se pide la primera vez que se despliega y se
  * queda; volver a plegar y desplegar no vuelve a pedir.
+ *
+ * ── LA FICHA SE ABRE DEBAJO, NO EN UN DIÁLOGO ─────────────────────────────
+ * Primero se hizo con `Emergente` y fue un error: ese componente es un
+ * desplegable ANCLADO a su padre (`role="menu"`, 320 px), no un diálogo — y
+ * dentro de una lista con `overflow: hidden` y un ancestro con
+ * `backdrop-filter`, que convierte el `fixed` en relativo, quedaba recortado y
+ * sin verse. Estaba en el DOM y no se pintaba.
+ *
+ * Abrir debajo, como un segundo nivel del acordeón, además orienta mejor: no
+ * se pierde de vista de qué empresa y de qué persona se está hablando.
  * ════════════════════════════════════════════════════════════════════════════
  */
 
@@ -44,7 +54,9 @@ export function PersonasDeLaEmpresa({
   const [datos, setDatos] = useState<Datos | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [abierta, setAbierta] = useState<PersonaDeLaEmpresa | null>(null);
+  /* El ID de la abierta, no la persona: tras recargar, el objeto es otro y
+     guardar el viejo dejaría pintada una ficha con datos de antes. */
+  const [abierta, setAbierta] = useState<string | null>(null);
   const [invitando, setInvitando] = useState(false);
 
   const cargar = useCallback(async () => {
@@ -92,18 +104,32 @@ export function PersonasDeLaEmpresa({
               )}
             </div>
 
+            {invitando && (
+              <Invitacion
+                tenantId={tenantId}
+                roles={datos.rolesDisponibles}
+                onCerrar={() => setInvitando(false)}
+                onHecho={() => { setInvitando(false); void cargar(); }}
+              />
+            )}
+
             {datos.conAcceso.length === 0 ? (
               <p className="personas__vacio">{t("personas.vacio")}</p>
             ) : (
               <ul className="personas__lista">
                 {datos.conAcceso.map((p) => {
                   const Fila: any = puedeGestionar ? "button" : "div";
+                  const desplegada = abierta === p.id;
                   return (
                     <li key={p.id}>
                       <Fila
-                        className="persona"
+                        className={`persona${desplegada ? " persona--abierta" : ""}`}
                         {...(puedeGestionar
-                          ? { type: "button", onClick: () => setAbierta(p) }
+                          ? {
+                            type: "button",
+                            "aria-expanded": desplegada,
+                            onClick: () => setAbierta(desplegada ? null : p.id),
+                          }
                           : {})}
                       >
                         <span className="persona__principal">
@@ -117,9 +143,22 @@ export function PersonasDeLaEmpresa({
                           {t(`personas.estado.${p.status}` as Clave) || p.status}
                         </Pildora>
                         {puedeGestionar && (
-                          <Icono nombre="galon" tamano={16} className="persona__galon" />
+                          <Icono
+                            nombre="galon"
+                            tamano={16}
+                            className={`persona__galon${desplegada ? " persona__galon--abierto" : ""}`}
+                          />
                         )}
                       </Fila>
+
+                      {desplegada && (
+                        <FichaDePersona
+                          tenantId={tenantId}
+                          persona={p}
+                          roles={datos.rolesDisponibles}
+                          onCambio={() => { setAbierta(null); void cargar(); }}
+                        />
+                      )}
                     </li>
                   );
                 })}
@@ -129,37 +168,25 @@ export function PersonasDeLaEmpresa({
         )}
       </EstadoDeDatos>
 
-      {abierta && (
-        <FichaDePersona
-          tenantId={tenantId}
-          persona={abierta}
-          roles={datos?.rolesDisponibles ?? []}
-          onCerrar={() => setAbierta(null)}
-          onCambio={() => { setAbierta(null); void cargar(); }}
-        />
-      )}
-
-      {invitando && (
-        <Invitacion
-          tenantId={tenantId}
-          roles={datos?.rolesDisponibles ?? []}
-          onCerrar={() => setInvitando(false)}
-          onHecho={() => { setInvitando(false); void cargar(); }}
-        />
-      )}
     </div>
   );
 }
 
 /* ── La ficha de una persona ─────────────────────────────────────────────── */
 
+/**
+ * Se abre DEBAJO de la persona, como segundo nivel del acordeón.
+ *
+ * Sin cabecera repetida: el nombre, el correo y el estado están justo encima,
+ * en la fila que se acaba de pulsar. Repetirlos aquí llenaría la mitad del
+ * panel con lo que ya se está mirando.
+ */
 function FichaDePersona({
-  tenantId, persona, roles, onCerrar, onCambio,
+  tenantId, persona, roles, onCambio,
 }: {
   tenantId: string;
   persona: PersonaDeLaEmpresa;
   roles: string[];
-  onCerrar: () => void;
   onCambio: () => void;
 }) {
   const t = useT();
@@ -183,75 +210,64 @@ function FichaDePersona({
   };
 
   return (
-    <Emergente abierto onCerrar={onCerrar} etiqueta={persona.nombre || persona.email}>
-      <div className="persona-ficha">
-        <header className="persona-ficha__cabecera">
-          <div>
-            <h2>{persona.nombre || t("personas.sinNombre")}</h2>
-            <p>{persona.email}</p>
-          </div>
-          <Pildora tono={TONO[persona.status] ?? "neutro"}>
-            {t(`personas.estado.${persona.status}` as Clave) || persona.status}
-          </Pildora>
-        </header>
+    <div className="persona-ficha">
+      <Selector
+        etiqueta={t("personas.rol")}
+        value={rol}
+        disabled={guardando || archivada}
+        onChange={(e) => setRol(e.target.value)}
+      >
+        {/* Si su rol actual no está entre los que el panel concede —porque se
+            lo puso alguien dentro del CRM— se enseña igual, para no fingir que
+            tiene otro. Al guardar pasaría a ser uno de la lista. */}
+        {!roles.includes(rol) && rol && (
+          <option value={rol}>{t(`rolEmpresa.${rol}` as Clave) || rol}</option>
+        )}
+        {roles.map((r) => (
+          <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
+        ))}
+      </Selector>
 
-        <Selector
-          etiqueta={t("personas.rol")}
-          value={rol}
-          disabled={guardando || archivada}
-          onChange={(e) => setRol(e.target.value)}
-        >
-          {/* Si su rol actual no está entre los que el panel concede —porque se
-              lo puso alguien dentro del CRM— se enseña igual, para no fingir
-              que tiene otro. Al guardar pasaría a ser uno de la lista. */}
-          {!roles.includes(rol) && rol && (
-            <option value={rol}>{t(`rolEmpresa.${rol}` as Clave) || rol}</option>
-          )}
-          {roles.map((r) => (
-            <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
-          ))}
-        </Selector>
+      {error && <p className="persona-ficha__error" role="alert">{error}</p>}
 
-        {error && <p className="persona-ficha__error" role="alert">{error}</p>}
+      <p className="persona-ficha__nota">
+        {archivada ? t("personas.notaArchivada") : t("personas.notaQuitar")}
+      </p>
 
-        <p className="persona-ficha__nota">
-          {archivada ? t("personas.notaArchivada") : t("personas.notaQuitar")}
-        </p>
-
-        <div className="persona-ficha__acciones">
-          {archivada ? (
+      <div className="persona-ficha__acciones">
+        {archivada ? (
+          <Boton
+            cargando={guardando}
+            onClick={() => hacer(() => personasService.devolverAcceso(tenantId, persona.id))}
+          >
+            {t("personas.devolver")}
+          </Boton>
+        ) : (
+          <>
             <Boton
               cargando={guardando}
-              onClick={() => hacer(() => personasService.devolverAcceso(tenantId, persona.id))}
+              disabled={!rol || rol === persona.roles[0]}
+              onClick={() => hacer(() => personasService.cambiarRol(tenantId, persona.id, rol))}
             >
-              {t("personas.devolver")}
+              {t("comun.guardar")}
             </Boton>
-          ) : (
-            <>
-              <Boton
-                cargando={guardando}
-                disabled={!rol || rol === persona.roles[0]}
-                onClick={() => hacer(() => personasService.cambiarRol(tenantId, persona.id, rol))}
-              >
-                {t("comun.guardar")}
-              </Boton>
-              <Boton
-                variante="peligro"
-                disabled={guardando}
-                onClick={() => hacer(() => personasService.quitarAcceso(tenantId, persona.id))}
-              >
-                {t("personas.quitar")}
-              </Boton>
-            </>
-          )}
-        </div>
+            <Boton
+              variante="peligro"
+              disabled={guardando}
+              onClick={() => hacer(() => personasService.quitarAcceso(tenantId, persona.id))}
+            >
+              {t("personas.quitar")}
+            </Boton>
+          </>
+        )}
       </div>
-    </Emergente>
+    </div>
   );
 }
 
 /* ── Invitar ─────────────────────────────────────────────────────────────── */
 
+/** Un panel encima de la lista, no un diálogo. Mismo motivo que la ficha. */
 function Invitacion({
   tenantId, roles, onCerrar, onHecho,
 }: {
@@ -284,49 +300,43 @@ function Invitacion({
   };
 
   return (
-    <Emergente abierto onCerrar={onCerrar} etiqueta={t("personas.invitar")}>
-      <div className="persona-ficha">
-        <header className="persona-ficha__cabecera">
-          <div>
-            <h2>{t("personas.invitar")}</h2>
-            <p>{t("personas.invitarSub")}</p>
-          </div>
-        </header>
-
+    <div className="persona-ficha persona-ficha--alta">
+      <Campo
+        etiqueta={t("personas.correo")}
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <div className="persona-ficha__dos">
         <Campo
-          etiqueta={t("personas.correo")}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          etiqueta={t("personas.nombre")}
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
         />
-        <div className="persona-ficha__dos">
-          <Campo
-            etiqueta={t("personas.nombre")}
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-          />
-          <Campo
-            etiqueta={t("personas.apellido")}
-            value={apellido}
-            onChange={(e) => setApellido(e.target.value)}
-          />
-        </div>
-        <Selector etiqueta={t("personas.rol")} value={rol} onChange={(e) => setRol(e.target.value)}>
-          {roles.map((r) => (
-            <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
-          ))}
-        </Selector>
-
-        {error && <p className="persona-ficha__error" role="alert">{error}</p>}
-        <p className="persona-ficha__nota">{t("personas.invitarNota")}</p>
-
-        <div className="persona-ficha__acciones">
-          <Boton cargando={enviando} disabled={!email.trim() || !rol} onClick={enviar}>
-            {t("personas.enviarInvitacion")}
-          </Boton>
-        </div>
+        <Campo
+          etiqueta={t("personas.apellido")}
+          value={apellido}
+          onChange={(e) => setApellido(e.target.value)}
+        />
       </div>
-    </Emergente>
+      <Selector etiqueta={t("personas.rol")} value={rol} onChange={(e) => setRol(e.target.value)}>
+        {roles.map((r) => (
+          <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
+        ))}
+      </Selector>
+
+      {error && <p className="persona-ficha__error" role="alert">{error}</p>}
+      <p className="persona-ficha__nota">{t("personas.invitarNota")}</p>
+
+      <div className="persona-ficha__acciones">
+        <Boton cargando={enviando} disabled={!email.trim() || !rol} onClick={enviar}>
+          {t("personas.enviarInvitacion")}
+        </Boton>
+        <Boton variante="fantasma" disabled={enviando} onClick={onCerrar}>
+          {t("comun.cancelar")}
+        </Boton>
+      </div>
+    </div>
   );
 }
 

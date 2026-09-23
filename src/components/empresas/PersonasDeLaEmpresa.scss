@@ -77,21 +77,33 @@ button.persona {
 
 /* ── La ficha ────────────────────────────────────────────────────────────── */
 
+/**
+ * Se abre DEBAJO de la persona, como segundo nivel del acordeón.
+ *
+ * Se intentó con `Emergente` y no valía: ése es un desplegable anclado, no un
+ * diálogo, y dentro de una lista con `overflow: hidden` —y un ancestro con
+ * `backdrop-filter`, que convierte el `fixed` en relativo— quedaba recortado.
+ * Estaba en el DOM y no se pintaba.
+ *
+ * Sin cabecera: el nombre, el correo y el estado están en la fila de encima.
+ */
 .persona-ficha {
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
-  min-width: min(420px, 82vw);
+  gap: var(--s-3);
+  max-width: 460px;
+  margin: var(--s-1) 0 var(--s-3);
+  padding: var(--s-3) var(--s-3) var(--s-4);
+  border-left: 2px solid var(--accent-solid);
+  background: var(--glass-subtle);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
 }
 
-.persona-ficha__cabecera {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--s-3);
-
-  h2 { font-size: 17px; font-weight: 600; margin: 0; overflow-wrap: anywhere; }
-  p { margin: 2px 0 0; font-size: 13px; color: var(--text-muted); overflow-wrap: anywhere; }
+/* El alta va encima de la lista y no cuelga de ninguna fila: sin el filete. */
+.persona-ficha--alta {
+  border-left: 0;
+  border-radius: var(--r-md);
+  margin-bottom: var(--s-4);
 }
 
 .persona-ficha__dos {
