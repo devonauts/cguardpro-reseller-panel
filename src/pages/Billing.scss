@@ -161,3 +161,199 @@
   .totales__fila { max-width: none; }
 }
 .factura__pagar { margin-top: var(--s-4); padding-top: var(--s-4); border-top: 1px solid var(--line); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CÓMO TE COBRAMOS
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.facturacion__facturas { display: flex; flex-direction: column; gap: var(--s-3); }
+.facturacion__lista { display: flex; flex-direction: column; gap: var(--s-4); }
+.facturacion__titulo,
+.cobro__titulo {
+  font-size: clamp(16px, 2.2vw, 18px);
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.cobro { display: flex; flex-direction: column; gap: var(--s-3); }
+.cobro__cabecera { display: flex; flex-direction: column; gap: var(--s-1); }
+.cobro__sub { font-size: 13px; color: var(--text-muted); }
+.cobro__vacio { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); }
+
+/* Los tres conceptos, lado a lado: se comparan de un vistazo. */
+.cobro__conceptos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--s-4);
+}
+
+.concepto {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  min-width: 0;
+}
+
+.concepto__cabecera { display: flex; align-items: center; justify-content: space-between; }
+
+.concepto__icono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  background: var(--brand-soft);
+  color: var(--text-primary);
+}
+
+.concepto__paso {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.concepto__titulo { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+
+.concepto__precio {
+  font-size: clamp(24px, 3vw, 30px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.concepto__unidad {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
+.concepto__regla { font-size: 13px; line-height: 1.55; color: var(--text-secondary); }
+
+/* El estado de HOY va al pie, separado de la regla: una cosa es el acuerdo y
+   otra dónde estás tú. */
+.concepto__pie {
+  margin-top: auto;
+  padding-top: var(--s-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.concepto__estado { font-size: 13px; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+.umbral {
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--line);
+  overflow: hidden;
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--brand);
+    transition: width var(--motion) var(--ease);
+  }
+}
+
+/* ── El recibo del mes ─────────────────────────────────────────────────── */
+.recibo { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+
+.recibo__linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.recibo__linea--total {
+  border-bottom: 0;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.recibo__concepto { display: flex; flex-direction: column; gap: 2px; font-size: 14px; color: var(--text-primary); }
+.recibo__detalle { font-size: 12.5px; font-weight: 400; color: var(--text-muted); }
+.recibo__importe { font-variant-numeric: tabular-nums; color: var(--text-primary); white-space: nowrap; }
+.recibo__aviso { margin-bottom: var(--s-3); font-size: 13px; color: var(--text-secondary); }
+
+.recibo__desglose-boton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
+  &[aria-expanded="true"] svg { transform: rotate(180deg); }
+}
+
+.mes-empresas { list-style: none; margin: var(--s-2) 0 0; padding: 0; }
+
+.mes-empresas__fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: var(--s-4);
+  padding: var(--s-2) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+
+  &:last-child { border-bottom: 0; }
+}
+
+.mes-empresas__nombre { color: var(--text-primary); text-decoration: none; overflow-wrap: anywhere; }
+.mes-empresas__usuarios { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.mes-empresas__importe { color: var(--text-primary); font-variant-numeric: tabular-nums; text-align: right; }
+.mes-empresas__fuera { grid-column: 2 / 4; color: var(--text-muted); text-align: right; }
+
+/* ── El ciclo de cada mes ──────────────────────────────────────────────── */
+.ciclo {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: var(--s-4);
+}
+
+.ciclo__paso { display: flex; gap: var(--s-3); min-width: 0; }
+
+.ciclo__numero {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.ciclo__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+
+  strong { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+}

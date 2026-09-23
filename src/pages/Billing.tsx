@@ -7,8 +7,9 @@ import {
 import {
   billingService,
   type FacturaDetallada, type FacturaEnLista, type LineaDeFactura,
-  type TerminosVigentes, type TotalPorMoneda,
+  type PlanDeCobro, type TotalPorMoneda,
 } from "@/services/resellerService";
+import { ComoTeCobramos } from "./ComoTeCobramos";
 import { TarjetaEnArchivo } from "@/components/panel/Tarjeta";
 import { EVENTO_PAGO, PagarFactura } from "@/components/panel/Pago";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
@@ -69,7 +70,7 @@ const MOTIVO: Record<string, Clave> = {
 export function Billing() {
   const t = useT();
   const [facturas, setFacturas] = useState<FacturaEnLista[]>([]);
-  const [terminos, setTerminos] = useState<TerminosVigentes | null>(null);
+  const [plan, setPlan] = useState<PlanDeCobro | null>(null);
   const [totales, setTotales] = useState<TotalPorMoneda[]>([]);
   const [abierta, setAbierta] = useState<string | null>(null);
   const [detalle, setDetalle] = useState<FacturaDetallada | null>(null);
@@ -80,9 +81,13 @@ export function Billing() {
     setCargando(true);
     setError(null);
     try {
-      const r = await billingService.list({ limit: 24 });
+      /* El plan no puede tumbar la pantalla: si falla, las facturas siguen. */
+      const [r, p] = await Promise.all([
+        billingService.list({ limit: 24 }),
+        billingService.plan().catch(() => null),
+      ]);
+      setPlan(p);
       setFacturas(r.invoices ?? []);
-      setTerminos(r.contract ?? null);
       setTotales(r.totalsByCurrency ?? []);
       setAbierta(r.invoices?.[0]?.id ?? null);
     } catch (e: any) {
@@ -121,107 +126,83 @@ export function Billing() {
         </div>
       </header>
 
-      {/* ── LA TARJETA, FUERA DEL ESTADO DE DATOS ──────────────────────────
-          Va antes del `EstadoDeDatos` a propósito: es lo único de esta pantalla
-          que sigue teniendo sentido cuando todavía NO hay facturas. Dentro, un
-          socio recién dado de alta —el que más falta le hace dejar la tarjeta—
-          vería el vacío de facturas y ningún sitio donde ponerla. */}
-      <TarjetaEnArchivo />
+      <div className="facturacion">
+        {/* De arriba abajo: cómo te cobramos → cómo va este mes → cuándo se
+            cobra → con qué tarjeta → las facturas. Lo primero contesta el
+            «¿por qué?» que la lista de facturas sola no contestaba. */}
+        {plan && <ComoTeCobramos plan={plan} />}
 
-      <EstadoDeDatos
-        cargando={cargando}
-        error={error}
-        vacio={!cargando && facturas.length === 0}
-        etiquetaVacio={t("facturacion.vacio")}
-        onReintentar={cargar}
-      >
-        <div className="facturacion">
-          {totales.map((x) => (
-            <Cifras key={x.currency}>
-              <Cifra
-                etiqueta={t("facturacion.facturado", { m: x.currency })}
-                valor={dinero(x.billedCents, x.currency)}
-                nota={t(
-                  x.invoiceCount === 1 ? "facturacion.facturaUna" : "facturacion.facturasVarias",
-                  { n: x.invoiceCount },
-                )}
-              />
-              <Cifra
-                etiqueta={t("facturacion.cobrado", { m: x.currency })}
-                valor={dinero(x.paidCents, x.currency)}
-              />
-              <Cifra
-                etiqueta={t("facturacion.pendiente", { m: x.currency })}
-                valor={dinero(x.outstandingCents, x.currency)}
-              />
-            </Cifras>
-          ))}
+        {/* ── LA TARJETA, FUERA DEL ESTADO DE DATOS ──────────────────────
+            Tiene sentido aunque todavía NO haya facturas: un socio recién dado
+            de alta es el que más falta le hace dejarla puesta. */}
+        <TarjetaEnArchivo />
 
-          {totales.length > 1 && (
-            <p className="facturacion__nota">{t("facturacion.variasMonedas")}</p>
-          )}
+        <section className="facturacion__facturas" aria-labelledby="tus-facturas">
+          <h2 id="tus-facturas" className="facturacion__titulo">{t("facturacion.tusFacturas")}</h2>
+          <EstadoDeDatos
+            cargando={cargando}
+            error={error}
+            vacio={!cargando && facturas.length === 0}
+            etiquetaVacio={t("facturacion.vacio")}
+            onReintentar={cargar}
+          >
+            <div className="facturacion__lista">
+              {totales.map((x) => (
+                <Cifras key={x.currency}>
+                  <Cifra
+                    etiqueta={t("facturacion.facturado", { m: x.currency })}
+                    valor={dinero(x.billedCents, x.currency)}
+                    nota={t(
+                      x.invoiceCount === 1 ? "facturacion.facturaUna" : "facturacion.facturasVarias",
+                      { n: x.invoiceCount },
+                    )}
+                  />
+                  <Cifra
+                    etiqueta={t("facturacion.cobrado", { m: x.currency })}
+                    valor={dinero(x.paidCents, x.currency)}
+                  />
+                  <Cifra
+                    etiqueta={t("facturacion.pendiente", { m: x.currency })}
+                    valor={dinero(x.outstandingCents, x.currency)}
+                  />
+                </Cifras>
+              ))}
 
-          {terminos && <Terminos terminos={terminos} />}
+              {totales.length > 1 && (
+                <p className="facturacion__nota">{t("facturacion.variasMonedas")}</p>
+              )}
 
-          <Lista como="nav" aria-label={t("facturacion.tusFacturas")}>
-            {facturas.map((f) => (
-              <ListaFila
-                key={f.id}
-                como="button"
-                type="button"
-                className={`factura-fila${f.id === abierta ? " factura-fila--abierta" : ""}`}
-                onClick={() => setAbierta(f.id)}
-                aria-current={f.id === abierta}
-              >
-                <span className="factura-fila__numero">{f.number}</span>
-                <span className="factura-fila__periodo">{mesDelPeriodo(f.periodLabel)}</span>
-                <span className="factura-fila__total">{dinero(f.totalCents, f.currency)}</span>
-                <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
-                  {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
-                </Pildora>
-              </ListaFila>
-            ))}
-          </Lista>
+              <Lista como="nav" aria-label={t("facturacion.tusFacturas")}>
+                {facturas.map((f) => (
+                  <ListaFila
+                    key={f.id}
+                    como="button"
+                    type="button"
+                    className={`factura-fila${f.id === abierta ? " factura-fila--abierta" : ""}`}
+                    onClick={() => setAbierta(f.id)}
+                    aria-current={f.id === abierta}
+                  >
+                    <span className="factura-fila__numero">{f.number}</span>
+                    <span className="factura-fila__periodo">{mesDelPeriodo(f.periodLabel)}</span>
+                    <span className="factura-fila__total">{dinero(f.totalCents, f.currency)}</span>
+                    <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
+                      {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
+                    </Pildora>
+                  </ListaFila>
+                ))}
+              </Lista>
 
-          {detalle && (
-            <Detalle
-              factura={detalle}
-              onPagada={() => window.dispatchEvent(new CustomEvent(EVENTO_PAGO))}
-            />
-          )}
-        </div>
-      </EstadoDeDatos>
+              {detalle && (
+                <Detalle
+                  factura={detalle}
+                  onPagada={() => window.dispatchEvent(new CustomEvent(EVENTO_PAGO))}
+                />
+              )}
+            </div>
+          </EstadoDeDatos>
+        </section>
+      </div>
     </>
-  );
-}
-
-function Terminos({ terminos }: { terminos: TerminosVigentes }) {
-  const t = useT();
-  return (
-    <Tarjeta>
-      <TarjetaCabecera
-        titulo={t("facturacion.terminosTitulo", { v: terminos.version })}
-        nota={t("facturacion.terminosDesde", { f: fechaCorta(terminos.effectiveFrom) })}
-      />
-      <ul className="terminos">
-        <li>
-          <span>{t("facturacion.terminosSuscripcion")}</span>
-          <strong>{dinero(terminos.monthlyFeeCents, terminos.currency)}</strong>
-        </li>
-        <li>
-          <span>{t("facturacion.terminosRegalia")}</span>
-          <strong>{dinero(terminos.royaltyPerUserCents, terminos.currency)}</strong>
-        </li>
-        <li>
-          <span>{t("facturacion.terminosModalidad")}</span>
-          <strong>{terminos.seatPolicy}</strong>
-        </li>
-      </ul>
-      {/* No se estima la factura del mes en curso. Un número que nadie ha
-          cerrado no se puede reclamar, y enseñarlo junto a los cerrados haría
-          que se leyera igual que ellos. */}
-      <p className="terminos__nota">{t("facturacion.terminosNota")}</p>
-    </Tarjeta>
   );
 }
 

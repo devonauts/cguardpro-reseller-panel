@@ -734,6 +734,48 @@ export interface TarjetaDelSocio {
   locked: boolean;
 }
 
+/** «Cómo te cobramos»: condiciones, cuota de alta y el mes en curso. */
+export interface PlanDeCobro {
+  contract: {
+    version: number;
+    effectiveFrom: string;
+    currency: string;
+    setupFeeCents: number;
+    setupFeeWaived: boolean;
+    monthlyFeeCents: number;
+    /** Hasta cuántos usuarios NO se cobra la cuota mensual. 0 = desde el primero. */
+    monthlyFeeFreeUntilSeats: number;
+    royaltyPerUserCents: number;
+    seatPolicy: string;
+    paymentTermDays: number;
+    gracePeriodDays: number;
+  } | null;
+  setupFee: {
+    status: "sin_cuota" | "perdonada" | "pagada" | "facturada" | "proxima";
+    amountCents: number;
+    invoiceId: string | null;
+    invoiceNumber: string | null;
+    paidAt: string | null;
+  };
+  /** ESTIMACIÓN con los usuarios de hoy. La factura sale del último día del mes. */
+  currentMonth: {
+    estimate: true;
+    billable: boolean;
+    label: string;
+    start: string;
+    end: string;
+    closesOn: string;
+    seats: number;
+    companies: Array<{ tenantId: string; name: string | null; seats: number; excludedReason: string | null }>;
+    royaltyCents: number;
+    monthlyFeeApplies: boolean;
+    monthlyFeeCents: number;
+    seatsToMonthlyFee: number;
+    setupFeeCents: number;
+    totalCents: number;
+  } | null;
+}
+
 /** Lo que contesta el servidor al pagar. */
 export interface PagoDeFactura {
   estado: "pagada" | "requiere_accion" | "requiere_tarjeta" | "rechazada";
@@ -759,6 +801,9 @@ export const billingService = {
 
   detail: (invoiceId: string) =>
     get<FacturaDetallada>(`/reseller/billing/invoices/${invoiceId}`),
+
+  /** Cómo se le cobra al socio, explicado, y cómo va el mes en curso. */
+  plan: () => get<PlanDeCobro>("/reseller/billing/plan"),
 
   /* ── LA TARJETA EN ARCHIVO ───────────────────────────────────────────────
      El número NUNCA pasa por aquí: lo recoge Stripe en su propio iframe y a
