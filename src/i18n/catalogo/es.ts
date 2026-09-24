@@ -1170,4 +1170,7 @@ export const es: Record<Clave, string> = {
   "cuenta.claveCambiada": "Listo: tu contraseña se cambió.",
   "cuenta.claveNoCambio": "No se pudo cambiar la contraseña.",
   "cuenta.claveFaltaActual": "Escribe tu contraseña actual.",
+  "actividad.accionAvisoPrueba": "Aviso a la empresa: su prueba termina",
+  "actividad.accionAvisoCobroFallido": "Aviso a la empresa: cobro fallido",
+  "actividad.accionAvisoPausa": "Aviso a la empresa: acceso pausado",
 };

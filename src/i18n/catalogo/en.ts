@@ -1180,6 +1180,9 @@ export const en = {
   "cuenta.claveCambiada": "Done: your password was changed.",
   "cuenta.claveNoCambio": "We couldn't change the password.",
   "cuenta.claveFaltaActual": "Enter your current password.",
+  "actividad.accionAvisoPrueba": "Notice to company: trial ending",
+  "actividad.accionAvisoCobroFallido": "Notice to company: charge failed",
+  "actividad.accionAvisoPausa": "Notice to company: access paused",
 } as const;
 
 /** Toda clave que el panel sabe decir. */
