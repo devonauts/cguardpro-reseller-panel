@@ -1,0 +1,104 @@
+.contrato { display: flex; flex-direction: column; gap: var(--s-4); }
+
+.contrato__cabecera { display: flex; flex-direction: column; gap: var(--s-2); }
+.contrato__rotulo { margin: 0; font-size: 10.5px; font-weight: 500; letter-spacing: 0.3em; color: var(--text-muted); }
+.contrato__titulo { margin: 0; font-size: clamp(22px, 3vw, 28px); font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.contrato__sub { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-secondary); }
+
+/* The bar stays on screen while reading: progress, language, next pending. */
+.contrato__barra {
+  position: sticky;
+  top: var(--s-3);
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  background: var(--surface-raised);
+}
+.contrato__progreso { flex: 1; min-width: 140px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+.contrato__lenguas { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: var(--r-md); }
+.contrato__lengua {
+  min-height: 36px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.contrato__lengua--activa { background: var(--surface-hover); color: var(--text-primary); }
+.contrato__prevalece { margin: 0; font-size: 12px; color: var(--text-muted); }
+.contrato__aviso { padding: var(--s-3); border: 1px solid var(--warn-line); border-radius: var(--r-md); background: var(--warn-soft); font-size: 13px; color: var(--text-primary); }
+.contrato__error { margin: 0; font-size: 13px; color: var(--danger); }
+
+.clausula {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  scroll-margin-top: 96px;
+}
+.clausula--firmada { border-color: var(--line-strong); }
+.clausula__titulo { margin: 0 0 var(--s-1); font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-primary); }
+.clausula__texto { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); white-space: pre-line; }
+
+.clausula__iniciales {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-3);
+  margin-top: var(--s-2);
+  padding-top: var(--s-3);
+  border-top: 1px dashed var(--line);
+}
+.clausula__iniciales .campo { width: 160px; }
+
+.clausula__sello {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font-size: 12px;
+  color: var(--text-muted);
+  strong { font-size: 16px; letter-spacing: 0.08em; color: var(--text-primary); }
+}
+
+.firmas {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  scroll-margin-top: 96px;
+}
+.firmas__cgp, .firmas__socio { display: flex; flex-direction: column; gap: var(--s-2); }
+.firmas__parte { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--text-muted); }
+.firmas__imagen { max-width: 260px; height: 90px; object-fit: contain; object-position: left; }
+.firmas__dato { margin: 0; font-size: 13.5px; color: var(--text-primary); }
+.firmas__nota { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+.firmas__campos { display: flex; flex-direction: column; gap: var(--s-4); margin: 0; padding: 0; border: 0; min-width: 0; }
+.firmas__campos:disabled { opacity: 0.55; }
+.firmas__paso { display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }
+.firmas__etiqueta { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
+.firmas__foto { width: 180px; height: 180px; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--line); }
+.firmas__consentimiento {
+  display: flex;
+  gap: var(--s-3);
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  input { width: 20px; height: 20px; margin-top: 2px; flex: none; }
+}

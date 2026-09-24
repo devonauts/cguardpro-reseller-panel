@@ -1,4 +1,4 @@
-import { del, get, patch, post, put, subirArchivo } from "@/services/api";
+import { del, enviarFormulario, get, patch, post, put, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -491,7 +491,51 @@ export interface EstadoDeActivacion {
   hasCard: boolean;
   invoiceId: string | null;
   invoiceNumber: string | null;
+  /** The White Label Reseller Agreement is signed (required before paying). */
+  agreementSigned?: boolean;
 }
+
+/* ── The White Label Reseller Agreement ─────────────────────────────────── */
+
+export interface BloqueDelContrato {
+  id: string;
+  tipo: "preambulo" | "clausula" | "anexo" | string;
+  titulo: string;
+  parrafos: string[];
+}
+
+export interface ContratoDelSocio {
+  available: boolean;
+  reason?: string;
+  id?: string;
+  status?: "pending" | "signed" | string;
+  controllingLanguage?: string;
+  blocksToInitial?: string[];
+  initials?: Record<string, { initials: string; at: string }>;
+  en?: BloqueDelContrato[];
+  es?: BloqueDelContrato[];
+  values?: {
+    registrationFeeCents: number; monthlyFeeCents: number; monthlyFeeFromUsers: number;
+    perUserFeeCents: number; minResalePerUserCents: number; currency: string;
+    reseller: { legalName: string; tradeName: string | null; address: string | null; email: string | null };
+    scheduleB: { authorizedAdmin: { name: string | null; email: string | null } };
+  };
+  cgpSigner?: { name: string; title: string; image: string; signedAt: string };
+  partnerSigner?: { name: string; title: string; licence: string; address: string | null } | null;
+  partnerSignature?: string | null;
+  signedAt?: string | null;
+  documentHash?: string | null;
+}
+
+export const contratoService = {
+  ver: () => get<ContratoDelSocio>("/reseller/agreement"),
+  iniciales: (block: string, initials: string) =>
+    post<{ block: string; initials: string; remaining: number; next: string | null }>(
+      "/reseller/agreement/initials", { block, initials },
+    ),
+  firmar: (datos: FormData) =>
+    enviarFormulario<{ status: string; signedAt: string; documentHash: string }>("/reseller/agreement/sign", datos),
+};
 
 export const activacionService = {
   estado: () => get<EstadoDeActivacion>("/reseller/billing/activation"),

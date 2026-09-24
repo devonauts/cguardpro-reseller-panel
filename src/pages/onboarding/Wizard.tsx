@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { Activacion } from "./Activacion";
+import { FirmaDelContrato } from "./FirmaDelContrato";
 import { useT } from "@/i18n/IdiomaProvider";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import type { Clave } from "@/i18n/idioma";
@@ -159,7 +160,19 @@ export function Wizard() {
           error={!est && !activacion?.required ? error : null}
           onReintentar={cargar}
         >
-          {activacion?.required && (
+          {/* FIRST THE AGREEMENT, THEN THE REGISTRATION: the server refuses the
+              payment until it is signed, so the screen follows the same order. */}
+          {activacion?.required && !activacion.agreementSigned && (
+            <FirmaDelContrato
+              onFirmado={async () => {
+                const a = await activacionService.estado().catch(() => null);
+                setActivacion(a);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          )}
+
+          {activacion?.required && activacion.agreementSigned && (
             <Activacion
               estado={activacion}
               onPagada={async () => {

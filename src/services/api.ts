@@ -163,6 +163,12 @@ export async function del<T>(url: string, params?: any): Promise<T> {
   return desenvolver<T>(r.data);
 }
 
+/** Multipart with several fields and files (the signing photo + its form). */
+export async function enviarFormulario<T>(url: string, datos: FormData): Promise<T> {
+  const r = await api.post(url, datos, { headers: { "Content-Type": undefined } as any });
+  return desenvolver<T>(r.data);
+}
+
 export async function subirArchivo<T>(url: string, archivo: File): Promise<T> {
   const fd = new FormData();
   fd.append("file", archivo);
