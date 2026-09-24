@@ -7,6 +7,8 @@ import { portalService, type CuentaDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { nombreDeRol } from "@/lib/rolDeSocio";
+import { useResellerAuth } from "@/auth/ResellerAuthContext";
+import { CambiarContrasena } from "@/components/cuenta/CambiarContrasena";
 import "./Cuenta.scss";
 
 /**
@@ -45,8 +47,14 @@ export function Cuenta() {
   const [c, setC] = useState<CuentaDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /* The account summary needs settings.manage; billing, support, read-only
+     and account managers got a 403 page instead of their own session. They
+     now see their session (from /me) and can change their password. */
+  const { puede, me } = useResellerAuth();
+  const veCuenta = puede("reseller.settings.manage");
 
   const cargar = useCallback(async () => {
+    if (!veCuenta) { setCargando(false); return; }
     setCargando(true);
     setError(null);
     try {
@@ -56,7 +64,7 @@ export function Cuenta() {
     } finally {
       setCargando(false);
     }
-  }, [t]);
+  }, [t, veCuenta]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
@@ -65,6 +73,18 @@ export function Cuenta() {
   return (
     <Pagina titulo={t("cuenta.titulo")} nota={t("cuenta.nota")}>
 
+      {!veCuenta && me && (
+        <Tarjeta>
+          <TarjetaCabecera titulo={t("cuenta.tuSesion")} />
+          <div className="cuenta__rejilla">
+            <Dato etiqueta={t("cuenta.persona")} valor={me.user.fullName || me.user.email || "—"} />
+            <Dato etiqueta={t("cuenta.correo")} valor={me.user.email || "—"} />
+            <Dato etiqueta={t("cuenta.rol")} valor={me.membership?.role ? nombreDeRol(me.membership.role) : "—"} />
+          </div>
+        </Tarjeta>
+      )}
+
+      {veCuenta && (
       <EstadoDeDatos
         cargando={cargando}
         error={error}
@@ -133,6 +153,9 @@ export function Cuenta() {
           </>
         )}
       </EstadoDeDatos>
+      )}
+
+      <CambiarContrasena />
     </Pagina>
   );
 }

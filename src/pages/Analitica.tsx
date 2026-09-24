@@ -3,6 +3,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Boton, Campo, EstadoDeDatos, Panel } from "@/components/cristal";
 import { analiticaService } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
+import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import "./Analitica.scss";
 
 /**
@@ -33,6 +34,11 @@ export function Analitica() {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Save errors stay next to the form; only a failed LOAD replaces the page
+  // (a 400 used to wipe the form and what the partner had typed).
+  const [errorAlGuardar, setErrorAlGuardar] = useState<string | null>(null);
+  const { puede } = useResellerAuth();
+  const edita = puede("reseller.settings.manage");
   const [aviso, setAviso] = useState<string | null>(null);
 
   const cargar = useCallback(async () => {
@@ -56,7 +62,7 @@ export function Analitica() {
     e.preventDefault();
     if (guardando) return;
     setGuardando(true);
-    setError(null);
+    setErrorAlGuardar(null);
     setAviso(null);
     try {
       const r = await analiticaService.guardar({
@@ -68,7 +74,7 @@ export function Analitica() {
       setAviso(t("analitica.guardada"));
     } catch (e: any) {
       // El 400 del servidor explica QUÉ identificador no tiene la forma buena.
-      setError(e?.message || t("analitica.noGuardo"));
+      setErrorAlGuardar(e?.message || t("analitica.noGuardo"));
     } finally {
       setGuardando(false);
     }
@@ -83,7 +89,7 @@ export function Analitica() {
         </div>
       </header>
 
-      <EstadoDeDatos cargando={cargando} error={error && !aviso ? error : null} onReintentar={cargar}>
+      <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         <Panel titulo={t("analitica.google")} nota={t("analitica.googleNota")}>
           <form className="analitica" onSubmit={guardar} noValidate>
             <Campo
@@ -91,6 +97,7 @@ export function Analitica() {
               ayuda={t("analitica.ga4Ayuda")}
               placeholder="G-XXXXXXXXXX"
               value={ga4}
+              disabled={!edita}
               onChange={(e) => setGa4(e.target.value)}
             />
             <Campo
@@ -98,6 +105,7 @@ export function Analitica() {
               ayuda={t("analitica.gtmAyuda")}
               placeholder="GTM-XXXXXXX"
               value={gtm}
+              disabled={!edita}
               onChange={(e) => setGtm(e.target.value)}
             />
 
@@ -106,12 +114,15 @@ export function Analitica() {
 
             <p className="analitica__eventos">{t("analitica.eventos")}</p>
 
-            {error && <p role="alert" className="analitica__error">{error}</p>}
+            {errorAlGuardar && <p role="alert" className="analitica__error">{errorAlGuardar}</p>}
+            {!edita && <p className="analitica__eventos">{t("analitica.soloLectura")}</p>}
             {aviso && <p role="status" className="analitica__aviso">{aviso}</p>}
 
-            <div className="analitica__pie">
-              <Boton type="submit" cargando={guardando}>{t("comun.guardar")}</Boton>
-            </div>
+            {edita && (
+              <div className="analitica__pie">
+                <Boton type="submit" cargando={guardando}>{t("comun.guardar")}</Boton>
+              </div>
+            )}
           </form>
         </Panel>
       </EstadoDeDatos>

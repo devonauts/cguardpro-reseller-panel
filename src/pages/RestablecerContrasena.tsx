@@ -39,6 +39,9 @@ export function RestablecerContrasena() {
   const [error, setError] = useState<string | null>(null);
   const [listo, setListo] = useState(false);
   const [enviando, setEnviando] = useState(false);
+  /* An expired or used link used to leave the form on screen with an error
+     and no way forward; it now shows the dead-link screen. */
+  const [caducado, setCaducado] = useState(false);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
@@ -52,13 +55,14 @@ export function RestablecerContrasena() {
       await recuperacionService.restablecer(token, clave);
       setListo(true);
     } catch (err: any) {
+      if (/invalidToken|expired/i.test(String(err?.messageCode || ""))) { setCaducado(true); return; }
       setError(err?.message || t("clave.falloRestablecer"));
     } finally {
       setEnviando(false);
     }
   };
 
-  if (!token) {
+  if (!token || caducado) {
     return (
       <div className="acceso">
         <header className="acceso__cabecera">

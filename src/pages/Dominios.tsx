@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  Boton, Campo, CampoCopiable, EstadoDeDatos, Estado, Panel, Pildora,
+  Boton, Campo, CampoCopiable, Confirmar, Estado, EstadoDeDatos, Panel, Pildora,
 } from "@/components/cristal";
 import { Pagina } from "@/components/panel";
 import { EnlaceParaClientes } from "@/components/panel/Enlace";
@@ -149,7 +149,10 @@ export function Dominios() {
     if (!nuevo.trim()) return;
     await accion(async () => {
       const d = await domainsService.agregar(nuevo.trim());
-      setDetalle((p) => ({ ...p, [d.id]: d }));
+      /* The add response carries locally-built instructions; the records the
+         edge really checks only come from the detail. Show those. */
+      const completo = await domainsService.ver(d.id).catch(() => d);
+      setDetalle((p) => ({ ...p, [d.id]: completo }));
       setNuevo("");
     }, t("dominios.anadido"));
   };
@@ -284,7 +287,14 @@ export function Dominios() {
                       type="button"
                       disabled={enviando || !datos?.proveedorListo}
                       onClick={() => accion(
-                        () => domainsService.comprobar(d.id),
+                        async () => {
+                          await domainsService.comprobar(d.id);
+                          // Open instructions go stale after a check: refresh them.
+                          if (detalle[d.id]) {
+                            const fresco = await domainsService.ver(d.id).catch(() => null);
+                            if (fresco) setDetalle((p) => ({ ...p, [d.id]: fresco }));
+                          }
+                        },
                         t("dominios.verificacionLanzada"),
                       )}
                     >
@@ -304,29 +314,29 @@ export function Dominios() {
                       </Boton>
                     )}
                     {d.isActive && (
-                      <Boton
+                      <Confirmar
                         variante="suave"
-                        type="button"
                         disabled={enviando}
-                        onClick={() => accion(
+                        pregunta={t(d.isPrimary ? "dominios.desactivarPreguntaPrincipal" : "dominios.desactivarPregunta", { host: d.hostname ?? "" })}
+                        onConfirmar={() => accion(
                           () => domainsService.desactivar(d.id),
                           t("dominios.dominioDesactivado"),
                         )}
                       >
                         {t("dominios.desactivar")}
-                      </Boton>
+                      </Confirmar>
                     )}
-                    <Boton
+                    <Confirmar
                       variante="peligro"
-                      type="button"
                       disabled={enviando}
-                      onClick={() => accion(
+                      pregunta={t(d.isPrimary ? "dominios.quitarPreguntaPrincipal" : "dominios.quitarPregunta", { host: d.hostname ?? "" })}
+                      onConfirmar={() => accion(
                         () => domainsService.quitar(d.id),
                         t("dominios.quitado"),
                       )}
                     >
                       {t("dominios.quitar")}
-                    </Boton>
+                    </Confirmar>
                   </div>
                 )}
 

@@ -21,8 +21,8 @@
 .copiable__boton {
   flex: none;
   appearance: none;
-  /* 32 px de alto y su propio relleno: es un objetivo táctil, no un enlace. */
-  min-height: 32px;
+  /* 40 px de alto y su propio relleno: es un objetivo táctil, no un enlace. */
+  min-height: 40px;
   padding: 0 var(--s-3);
   border: 1px solid var(--glass-border);
   border-radius: var(--r-sm);

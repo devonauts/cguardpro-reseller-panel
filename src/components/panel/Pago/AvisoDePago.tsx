@@ -48,7 +48,9 @@ export function AvisoDePago() {
     if (!ve) return;
     try {
       const [lista, tarjeta] = await Promise.all([
-        billingService.list({ limit: 24 }),
+        /* The 24 NEWEST missed an older unpaid invoice on a long-lived
+           account (and miscounted "+N more"). The server caps at 200. */
+        billingService.list({ limit: 200 }),
         billingService.tarjeta().catch(() => null),
       ]);
       const vivas = (lista.invoices ?? [])
@@ -66,6 +68,13 @@ export function AvisoDePago() {
   }, [ve]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  // The thank-you note is a moment, not a fixture for the rest of the session.
+  useEffect(() => {
+    if (!hecho) return undefined;
+    const reloj = setTimeout(() => setHecho(null), 10000);
+    return () => clearTimeout(reloj);
+  }, [hecho]);
 
   const alPagar = async (r: PagoDeFactura) => {
     setHecho(r);

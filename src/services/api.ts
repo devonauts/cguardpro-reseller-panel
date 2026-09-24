@@ -50,6 +50,7 @@ export interface ApiError {
   code?: string;
   /** El estado comercial que devuelve el portero cuando contesta 403. */
   resellerStatus?: string | null;
+  messageCode?: string | null;
 }
 
 const api: AxiosInstance = axios.create({
@@ -103,6 +104,8 @@ function normalizar(error: AxiosError): ApiError {
     status,
     message,
     code: data?.code,
+    /** The server's message key (e.g. `auth.passwordReset.invalidToken`). */
+    messageCode: data?.messageCode ?? null,
     resellerStatus: data?.resellerStatus ?? null,
   };
 }

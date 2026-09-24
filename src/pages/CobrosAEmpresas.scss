@@ -143,8 +143,10 @@
 }
 
 @include r.hasta(movil) {
-  .cobros-tabla__fila { grid-template-columns: minmax(0, 1fr) auto; }
-  .cobros-tabla__fila > :nth-child(3), .cobros-tabla__fila > :nth-child(4), .cobros-tabla__fila > :nth-child(5) { display: none; }
+  /* Name, status and what they OWE stay visible: the phone is where a partner
+     checks who hasn't paid. */
+  .cobros-tabla__fila { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .cobros-tabla__fila > :nth-child(3), .cobros-tabla__fila > :nth-child(4) { display: none; }
   .cobros-tabla__fila--cabecera { display: none; }
 }
 

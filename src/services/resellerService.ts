@@ -1012,6 +1012,8 @@ export interface CobroAEmpresas {
   pricing: PreciosAEmpresas | null;
   minimums: { currency: string; perUserCents: number; monthlyFeeCents: number };
   collectedLast30Cents: number;
+  /** Every invoice currency apart; the headline totals count the pricing one only. */
+  totalsByCurrency?: Array<{ currency: string; collectedLast30Cents: number; outstandingCents: number }>;
   outstandingCents: number;
   companies: EmpresaCobrada[];
 }

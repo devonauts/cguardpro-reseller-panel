@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import { Boton, Campo, EstadoDeDatos, Icono, Pildora, type Tono } from "@/components/cristal";
+import { Boton, Campo, Confirmar, EstadoDeDatos, Icono, Pildora, type Tono } from "@/components/cristal";
 import { fechaCorta, precio } from "@/lib/dinero";
 import {
   cobroAEmpresasService, type CobroAEmpresas, type EmpresaCobrada, type PasarelaDelCatalogo,
@@ -55,22 +55,30 @@ export function CobrosAEmpresas() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    setError(null);
+  /* After a save the page refreshes QUIETLY: a loud reload unmounted every
+     section, so "Prices saved." vanished at once and an open company row
+     collapsed. */
+  const cargar = useCallback(async (silencioso = false) => {
+    if (!silencioso) { setCargando(true); setError(null); }
     try {
       setDatos(await cobroAEmpresasService.leer());
     } catch (e: any) {
-      setError(e?.message || t("cobros.noCargo"));
+      if (!silencioso) setError(e?.message || t("cobros.noCargo"));
     } finally {
-      setCargando(false);
+      if (!silencioso) setCargando(false);
     }
   }, [t]);
+  const refrescar = useCallback(() => { void cargar(true); }, [cargar]);
 
   useEffect(() => { cargar(); }, [cargar]);
 
   const moneda = datos?.pricing?.currency ?? datos?.minimums.currency ?? "USD";
   const activo = datos?.gateway?.status === "connected" && !!datos?.pricing;
+  const enPrueba = activo && datos?.gateway?.mode !== "live";
+  /* Invoices in a currency other than today's pricing one are listed apart,
+     never added to it. */
+  const otrasMonedas = (datos?.totalsByCurrency ?? []).filter((x) => x.currency !== moneda
+    && (x.collectedLast30Cents || x.outstandingCents));
 
   return (
     <>
@@ -81,7 +89,7 @@ export function CobrosAEmpresas() {
         </div>
       </header>
 
-      <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
+      <EstadoDeDatos cargando={cargando} error={error} onReintentar={() => cargar()}>
         {datos && (
           <div className="cobros">
             <div className="cobros__resumen">
@@ -89,14 +97,21 @@ export function CobrosAEmpresas() {
               <Ficha etiqueta={t("cobros.pendiente")} valor={precio(datos.outstandingCents, moneda)} />
               <Ficha
                 etiqueta={t("cobros.estado")}
-                valor={activo ? t("cobros.activo") : t("cobros.inactivo")}
-                nota={activo ? t("cobros.activoNota") : t("cobros.inactivoNota")}
+                valor={activo ? t(enPrueba ? "cobros.activoPrueba" : "cobros.activo") : t("cobros.inactivo")}
+                nota={activo ? t(enPrueba ? "cobros.activoPruebaNota" : "cobros.activoNota") : t("cobros.inactivoNota")}
               />
             </div>
+            {otrasMonedas.length > 0 && (
+              <p className="bloque__nota">
+                {t("cobros.otrasMonedas", {
+                  l: otrasMonedas.map((x) => `${precio(x.collectedLast30Cents, x.currency, true)} / ${precio(x.outstandingCents, x.currency, true)}`).join(" · "),
+                })}
+              </p>
+            )}
 
-            <Pasarela datos={datos} gestiona={gestiona} onCambio={cargar} />
-            <Precios datos={datos} gestiona={gestiona} onCambio={cargar} />
-            <Empresas datos={datos} gestiona={gestiona} onCambio={cargar} />
+            <Pasarela datos={datos} gestiona={gestiona} onCambio={refrescar} />
+            <Precios datos={datos} gestiona={gestiona} onCambio={refrescar} />
+            <Empresas datos={datos} gestiona={gestiona} onCambio={refrescar} />
 
             <p className="cobros__legal">
               <Icono nombre="libro" tamano={15} />
@@ -147,7 +162,16 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
 
   const desconectar = async () => {
     setEnviando(true);
-    try { await cobroAEmpresasService.desconectar(); onCambio(); } finally { setEnviando(false); }
+    setError(null);
+    try {
+      await cobroAEmpresasService.desconectar();
+      onCambio();
+    } catch (e: any) {
+      // Used to fail silently (try/finally with no catch).
+      setError(e?.message || t("cobros.noDesconecto"));
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -164,8 +188,8 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
             <strong>{gw.name}</strong>
             <span>{gw.accountLabel ?? "—"}</span>
           </span>
-          <Pildora tono={gw.status === "connected" ? "ok" : "peligro"}>
-            {t(gw.status === "connected" ? "cobros.conectada" : "cobros.conError")}
+          <Pildora tono={gw.status === "connected" ? "ok" : gw.status === "pending" ? "aviso" : "peligro"}>
+            {t(gw.status === "connected" ? "cobros.conectada" : gw.status === "pending" ? "cobros.pendienteVerificar" : "cobros.conError")}
           </Pildora>
           <Pildora tono={gw.mode === "live" ? "ok" : "aviso"}>
             {t(gw.mode === "live" ? "cobros.modoReal" : "cobros.modoPrueba")}
@@ -175,11 +199,22 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
               <Boton variante="suave" onClick={() => setEligiendo(datos.catalog.find((c) => c.provider === gw.provider) ?? null)}>
                 {t("cobros.cambiarClaves")}
               </Boton>
-              <Boton variante="fantasma" onClick={desconectar} disabled={enviando}>{t("cobros.desconectar")}</Boton>
+              <Confirmar
+                variante="fantasma"
+                disabled={enviando}
+                pregunta={t("cobros.desconectarPregunta")}
+                onConfirmar={desconectar}
+              >
+                {t("cobros.desconectar")}
+              </Confirmar>
             </span>
           )}
         </div>
       )}
+      {gw && gw.status !== "connected" && gw.lastError && !eligiendo && (
+        <p role="alert" className="cobros__error">{gw.lastError}</p>
+      )}
+      {error && !eligiendo && <p role="alert" className="cobros__error">{error}</p>}
 
       {(!gw || eligiendo) && (
         <div className="cobros-catalogo">
@@ -213,6 +248,9 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
             />
           ))}
           <p className="bloque__nota">{t("cobros.clavesNota")}</p>
+          {/* Saved cards belong to the gateway ACCOUNT: another account cannot
+              charge them. Said before they swap keys, not after the failures. */}
+          {gw && <p className="cobros__alerta">{t("cobros.otraCuentaAviso")}</p>}
           {error && <p role="alert" className="cobros__error">{error}</p>}
           <div className="cobros-formulario__botones">
             <Boton variante="fantasma" onClick={() => setEligiendo(null)} disabled={enviando}>{t("comun.cancelar")}</Boton>
@@ -270,13 +308,22 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const guardar = async () => {
     setError(null);
     setAviso(null);
+    /* Whole days only: "abc" used to become 0, and 0 grace days pauses a
+       company the moment a charge fails. */
+    const dias = (v: string) => (/^\d{1,3}$/.test(v.trim()) ? Number(v.trim()) : NaN);
+    const trialDays = dias(f.trialDays);
+    const graceDays = dias(f.graceDays);
+    if (Number.isNaN(trialDays) || Number.isNaN(graceDays)) {
+      setError(t("cobros.diasNoValidos"));
+      return;
+    }
     const cuerpo: PreciosAEmpresas = {
       currency: f.currency,
       perUserCents: porUsuario ?? 0,
       monthlyFeeCents: mensual ?? 0,
       setupFeeCents: aCentavos(f.setup) ?? 0,
-      trialDays: Number(f.trialDays) || 0,
-      graceDays: Number(f.graceDays) || 0,
+      trialDays,
+      graceDays,
     };
     if ([cuerpo.perUserCents, cuerpo.monthlyFeeCents, cuerpo.setupFeeCents].some((n) => Number.isNaN(n))) {
       setError(t("cobros.importeNoValido"));
@@ -331,6 +378,9 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
           >
             {monedas.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
+          {p && f.currency !== p.currency && datos.companies.some((e) => e.override && Object.values(e.override).some((v) => v != null)) && (
+            <span className="cobros-moneda__tasa" role="alert">{t("cobros.monedaAjustesAviso", { m: p.currency })}</span>
+          )}
           {otraMoneda && (
             <span className="cobros-moneda__tasa">
               {tasa ? t("cobros.tasa", { b: base, x: tasa.toFixed(tasa >= 100 ? 0 : 2), m: f.currency }) : t("cobros.sinTasa")}
@@ -373,7 +423,7 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
               ? t("cobros.cuadreCuotaUmbral", { c: $b(plataforma.monthlyFeeCents), n: plataforma.monthlyFeeFreeUntilSeats })
               : t("cobros.cuadreCuota", { c: $b(plataforma.monthlyFeeCents) })}
             {" "}
-            {mensual != null && !Number.isNaN(mensual) && mensual > 0 && tasa
+            {plataforma.monthlyFeeCents > 0 && mensual != null && !Number.isNaN(mensual) && mensual > 0 && tasa
               ? t("cobros.cuadreEmpresas", {
                 c: $m(mensual), n: Math.max(1, Math.ceil(plataforma.monthlyFeeCents / Math.max(1, aBase(mensual) ?? 1))),
               })
@@ -415,13 +465,15 @@ function Empresas({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
       {datos.companies.length === 0 ? (
         <p className="bloque__vacio">{t("empresas.vacio")}</p>
       ) : (
-        <div className="cobros-tabla" role="table" aria-label={t("cobros.empresasTitulo")}>
-          <div className="cobros-tabla__fila cobros-tabla__fila--cabecera" role="row">
-            <span role="columnheader">{t("cobros.colEmpresa")}</span>
-            <span role="columnheader">{t("cobros.colEstado")}</span>
-            <span role="columnheader">{t("cobros.colFecha")}</span>
-            <span role="columnheader">{t("cobros.colTarjeta")}</span>
-            <span role="columnheader" className="cobros-tabla__derecha">{t("cobros.colPendiente")}</span>
+        /* A list of expandable buttons: each row IS a button (so it can carry
+           aria-expanded), which a table row cannot be. The header is visual. */
+        <div className="cobros-tabla">
+          <div className="cobros-tabla__fila cobros-tabla__fila--cabecera" aria-hidden="true">
+            <span>{t("cobros.colEmpresa")}</span>
+            <span>{t("cobros.colEstado")}</span>
+            <span>{t("cobros.colFecha")}</span>
+            <span>{t("cobros.colTarjeta")}</span>
+            <span className="cobros-tabla__derecha">{t("cobros.colPendiente")}</span>
           </div>
           {datos.companies.map((e) => {
             const est = ESTADO[e.status] ?? ESTADO.trialing;
@@ -429,20 +481,19 @@ function Empresas({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
               <div key={e.tenantId} className="cobros-tabla__grupo">
                 <button
                   type="button"
-                  role="row"
                   className={`cobros-tabla__fila${abierta === e.tenantId ? " cobros-tabla__fila--abierta" : ""}`}
                   onClick={() => setAbierta((a) => (a === e.tenantId ? null : e.tenantId))}
                   aria-expanded={abierta === e.tenantId}
                 >
-                  <span role="cell" className="cobros-tabla__nombre">{e.name || t("empresas.sinNombre")}</span>
-                  <span role="cell"><Pildora tono={est.tono}>{t(est.texto)}</Pildora></span>
-                  <span role="cell">
+                  <span className="cobros-tabla__nombre">{e.name || t("empresas.sinNombre")}</span>
+                  <span><Pildora tono={est.tono}>{t(est.texto)}</Pildora></span>
+                  <span>
                     {e.anchorAt
                       ? t("cobros.renuevaDia", { d: Number(e.anchorAt.slice(8, 10)) })
                       : e.trialEndsAt ? t("cobros.pruebaHasta", { f: fechaCorta(e.trialEndsAt) }) : "—"}
                   </span>
-                  <span role="cell">{t(e.hasCard ? "cobros.conTarjeta" : "cobros.sinTarjeta")}</span>
-                  <span role="cell" className="cobros-tabla__derecha">{precio(e.outstandingCents, moneda)}</span>
+                  <span>{t(e.hasCard ? "cobros.conTarjeta" : "cobros.sinTarjeta")}</span>
+                  <span className="cobros-tabla__derecha">{precio(e.outstandingCents, moneda)}</span>
                 </button>
                 {abierta === e.tenantId && (
                   <Ajuste empresa={e} datos={datos} gestiona={gestiona} onCambio={onCambio} />
@@ -469,16 +520,26 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [aviso, setAviso] = useState<string | null>(null);
+
   const guardar = async (extra: { exempt?: boolean } = {}) => {
+    const cuerpo = {
+      perUserCents: aCentavos(f.perUser),
+      monthlyFeeCents: aCentavos(f.monthly),
+      setupFeeCents: aCentavos(f.setup),
+    };
+    /* NaN travels as null in JSON, and null means "remove the override":
+       typing "abc" silently wiped this company's special price. */
+    if (Object.values(cuerpo).some((n) => n != null && Number.isNaN(n))) {
+      setError(t("cobros.importeNoValido"));
+      return;
+    }
     setEnviando(true);
     setError(null);
+    setAviso(null);
     try {
-      await cobroAEmpresasService.ajustarEmpresa(empresa.tenantId, {
-        perUserCents: aCentavos(f.perUser),
-        monthlyFeeCents: aCentavos(f.monthly),
-        setupFeeCents: aCentavos(f.setup),
-        ...extra,
-      });
+      await cobroAEmpresasService.ajustarEmpresa(empresa.tenantId, { ...cuerpo, ...extra });
+      setAviso(t("exempt" in extra ? (extra.exempt ? "cobros.eximida" : "cobros.exencionQuitada") : "cobros.ajusteGuardado"));
       onCambio();
     } catch (e: any) {
       setError(e?.message || t("cobros.noGuardo"));
@@ -504,12 +565,18 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
         <Campo etiqueta={t("cobros.cuotaAlta")} placeholder={aTexto(base?.setupFeeCents)} {...campo("setup")} />
       </div>
       {error && <p role="alert" className="cobros__error">{error}</p>}
+      {aviso && <p role="status" className="cobros__aviso">{aviso}</p>}
       {gestiona && (
         <div className="cobros-formulario__botones">
           <Link to={`/companies/${empresa.tenantId}`} className="bloque__enlace">{t("cobros.verEmpresa")}</Link>
-          <Boton variante="fantasma" onClick={() => guardar({ exempt: empresa.status !== "exempt" })} disabled={enviando}>
+          <Confirmar
+            variante="fantasma"
+            disabled={enviando}
+            pregunta={t(empresa.status === "exempt" ? "cobros.quitarExencionPregunta" : "cobros.eximirPregunta")}
+            onConfirmar={() => guardar({ exempt: empresa.status !== "exempt" })}
+          >
             {t(empresa.status === "exempt" ? "cobros.quitarExencion" : "cobros.eximir")}
-          </Boton>
+          </Confirmar>
           <Boton onClick={() => guardar()} cargando={enviando}>{t("cobros.guardarAjuste")}</Boton>
         </div>
       )}

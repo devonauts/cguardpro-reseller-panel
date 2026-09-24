@@ -71,6 +71,7 @@ export function Usage() {
                 <Boton
                   key={p.periodId}
                   variante={p.periodId === actual?.periodId ? "primario" : "suave"}
+                  aria-pressed={p.periodId === actual?.periodId}
                   onClick={() => setAbierto(p.periodId)}
                 >
                   {mesDelPeriodo(p.period.label)}
