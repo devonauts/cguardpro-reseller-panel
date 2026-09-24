@@ -48,7 +48,11 @@
   color: var(--text-primary);
   font: inherit;
 
-  &:focus { outline: none; }
+  /* The ring belongs to the BOX (see `.campo__caja:focus-within`). The global
+     `:focus-visible` ring also landed on this bare input, drawing a second,
+     shorter frame inside the field that cut off the icon and the eye. */
+  &:focus,
+  &:focus-visible { outline: none; box-shadow: none; }
   &::placeholder { color: var(--text-muted); }
 
   /* El autorrelleno de Chrome pinta un fondo azul claro imposible de cambiar
