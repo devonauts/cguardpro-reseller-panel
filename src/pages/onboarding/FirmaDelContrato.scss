@@ -85,7 +85,18 @@
 }
 .firmas__cgp, .firmas__socio { display: flex; flex-direction: column; gap: var(--s-2); }
 .firmas__parte { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; color: var(--text-muted); }
-.firmas__imagen { max-width: 260px; height: 90px; object-fit: contain; object-position: left; }
+.firmas__imagen {
+  /* On paper, whatever the theme: signatures are dark ink. */
+  width: fit-content;
+  max-width: 280px;
+  height: 96px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--papel-borde);
+  border-radius: var(--r-md);
+  background: var(--papel);
+  object-fit: contain;
+  object-position: left;
+}
 .firmas__dato { margin: 0; font-size: 13.5px; color: var(--text-primary); }
 .firmas__nota { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
 .firmas__campos { display: flex; flex-direction: column; gap: var(--s-4); margin: 0; padding: 0; border: 0; min-width: 0; }

@@ -3,11 +3,11 @@
 .lienzo-firma__area {
   width: 100%;
   height: 170px;
-  border: 1px dashed var(--line-strong);
+  border: 1px dashed var(--papel-borde);
   border-radius: var(--r-md);
-  background: var(--canvas-deep);
-  /* The ink: the canvas reads `color` for its stroke. */
-  color: var(--text-primary);
+  background: var(--papel);
+  /* The ink: the canvas reads `color` for its stroke — dark on the paper. */
+  color: var(--tinta-firma);
   touch-action: none;
   cursor: crosshair;
 }

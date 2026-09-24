@@ -71,6 +71,11 @@
   --surface-hover: oklch(0.24 0 0);
   --line: oklch(0.30 0 0);
   --line-strong: oklch(0.38 0 0);
+  /* PAPER for signatures: a signature is dark ink on white paper in every
+     theme, as on a signed document. On the dark canvas a dark stroke vanished. */
+  --papel: oklch(0.99 0 0);
+  --papel-borde: oklch(0.86 0 0);
+  --tinta-firma: oklch(0.2 0 0);
 
   /* ── El ambiente ───────────────────────────────────────────────────────
      NEUTRO. Sin tono de marca: es lo que hace que el panel no se lea azul.
