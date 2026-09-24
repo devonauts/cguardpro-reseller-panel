@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import {
-  Boton, Campo, EstadoDeDatos, Lista, ListaFila, Panel, Pildora, Selector,
-  Tarjeta, TarjetaCabecera,
-} from "@/components/cristal";
+import { Boton, Campo, Confirmar, EstadoDeDatos, Lista, ListaFila, Panel, Pildora, Selector, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { Pagina } from "@/components/panel";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
@@ -41,6 +38,7 @@ export function Equipo() {
   const t = useT();
   const [datos, setDatos] = useState<EquipoDelSocio | null>(null);
   const [roles, setRoles] = useState<RolDeSocio[]>([]);
+  const [rolPendiente, setRolPendiente] = useState<Record<string, string>>({});
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -155,7 +153,7 @@ export function Equipo() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="persona@empresa.com"
+                placeholder={t("equipo.correoEjemplo")}
               />
               <Selector
                 etiqueta={t("equipo.rol")}
@@ -230,16 +228,38 @@ export function Equipo() {
                       <Selector
                         compacto
                         etiquetaOculta={t("equipo.rolDe", { correo: m.email ?? "" })}
-                        value={m.role ?? ""}
+                        value={rolPendiente[m.id] ?? m.role ?? ""}
                         disabled={ocupado === m.id || !activo}
-                        onChange={(e) =>
-                          accion(m.id, () => teamService.cambiarRol(m.id, e.target.value),
-                            t("equipo.rolActualizado"))}
+                        /* Picking a role only stages it: a stray scroll on the
+                           select used to demote an owner on the spot. */
+                        onChange={(e) => setRolPendiente((p) => ({ ...p, [m.id]: e.target.value }))}
                       >
                         {roles.map((r) => (
                           <option key={r.id} value={r.id}>{nombreDeRol(r.id, r.label)}</option>
                         ))}
                       </Selector>
+
+                      {rolPendiente[m.id] && rolPendiente[m.id] !== m.role && (
+                        <>
+                          <Boton
+                            cargando={ocupado === m.id}
+                            onClick={() => {
+                              const nuevo = rolPendiente[m.id];
+                              setRolPendiente(({ [m.id]: _, ...resto }) => resto);
+                              accion(m.id, () => teamService.cambiarRol(m.id, nuevo),
+                                t("equipo.rolActualizado"));
+                            }}
+                          >
+                            {t("comun.guardar")}
+                          </Boton>
+                          <Boton
+                            variante="fantasma"
+                            onClick={() => setRolPendiente(({ [m.id]: _, ...resto }) => resto)}
+                          >
+                            {t("comun.cancelar")}
+                          </Boton>
+                        </>
+                      )}
 
                       {m.status === "invited" && (
                         <Boton
@@ -253,14 +273,15 @@ export function Equipo() {
                       )}
 
                       {activo && !yo && (
-                        <Boton
+                        <Confirmar
                           variante="peligro"
                           cargando={ocupado === m.id}
-                          onClick={() => accion(m.id, () => teamService.darDeBaja(m.id),
+                          pregunta={t("equipo.desactivarPregunta", { correo: m.email ?? "" })}
+                          onConfirmar={() => accion(m.id, () => teamService.darDeBaja(m.id),
                             t("equipo.miembroDesactivado"))}
                         >
                           {t("equipo.desactivar")}
-                        </Boton>
+                        </Confirmar>
                       )}
                     </div>
                   )}

@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import Contrato from "@/pages/Contrato";
@@ -33,6 +33,15 @@ import NotFound from "@/pages/NotFound";
  */
 export default function App() {
   const { autenticado, cargando, me } = useResellerAuth();
+  const location = useLocation();
+  /* An emailed link to /billing or a company lands there after signing in,
+     not on the dashboard. Only in-app paths: never an absolute URL. */
+  const destinoTrasEntrar = () => {
+    const desde = (location.state as any)?.desde;
+    return typeof desde === "string" && desde.startsWith("/") && !desde.startsWith("//") && desde !== "/login"
+      ? desde
+      : "/dashboard";
+  };
 
   /* Un socio que todavía está dándose de alta va al asistente, no al resumen.
      No es una preferencia de navegación: en esos dos estados el servidor sólo
@@ -47,7 +56,7 @@ export default function App() {
         path="/login"
         element={
           autenticado && !cargando
-            ? <Navigate to="/dashboard" replace />
+            ? <Navigate to={destinoTrasEntrar()} replace />
             : <AuthLayout><Login /></AuthLayout>
         }
       />

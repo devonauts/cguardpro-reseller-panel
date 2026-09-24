@@ -117,6 +117,9 @@
   &:focus-visible { outline: none; box-shadow: var(--focus); }
 }
 
+/* The row Enter would open. */
+.buscador__item--activo { background: var(--glass-interactive); color: var(--text-primary); }
+
 .buscador__vacio {
   padding: var(--s-5) var(--s-3);
   text-align: center;

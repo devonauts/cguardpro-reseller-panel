@@ -41,6 +41,10 @@
   border: 0;
   background: none;
   padding: 0;
+  /* 44 px tall to hit on a phone; the text stays the size of a link. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   font: inherit;
   font-size: 13px;
   color: var(--text-secondary);

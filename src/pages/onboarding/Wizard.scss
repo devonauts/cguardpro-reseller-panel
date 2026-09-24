@@ -94,6 +94,8 @@ background: var(--glass-elevated);
   position: relative;
   z-index: 1;
   display: flex;
+  align-items: center;
+  gap: var(--s-3);
   justify-content: center;
   margin-bottom: var(--s-4);
 }

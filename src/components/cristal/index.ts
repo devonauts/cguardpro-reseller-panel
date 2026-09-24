@@ -24,3 +24,4 @@ export type { Tono } from "./Estado";
 export { CampoCopiable } from "./CampoCopiable";
 export { Lista, ListaFila } from "./Lista";
 export { EstadoDeDatos, TodaviaNo } from "./EstadoDeDatos";
+export { Confirmar } from "./Confirmar";

@@ -25,6 +25,9 @@ function hayCambios(borrador: Marca | null, publicado: Marca | null): boolean {
     "platformName", "brandHue", "brandChroma", "loginTagline",
     "supportEmail", "supportUrl", "supportPhone",
     "logoFileId", "faviconFileId", "emailLogoFileId",
+    // The assistant is published with the brand: editing only it must still
+    // light up Publish.
+    "agentName", "agentTone", "agentGreeting", "agentAvatarFileId",
   ];
   return campos.some((c) => (borrador[c] ?? null) !== (publicado[c] ?? null));
 }
@@ -39,17 +42,19 @@ export function Branding() {
   const [guardando, setGuardando] = useState(false);
   const [publicando, setPublicando] = useState(false);
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
-    setError(null);
+  const cargar = useCallback(async (silencioso = false) => {
+    if (!silencioso) {
+      setCargando(true);
+      setError(null);
+    }
     try {
       const r = await brandingService.obtener();
       setBorrador(r.draft);
       setPublicado(r.published);
     } catch (e: any) {
-      setError(e?.message || t("marca.noCargo"));
+      if (!silencioso) setError(e?.message || t("marca.noCargo"));
     } finally {
-      setCargando(false);
+      if (!silencioso) setCargando(false);
     }
   }, [t]);
 
@@ -68,28 +73,42 @@ export function Branding() {
     temporizador.current = setTimeout(() => { void guardar(); }, 700);
   };
 
-  const guardar = async () => {
+  /** `true` when there was nothing to save or it saved; `false` on failure. */
+  const guardar = async (): Promise<boolean> => {
     const cambios = pendiente.current;
-    if (!Object.keys(cambios).length) return;
+    if (!Object.keys(cambios).length) return true;
     pendiente.current = {};
     setGuardando(true);
     setError(null);
     try {
       const fresco = await brandingService.guardar(cambios);
-      setBorrador(fresco);
+      // Whatever was typed while this request was in flight wins over the
+      // server's copy; it goes out with the next save.
+      setBorrador({ ...fresco, ...pendiente.current } as Marca);
+      return true;
     } catch (e: any) {
-      // El servidor dice qué campo está mal; se enseña tal cual y se recarga
-      // para que la pantalla no siga enseñando algo que no se ha guardado.
+      // Reload quietly so the screen stops showing what did not save, and
+      // keep the server's message on screen (a loud reload used to wipe it).
+      await cargar(true);
       setError(e?.message || t("marca.noGuardo"));
-      await cargar();
+      return false;
     } finally {
       setGuardando(false);
     }
   };
 
+  /* Leaving the page inside the 700 ms debounce used to drop the last edit. */
+  const guardarRef = useRef(guardar);
+  guardarRef.current = guardar;
+  useEffect(() => () => {
+    clearTimeout(temporizador.current);
+    void guardarRef.current();
+  }, []);
+
   const publicar = async () => {
     clearTimeout(temporizador.current);
-    await guardar();
+    // A failed save must not publish the older draft and report success.
+    if (!(await guardar())) return;
     setPublicando(true);
     setError(null);
     try {
@@ -121,7 +140,7 @@ export function Branding() {
         </Boton>
       </header>
 
-      <EstadoDeDatos cargando={cargando} error={error && !borrador ? error : null} onReintentar={cargar}>
+      <EstadoDeDatos cargando={cargando} error={error && !borrador ? error : null} onReintentar={() => cargar()}>
         {borrador && (
           <div className="marca">
             <div className="marca__columna">

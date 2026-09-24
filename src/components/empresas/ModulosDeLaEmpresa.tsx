@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import { Boton, Campo, Pildora, Tarjeta, TarjetaCabecera } from "@/components/cristal";
+import { Campo, Confirmar, Pildora, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { modulosDeEmpresaService, type ModuloDeEmpresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { dinero, fecha } from "@/lib/dinero";
@@ -94,9 +94,20 @@ export function ModulosDeLaEmpresa({ tenantId }: { tenantId: string }) {
                     value={precios[m.key] || ""}
                     onChange={(e) => setPrecios((p) => ({ ...p, [m.key]: e.target.value }))}
                   />
-                  <Boton cargando={ocupado === m.key} onClick={() => activar(m)}>
+                  {/* One click charged the card for a permanent module: now it
+                      first says what will be charged. */}
+                  <Confirmar
+                    variante="primario"
+                    cargando={ocupado === m.key}
+                    disabled={regalia == null}
+                    pregunta={regalia != null
+                      ? t("modulosEmpresa.confirmar", { m: m.name, r: dinero(regalia, m.currency) })
+                      : ""}
+                    textoConfirmar={t("modulosEmpresa.confirmarBoton")}
+                    onConfirmar={() => activar(m)}
+                  >
                     {t("modulosEmpresa.activar")}
-                  </Boton>
+                  </Confirmar>
                 </div>
               )}
               {m.canActivate && !puedeActivar && (

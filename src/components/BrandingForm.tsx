@@ -291,6 +291,20 @@ function SubidaDeImagen({
     }
   };
 
+  /* Removing only touches the draft; what customers see changes on Publish. */
+  const quitar = async () => {
+    setError(null);
+    setSubiendo(true);
+    try {
+      const r = await brandingService.quitarImagen(ranura);
+      onSubida?.(r.draft);
+    } catch (err: any) {
+      setError(err?.message || t("marca.quitarFallo"));
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
   return (
     <div className="subida">
       <div className="subida__texto">
@@ -308,6 +322,11 @@ function SubidaDeImagen({
         >
           {t(puesto ? "marca.subidaCambiar" : "marca.subidaSubir")}
         </Boton>
+        {puesto && (
+          <Boton variante="fantasma" disabled={deshabilitado || subiendo} onClick={quitar}>
+            {t("marca.subidaQuitar")}
+          </Boton>
+        )}
       </div>
 
       <input

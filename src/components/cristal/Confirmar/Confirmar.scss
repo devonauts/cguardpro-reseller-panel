@@ -1,0 +1,12 @@
+.confirmar {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.confirmar__pregunta {
+  font-size: 13px;
+  color: var(--ink-subtle);
+  max-width: 42ch;
+}

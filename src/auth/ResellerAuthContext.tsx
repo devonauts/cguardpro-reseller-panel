@@ -52,7 +52,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
   });
 
   /** Pide `/me` y traduce el fallo a algo que se pueda contar en pantalla. */
-  const cargarMe = useCallback(async () => {
+  const cargarMe = useCallback(async (): Promise<string | null> => {
     setEstado((s) => ({ ...s, cargando: true }));
     try {
       const me = await resellerService.me();
@@ -61,6 +61,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
          neutro ya pintado. */
       aplicarMarca(me?.branding ?? null);
       setEstado({ cargando: false, me, motivo: null, mensaje: null });
+      return null;
     } catch (e: any) {
       const status = e?.status;
       // La capa apagada contesta 404 en TODO el árbol: no es que falte esta
@@ -70,7 +71,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
           cargando: false, me: null, motivo: "capa-apagada",
           mensaje: t("sesion.capaApagada"),
         });
-        return;
+        return t("sesion.capaApagada");
       }
       /* 403 aquí significa que la sesión guardada no es de socio (o su membresía
          ya no vale). Se descarta SIN intentar reaprovecharla. */
@@ -81,16 +82,17 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
           cargando: false, me: null, motivo: "canal-incorrecto",
           mensaje: t("sesion.canalIncorrecto"),
         });
-        return;
+        return t("sesion.canalIncorrecto");
       }
       if (status === 401) {
         setEstado({ cargando: false, me: null, motivo: "sin-sesion", mensaje: null });
-        return;
+        return t("login.fallo");
       }
       setEstado({
         cargando: false, me: null, motivo: "error",
         mensaje: e?.message || t("sesion.noComprobada"),
       });
+      return e?.message || t("sesion.noComprobada");
     }
   }, []);
 
@@ -116,7 +118,11 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
       throw { message: t("sesion.sinSesionValida") };
     }
     setAuthToken(token);
-    await cargarMe();
+    /* The password was right but the panel still would not open (not a
+       partner account, layer off, server error). Said on the login form:
+       before, the button just stopped spinning and nothing appeared. */
+    const fallo = await cargarMe();
+    if (fallo) throw { message: fallo };
   }, [cargarMe]);
 
   const salir = useCallback(() => {
@@ -135,7 +141,7 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
   );
 
   const valor = useMemo<Contexto>(
-    () => ({ ...estado, autenticado: !!estado.me, entrar, salir, recargar: cargarMe, puede }),
+    () => ({ ...estado, autenticado: !!estado.me, entrar, salir, recargar: async () => { await cargarMe(); }, puede }),
     [estado, entrar, salir, cargarMe, puede],
   );
 

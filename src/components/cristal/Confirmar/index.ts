@@ -1,0 +1,1 @@
+export { Confirmar } from "./Confirmar";

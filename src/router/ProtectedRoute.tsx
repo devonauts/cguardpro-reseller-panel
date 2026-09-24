@@ -3,6 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
+import { Boton } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
 
 /**
@@ -22,7 +23,7 @@ export function ProtectedRoute({
    *  existen sólo invita a salirse del asistente a medias. */
   sinArmazon,
 }: { children: ReactNode; sinArmazon?: boolean }) {
-  const { cargando, autenticado, motivo, mensaje } = useResellerAuth();
+  const { cargando, autenticado, motivo, mensaje, recargar, salir } = useResellerAuth();
   const location = useLocation();
   const t = useT();
 
@@ -47,11 +48,16 @@ export function ProtectedRoute({
           <div role="alert" style={{ textAlign: "center" }}>
             <h1 style={{ fontSize: 18, marginBottom: "var(--s-2)" }}>{t("sesion.noDisponible")}</h1>
             <p style={{ fontSize: 13, color: "var(--ink-subtle)" }}>{mensaje}</p>
+            {/* A passing 500 on startup used to leave this screen with no exit. */}
+            <div style={{ display: "flex", gap: "var(--s-3)", justifyContent: "center", marginTop: "var(--s-4)" }}>
+              <Boton onClick={() => { void recargar(); }}>{t("comun.reintentar")}</Boton>
+              <Boton variante="fantasma" onClick={salir}>{t("sesion.volverAEntrar")}</Boton>
+            </div>
           </div>
         </AuthLayout>
       );
     }
-    return <Navigate to="/login" replace state={{ desde: location.pathname }} />;
+    return <Navigate to="/login" replace state={{ desde: location.pathname + location.search }} />;
   }
 
   if (sinArmazon) return <>{children}</>;

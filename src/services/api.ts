@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
 
-import { t } from "@/i18n/idioma";
+import { idioma, t } from "@/i18n/idioma";
 
 /**
  * El cliente HTTP del panel de socio.
@@ -60,10 +60,13 @@ const api: AxiosInstance = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = getAuthToken();
+  config.headers = config.headers || ({} as any);
   if (token) {
-    config.headers = config.headers || ({} as any);
     (config.headers as any).Authorization = `Bearer ${token}`;
   }
+  // Server messages follow the language picked in the panel, not the
+  // browser's Accept-Language.
+  (config.headers as any)["x-language"] = idioma();
   return config;
 });
 
@@ -87,11 +90,15 @@ export function onSessionLost(fn: () => void) {
 function normalizar(error: AxiosError): ApiError {
   const status = error.response?.status;
   const data: any = error.response?.data;
+  /* Axios's own texts ("Network Error", "timeout of 30000ms exceeded",
+     "Request failed with status code 500") and HTML error pages from a proxy
+     never reach the screen: they are English, technical and say nothing to
+     a partner. A bare 500 says "could not do it" in the panel's language. */
+  const delServidor =
+    (data && typeof data === "object" && (data.message || data.error)) ||
+    (typeof data === "string" && !/^\s*</.test(data) ? data : "");
   const message =
-    (data && (data.message || data.error)) ||
-    (typeof data === "string" ? data : "") ||
-    error.message ||
-    t("comun.noSePudo");
+    (status && status !== 500 && delServidor) || t("comun.noSePudo");
   return {
     status,
     message,
@@ -149,8 +156,8 @@ export async function put<T>(url: string, body?: any): Promise<T> {
  * el servidor no sabe despiezar. Se borra el de por defecto para que lo haga.
  */
 export async function del<T>(url: string, params?: any): Promise<T> {
-  const res = await api.delete<T>(url, { params });
-  return res.data;
+  const r = await api.delete(url, { params });
+  return desenvolver<T>(r.data);
 }
 
 export async function subirArchivo<T>(url: string, archivo: File): Promise<T> {

@@ -55,8 +55,16 @@ export function Wizard() {
   /* PRIMERO SE PAGA EL ALTA. Si falta, el asistente enseña la activación en
      su mismo marco; el servidor no le abriría los pasos de todas formas. */
   const [activacion, setActivacion] = useState<EstadoDeActivacion | null>(null);
-  const { recargar } = useResellerAuth();
+  const { recargar, salir, me } = useResellerAuth();
   const navigate = useNavigate();
+
+  /* A partner who already paid is activated by the server the moment the
+     wizard completes. Without this they stayed on the final screen reading
+     "we still have to activate your account" until they reloaded. */
+  const activo = String(me?.reseller.status || "") === "active";
+  useEffect(() => {
+    if (activo && est?.completed) navigate("/dashboard", { replace: true });
+  }, [activo, est?.completed, navigate]);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -88,6 +96,7 @@ export function Wizard() {
       if (paso === "publish") {
         const r = await onboardingService.completar();
         setEst(r);
+        await recargar();
         return;
       }
       /* ── LO QUE SE VE ES LO QUE SE MANDA ──────────────────────────────
@@ -140,6 +149,9 @@ export function Wizard() {
           está dando de alta también tiene que poder cambiarlo. */}
       <div className="alta__idioma">
         <SelectorDeIdioma compacto />
+        {/* No shell during onboarding, so the only way out lives here too:
+            someone in the wrong account, or with no contract yet, was trapped. */}
+        <Boton variante="fantasma" onClick={salir}>{t("armazon.cerrarSesion")}</Boton>
       </div>
       <div className="alta__caja">
         <EstadoDeDatos

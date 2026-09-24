@@ -26,19 +26,25 @@ import "./Login.scss";
 const SOPORTE = "support@cguardpro.com";
 
 export function Login() {
-  const { entrar } = useResellerAuth();
+  const { entrar, motivo, mensaje } = useResellerAuth();
   const t = useT();
 
   const [modo, setModo] = useState<"entrar" | "recuperar">("entrar");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // A saved session that turned out not to be a partner account lands here;
+  // say why instead of showing a silent empty form.
+  const [error, setError] = useState<string | null>(
+    motivo === "canal-incorrecto" ? mensaje : null,
+  );
   const [aviso, setAviso] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
     if (enviando) return;
+    // Said here, not after a round trip that answers "check your details".
+    if (!email.trim() || !password) { setError(t("login.faltanDatos")); return; }
     setError(null);
     setEnviando(true);
     try {
@@ -55,7 +61,8 @@ export function Login() {
 
   const pedirEnlace = async (e: FormEvent) => {
     e.preventDefault();
-    if (enviando || !email.trim()) return;
+    if (enviando) return;
+    if (!email.trim()) { setError(t("login.faltaCorreo")); return; }
     setError(null);
     setAviso(null);
     setEnviando(true);

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Emergente, Icono } from "@/components/cristal";
 import { fechaYHora } from "@/lib/dinero";
+import { nombreDeAccion } from "@/pages/Actividad";
 import { useT } from "@/i18n/IdiomaProvider";
 import { portalService, type LineaDeActividad } from "@/services/resellerService";
 import "./Avisos.scss";
@@ -29,26 +30,32 @@ export function Avisos() {
   const [filas, setFilas] = useState<LineaDeActividad[]>([]);
   const [hayNuevo, setHayNuevo] = useState(false);
 
-  useEffect(() => {
-    let vivo = true;
-    portalService.actividad(0, 5)
-      .then((r) => {
-        if (!vivo) return;
-        const lista = r.rows ?? [];
-        setFilas(lista);
-        try {
-          const visto = localStorage.getItem(VISTO);
-          setHayNuevo(!!lista[0]?.at && lista[0].at !== visto);
-        } catch {
-          /* almacenamiento bloqueado: se prefiere NO marcar nada que marcarlo
-             todo como nuevo en cada carga */
-        }
-      })
-      .catch(() => { /* sin actividad la campana se queda callada */ });
-    return () => { vivo = false; };
+  const [fallo, setFallo] = useState(false);
+
+  const cargar = useCallback(async () => {
+    try {
+      const r = await portalService.actividad(0, 5);
+      const lista = r.rows ?? [];
+      setFilas(lista);
+      setFallo(false);
+      try {
+        const visto = localStorage.getItem(VISTO);
+        setHayNuevo(!!lista[0]?.at && lista[0].at !== visto);
+      } catch {
+        /* almacenamiento bloqueado: se prefiere NO marcar nada que marcarlo
+           todo como nuevo en cada carga */
+      }
+    } catch {
+      // A failed load is not "no activity": say so inside the menu.
+      setFallo(true);
+    }
   }, []);
 
+  useEffect(() => { void cargar(); }, [cargar]);
+
   const alternar = () => {
+    // Loaded once per mount it went stale all session: refresh on open.
+    if (!abierto) void cargar();
     setAbierto((v) => {
       if (!v && filas[0]?.at) {
         try { localStorage.setItem(VISTO, filas[0].at); } catch { /* da igual */ }
@@ -74,13 +81,15 @@ export function Avisos() {
 
       <Emergente abierto={abierto} onCerrar={() => setAbierto(false)} etiqueta={t("avisos.abrir")}>
         <p className="avisos__titulo">{t("avisos.abrir")}</p>
-        {filas.length === 0 ? (
+        {fallo && filas.length === 0 ? (
+          <p className="avisos__vacio">{t("avisos.noCargo")}</p>
+        ) : filas.length === 0 ? (
           <p className="avisos__vacio">{t("avisos.vacio")}</p>
         ) : (
           <ul className="avisos__lista">
             {filas.map((f) => (
               <li key={f.id}>
-                <span className="avisos__accion">{f.action}</span>
+                <span className="avisos__accion">{nombreDeAccion(f.action)}</span>
                 <span className="avisos__cuando">{fechaYHora(f.at)}</span>
               </li>
             ))}

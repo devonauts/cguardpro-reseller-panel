@@ -115,7 +115,7 @@ const OBJETO: Record<string, Clave> = {
 
 /** Un identificador sin nombre no se enseña crudo: «Cambio en tu cuenta», y el
     código queda en el `title` para quien lo necesite. */
-const nombreDeAccion = (a: string) => (ACCION[a] ? traducir(ACCION[a]) : traducir("actividad.accionOtra"));
+export const nombreDeAccion = (a: string) => (ACCION[a] ? traducir(ACCION[a]) : traducir("actividad.accionOtra"));
 
 /**
  * El valor de `status` se traduce SEGÚN LA ACCIÓN, no siempre. `archived` sólo

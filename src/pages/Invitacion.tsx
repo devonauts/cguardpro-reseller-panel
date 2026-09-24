@@ -46,6 +46,7 @@ export function Invitacion() {
   const [repetida, setRepetida] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [intento, setIntento] = useState(0);
 
   useEffect(() => {
     let vivo = true;
@@ -56,11 +57,17 @@ export function Invitacion() {
       /* Un 404 aquí es «este enlace ya no sirve», y da igual por qué: caducado,
          usado o inventado. El servidor no lo distingue a propósito y la
          pantalla tampoco lo inventa. */
-      .catch(() => { if (vivo) setCaduco(true); })
+      /* Only 404/410 mean the link is dead. A network blip, a 429 or a 5xx
+         used to tell the invitee to ask for a new link they did not need. */
+      .catch((e: any) => {
+        if (!vivo) return;
+        if (e?.status === 404 || e?.status === 410) setCaduco(true);
+        else setError(e?.message || t("comun.noSePudo"));
+      })
       .finally(() => { if (vivo) setCargando(false); });
 
     return () => { vivo = false; };
-  }, [token]);
+  }, [token, intento]);
 
   const enviar = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,6 +102,27 @@ export function Invitacion() {
           <p className="acceso__rotulo">{t("login.acceso")}</p>
           <h1 className="acceso__titulo">{t("invitacion.comprobando")}</h1>
         </header>
+      </div>
+    );
+  }
+
+  if (!caduco && !invitacion && error) {
+    return (
+      <div className="acceso">
+        <header className="acceso__cabecera">
+          <p className="acceso__rotulo">{t("login.acceso")}</p>
+          <h1 className="acceso__titulo">{t("sesion.noDisponible")}</h1>
+          <p className="acceso__sub" role="alert">{error}</p>
+        </header>
+        <div className="acceso__campos">
+          <Boton
+            bloque
+            className="acceso__enviar"
+            onClick={() => { setError(null); setCargando(true); setIntento((n) => n + 1); }}
+          >
+            {t("comun.reintentar")}
+          </Boton>
+        </div>
       </div>
     );
   }

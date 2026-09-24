@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent as TeclaDeReact } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Icono, type NombreDeIcono } from "@/components/cristal";
@@ -44,11 +44,17 @@ const SECCIONES: Seccion[] = [
   { a: "/team", icono: "personas", texto: "nav.equipo" },
   { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
   { a: "/usage", icono: "grafico", texto: "nav.consumo" },
+  { a: "/analytics", icono: "grafico", texto: "nav.analitica" },
   { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/contract", icono: "escudo", texto: "nav.contrato" },
   { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
   { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
 ];
+
+/** ⌘K on a Mac, Ctrl K everywhere else — both work, but say the right one. */
+const ATAJO = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)
+  ? "⌘K"
+  : "Ctrl K";
 
 /** Sin acentos y en minúsculas: buscar «marca» tiene que encontrar «Márca». */
 const normaliza = (v: string) =>
@@ -75,26 +81,42 @@ export function Buscador() {
   }, []);
 
   useEffect(() => {
-    if (!abierto) return;
-    campo.current?.focus();
-    /* Las empresas se piden al ABRIR, no al montar: quien no usa el buscador no
-       paga una petición por cargar el panel. */
-    if (empresas.length) return;
-    companiesService.list({ limit: 100 })
-      .then((r) => setEmpresas(r.rows ?? []))
-      .catch(() => { /* sin empresas se buscan sólo las secciones */ });
-  }, [abierto, empresas.length]);
+    if (abierto) campo.current?.focus();
+  }, [abierto]);
 
   const q = normaliza(consulta.trim());
+
+  /* Companies are searched ON THE SERVER as the partner types. The old copy
+     fetched the first 100 once and never again: a partner with more couldn't
+     find the rest, and a company created a minute ago never showed up. */
+  useEffect(() => {
+    if (!abierto || !consulta.trim()) { setEmpresas([]); return undefined; }
+    let vivo = true;
+    const reloj = setTimeout(() => {
+      companiesService.list({ limit: 6, search: consulta.trim() })
+        .then((r) => { if (vivo) setEmpresas(r.rows ?? []); })
+        .catch(() => { if (vivo) setEmpresas([]); });
+    }, 200);
+    return () => { vivo = false; clearTimeout(reloj); };
+  }, [abierto, consulta]);
 
   const secciones = useMemo(
     () => SECCIONES.filter((s) => !q || normaliza(t(s.texto)).includes(q)),
     [q, t],
   );
-  const encontradas = useMemo(
-    () => (!q ? [] : empresas.filter((e) => normaliza(String(e.name ?? "")).includes(q)).slice(0, 6)),
-    [q, empresas],
-  );
+  const encontradas = empresas.slice(0, 6);
+
+  /* One list for the keyboard: ↑↓ move, Enter opens. A ⌘K palette where
+     Enter did nothing sent everyone back to the mouse. */
+  const destinos = [...secciones.map((s) => s.a), ...encontradas.map((e) => `/companies/${e.id}`)];
+  const [activo, setActivo] = useState(0);
+  useEffect(() => { setActivo(0); }, [consulta]);
+  const alTeclear = (e: TeclaDeReact<HTMLInputElement>) => {
+    if (!destinos.length) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActivo((i) => (i + 1) % destinos.length); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setActivo((i) => (i - 1 + destinos.length) % destinos.length); }
+    if (e.key === "Enter") { e.preventDefault(); ir(destinos[Math.min(activo, destinos.length - 1)]); }
+  };
 
   const ir = (a: string) => { setAbierto(false); setConsulta(""); navigate(a); };
 
@@ -104,7 +126,7 @@ export function Buscador() {
         <Icono nombre="lupa" tamano={17} />
         <span className="buscador__texto">{t("buscador.abrir")}</span>
         {/* El atajo, a la vista: un atajo que no se anuncia no lo usa nadie. */}
-        <kbd className="buscador__atajo">⌘K</kbd>
+        <kbd className="buscador__atajo">{ATAJO}</kbd>
       </button>
 
       {abierto && (
@@ -122,6 +144,7 @@ export function Buscador() {
                 ref={campo}
                 value={consulta}
                 onChange={(e) => setConsulta(e.target.value)}
+                onKeyDown={alTeclear}
                 placeholder={t("buscador.marcador")}
                 aria-label={t("buscador.titulo")}
               />
@@ -131,8 +154,13 @@ export function Buscador() {
               {secciones.length > 0 && (
                 <>
                   <p className="buscador__grupo">{t("buscador.secciones")}</p>
-                  {secciones.map((s) => (
-                    <button key={s.a} type="button" className="buscador__item" onClick={() => ir(s.a)}>
+                  {secciones.map((s, i) => (
+                    <button
+                      key={s.a}
+                      type="button"
+                      className={`buscador__item${i === activo ? " buscador__item--activo" : ""}`}
+                      onClick={() => ir(s.a)}
+                    >
                       <Icono
                         nombre={s.icono}
                         tamano={17}
@@ -147,11 +175,11 @@ export function Buscador() {
               {encontradas.length > 0 && (
                 <>
                   <p className="buscador__grupo">{t("buscador.empresas")}</p>
-                  {encontradas.map((e) => (
+                  {encontradas.map((e, i) => (
                     <button
                       key={e.id}
                       type="button"
-                      className="buscador__item"
+                      className={`buscador__item${secciones.length + i === activo ? " buscador__item--activo" : ""}`}
                       onClick={() => ir(`/companies/${e.id}`)}
                     >
                       <Icono nombre="edificio" tamano={17} />

@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  Boton, Campo, EstadoDeDatos, Icono, Pildora, Selector,
-} from "@/components/cristal";
+import { Boton, Campo, Confirmar, EstadoDeDatos, Icono, Pildora, Selector } from "@/components/cristal";
 import {
   personasService, type PersonaDeLaEmpresa, type PersonasDeLaEmpresa as Datos,
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import "./PersonasDeLaEmpresa.scss";
+
+/** `t()` returns the key itself when it is missing, so `t(k) || r` never fell
+ *  back: a CRM role with no label showed up as "rolEmpresa.centralOperator". */
+function nombreDeRolEmpresa(t: (k: Clave) => string, r: string): string {
+  const clave = `rolEmpresa.${r}` as Clave;
+  const texto = t(clave);
+  return texto === clave ? r : texto;
+}
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
@@ -76,7 +82,7 @@ export function PersonasDeLaEmpresa({
   /* `rolEmpresa.*` y no `rol.*`: ese otro espacio ya son los roles DEL SOCIO
      (propietario, facturación…), y `rol.admin` significaría dos cosas. */
   const rol = (p: PersonaDeLaEmpresa) =>
-    p.roles.map((r) => t(`rolEmpresa.${r}` as Clave) || r).join(", ") || "—";
+    p.roles.map((r) => nombreDeRolEmpresa(t, r)).join(", ") || "—";
 
   return (
     <div className="personas">
@@ -224,7 +230,7 @@ function FichaDePersona({
           <option value={rol}>{t(`rolEmpresa.${rol}` as Clave) || rol}</option>
         )}
         {roles.map((r) => (
-          <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
+          <option key={r} value={r}>{nombreDeRolEmpresa(t, r)}</option>
         ))}
       </Selector>
 
@@ -251,13 +257,14 @@ function FichaDePersona({
             >
               {t("comun.guardar")}
             </Boton>
-            <Boton
+            <Confirmar
               variante="peligro"
               disabled={guardando}
-              onClick={() => hacer(() => personasService.quitarAcceso(tenantId, persona.id))}
+              pregunta={t("personas.quitarPregunta")}
+              onConfirmar={() => hacer(() => personasService.quitarAcceso(tenantId, persona.id))}
             >
               {t("personas.quitar")}
-            </Boton>
+            </Confirmar>
           </>
         )}
       </div>
@@ -321,7 +328,7 @@ function Invitacion({
       </div>
       <Selector etiqueta={t("personas.rol")} value={rol} onChange={(e) => setRol(e.target.value)}>
         {roles.map((r) => (
-          <option key={r} value={r}>{t(`rolEmpresa.${r}` as Clave) || r}</option>
+          <option key={r} value={r}>{nombreDeRolEmpresa(t, r)}</option>
         ))}
       </Selector>
 
