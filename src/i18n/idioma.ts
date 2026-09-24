@@ -97,6 +97,15 @@ export function alCambiarIdioma(fn: (i: Idioma) => void): () => void {
 }
 
 /**
+ * The translation of a key built from server data (a module key, a field id),
+ * or `respaldo` when the catalog has none. `t()` would return the raw key.
+ */
+export function tOr(clave: string, respaldo: string): string {
+  const texto = CATALOGOS[actual][clave as Clave] ?? en[clave as Clave];
+  return texto ?? respaldo;
+}
+
+/**
  * La clave → el texto.
  *
  * Una clave que no exista se devuelve TAL CUAL. Es feo a propósito: un

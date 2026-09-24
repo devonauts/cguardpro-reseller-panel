@@ -4,6 +4,7 @@ import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Cifra, Pildora } from "@/compo
 import { Pagina } from "@/components/panel";
 import { portalService, type DerechosDelSocio } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
+import { tOr } from "@/i18n/idioma";
 import "./Derechos.scss";
 
 /**
@@ -101,12 +102,12 @@ export function Derechos() {
                       >
                         <div className="derechos__item-cab">
                           {/* Nunca `{f}`: el objeto no se pinta. */}
-                          <span className="derechos__nombre">{f.label}</span>
+                          <span className="derechos__nombre">{tOr(`funcion.${f.key}`, f.label)}</span>
                           <Pildora tono={incluido ? "ok" : "neutro"}>
                             {t(incluido ? "derechos.incluido" : "derechos.noIncluido")}
                           </Pildora>
                         </div>
-                        <p className="derechos__desc">{f.description}</p>
+                        <p className="derechos__desc">{tOr(`funcionDesc.${f.key}`, f.description)}</p>
                       </li>
                     );
                   })}

@@ -10,6 +10,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
+import { tOr } from "@/i18n/idioma";
 import "./CobrosAEmpresas.scss";
 
 /**
@@ -239,7 +240,7 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
           {eligiendo.fields.map((f) => (
             <Campo
               key={f.clave}
-              etiqueta={f.etiqueta}
+              etiqueta={tOr(`cobros.campo.${f.clave}`, f.etiqueta)}
               type={f.secreto ? "password" : "text"}
               revelable={f.secreto}
               autoComplete="off"
