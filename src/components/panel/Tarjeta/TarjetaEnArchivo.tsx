@@ -50,6 +50,8 @@ export function TarjetaEnArchivo() {
   const [aviso, setAviso] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  /** Bumped when a Stripe field is created; the effect mounts it into the box. */
+  const [campoNuevo, setCampoNuevo] = useState(0);
 
   /* Stripe y su campo viven en refs y no en estado: montarlos es un efecto
      secundario sobre el DOM, y meterlos en `useState` provocaría un re-render
@@ -112,16 +114,21 @@ export function TarjetaEnArchivo() {
       });
       campo.on("change", (e) => setError(e.error?.message ?? null));
 
-      // El hueco se pinta en este mismo render; se espera a tenerlo.
-      requestAnimationFrame(() => {
-        if (hueco.current) campo.mount(hueco.current);
-      });
+      /* Mounted by an effect once the box is rendered: a requestAnimationFrame
+         could run before React committed it and the field never appeared. */
       campoRef.current = campo;
+      setCampoNuevo((n) => n + 1);
     } catch (e: any) {
       setError(e?.message || t("tarjeta.noEmpezo"));
       setEditando(false);
     }
   };
+
+  useEffect(() => {
+    const campo = campoRef.current;
+    if (!campoNuevo || !campo || !hueco.current) return;
+    try { campo.mount(hueco.current); } catch { /* already mounted */ }
+  }, [campoNuevo, editando]);
 
   const guardar = async () => {
     if (!stripeRef.current || !campoRef.current || !secreto.current || guardando) return;

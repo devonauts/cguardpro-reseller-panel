@@ -88,10 +88,19 @@ export function PagarFactura({
       style: { base: estiloDelCampo() },
     });
     campo.on("change", (e) => setError(e.error?.message ?? null));
-    setConCampo(true);
-    requestAnimationFrame(() => { if (hueco.current) campo.mount(hueco.current); });
     campoRef.current = campo;
+    /* Mounted by the effect below, once the box exists. A requestAnimationFrame
+       here raced React's commit: the box was not rendered yet, the field never
+       mounted, the card input stayed empty and paying failed with "could not
+       retrieve data from the specified Element". */
+    setConCampo(true);
   };
+
+  useEffect(() => {
+    const campo = campoRef.current;
+    if (!conCampo || !campo || !hueco.current) return;
+    try { campo.mount(hueco.current); } catch { /* already mounted */ }
+  }, [conCampo]);
 
   const pagar = async (otraTarjeta = false) => {
     if (trabajando) return;
