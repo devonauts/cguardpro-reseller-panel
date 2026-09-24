@@ -1152,6 +1152,8 @@ export const en = {
   "avisos.noCargo": "We couldn't load the activity.",
   "login.faltanDatos": "Enter your email and password.",
   "login.faltaCorreo": "Enter your email so we can send you the link.",
+  "formato.correo": "Check the email: it should look like name@company.com.",
+  "formato.web": "Type the full address, starting with https://",
 } as const;
 
 /** Toda clave que el panel sabe decir. */

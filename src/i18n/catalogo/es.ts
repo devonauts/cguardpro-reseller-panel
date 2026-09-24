@@ -1142,4 +1142,6 @@ export const es: Record<Clave, string> = {
   "avisos.noCargo": "No se pudo cargar la actividad.",
   "login.faltanDatos": "Escribe tu correo y tu contraseña.",
   "login.faltaCorreo": "Escribe tu correo para enviarte el enlace.",
+  "formato.correo": "Revisa el correo: debe ser como nombre@empresa.com.",
+  "formato.web": "Escribe la dirección completa, empezando por https://",
 };

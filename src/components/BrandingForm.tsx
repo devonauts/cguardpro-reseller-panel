@@ -6,6 +6,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
+import { correoValido, webValida } from "@/lib/formato";
 import "./BrandingForm.scss";
 
 /**
@@ -111,6 +112,7 @@ export function BrandingForm({
           value={marca.supportEmail ?? ""}
           disabled={deshabilitado}
           ayuda={t("marca.campoCorreoSoporteAyuda")}
+          error={marca.supportEmail && !correoValido(marca.supportEmail) ? t("formato.correo") : null}
           onChange={(e) => onCambio({ supportEmail: e.target.value })}
         />
       )}
@@ -133,6 +135,7 @@ export function BrandingForm({
           value={marca.supportUrl ?? ""}
           disabled={deshabilitado}
           ayuda={t("marca.campoWebSoporteAyuda")}
+          error={marca.supportUrl && !webValida(marca.supportUrl) ? t("formato.web") : null}
           onChange={(e) => onCambio({ supportUrl: e.target.value })}
         />
       )}

@@ -5,6 +5,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
+import { correoValido } from "@/lib/formato";
 import "./PersonasDeLaEmpresa.scss";
 
 /** `t()` returns the key itself when it is missing, so `t(k) || r` never fell
@@ -291,7 +292,12 @@ function Invitacion({
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [tocado, setTocado] = useState(false);
+  const correoMal = tocado && !!email.trim() && !correoValido(email);
+
   const enviar = async () => {
+    setTocado(true);
+    if (!correoValido(email)) return;
     setEnviando(true);
     setError(null);
     try {
@@ -312,6 +318,8 @@ function Invitacion({
         etiqueta={t("personas.correo")}
         type="email"
         value={email}
+        error={correoMal ? t("formato.correo") : null}
+        onBlur={() => setTocado(true)}
         onChange={(e) => setEmail(e.target.value)}
       />
       <div className="persona-ficha__dos">
