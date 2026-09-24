@@ -63,7 +63,9 @@ export function FondoEspacial() {
              que sí interesa es que no compita con el formulario — que se
              decodifique fuera del hilo y se pida después. */
           decoding="async"
-          fetchPriority="low"
+          /* Lowercase on purpose: React 18 does not know the camelCase prop
+             and warns; the attribute itself is what the browser reads. */
+          {...{ fetchpriority: "low" }}
           draggable={false}
         />
       </picture>

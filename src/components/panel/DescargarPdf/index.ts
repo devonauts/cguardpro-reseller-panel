@@ -1,0 +1,1 @@
+export { DescargarPdf } from "./DescargarPdf";

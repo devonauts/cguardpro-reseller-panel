@@ -4,12 +4,13 @@ import {
   EstadoDeDatos, Icono, Pildora, TodaviaNo, type Tono,
 } from "@/components/cristal";
 import {
-  billingService,
+  activacionService, billingService, contratoService,
   type FacturaDetallada, type FacturaEnLista, type LineaDeFactura,
   type PlanDeCobro, type TarjetaDelSocio,
 } from "@/services/resellerService";
 import { TarjetaEnArchivo } from "@/components/panel/Tarjeta";
 import { EVENTO_PAGO, PagarFactura } from "@/components/panel/Pago";
+import { DescargarPdf } from "@/components/panel/DescargarPdf";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
@@ -77,6 +78,7 @@ export function Billing() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [version, setVersion] = useState(0);
+  const [contratoFirmado, setContratoFirmado] = useState(false);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -89,6 +91,9 @@ export function Billing() {
         billingService.plan().catch(() => null),
         billingService.tarjeta().catch(() => null),
       ]);
+      activacionService.estado()
+        .then((a) => setContratoFirmado(!!a?.agreementSigned))
+        .catch(() => setContratoFirmado(false));
       setFacturas(r.invoices ?? []);
       setPlan(p);
       setTarjeta(c?.card ?? null);
@@ -231,6 +236,16 @@ export function Billing() {
 
           {/* ── 2 y 3. EL PLAN Y EL MES ───────────────────────────────── */}
           {plan && <TuPlan plan={plan} />}
+
+          {contratoFirmado && (
+            <section className="bloque" aria-labelledby="tu-contrato">
+              <header className="bloque__cabecera">
+                <h2 id="tu-contrato" className="bloque__titulo">{t("facturacion.tuContrato")}</h2>
+              </header>
+              <p className="bloque__vacio">{t("facturacion.tuContratoTexto")}</p>
+              <DescargarPdf descargar={contratoService.descargarPdf} etiqueta={t("firma.descargarPdf")} />
+            </section>
+          )}
           {plan?.contract && ciclo && <EsteCiclo plan={plan} />}
           {plan?.contract && !ciclo && mes && <EsteMes plan={plan} />}
 
@@ -388,11 +403,12 @@ function Detalle({
           />
         )}
         {factura.immutable ? (
-          /* Un enlace normal a una ruta que responde con el PDF: el navegador
-             ya sabe hacer esto, y la sesión viaja como en cualquier petición. */
-          <a className="btn btn--suave" href={billingService.pdfUrl(factura.id)} target="_blank" rel="noreferrer">
-            {t("facturacion.descargarPdf")}
-          </a>
+          /* Fetched with the session: a bare link reached the route without
+             the Bearer header and got 403. */
+          <DescargarPdf
+            descargar={() => billingService.descargarPdf(factura.id, factura.number)}
+            etiqueta={t("facturacion.descargarPdf")}
+          />
         ) : (
           <TodaviaNo>{t("facturacion.borradorPdf")}</TodaviaNo>
         )}

@@ -177,3 +177,39 @@ export async function subirArchivo<T>(url: string, archivo: File): Promise<T> {
 }
 
 export default api;
+
+/**
+ * Download a file from an authenticated route (a PDF).
+ *
+ * A plain `<a href>` does not carry the session — it lives in a Bearer header,
+ * not a cookie — so the route answered 403. The file is fetched here, with the
+ * header, and handed to the browser as a download.
+ */
+export async function descargarArchivo(url: string, nombrePorDefecto: string): Promise<void> {
+  const r = await api.get(url, {
+    responseType: "blob",
+    headers: { Accept: "application/pdf, application/json" },
+    validateStatus: () => true,
+  });
+  if (r.status >= 400) {
+    let message = t("comun.noSePudo");
+    try {
+      const cuerpo = JSON.parse(await (r.data as Blob).text());
+      if (r.status !== 500 && (cuerpo?.message || cuerpo?.error)) message = cuerpo.message || cuerpo.error;
+    } catch { /* not JSON: keep the generic message */ }
+    if (r.status === 401) {
+      clearAuthToken();
+      alPerderLaSesion?.();
+    }
+    throw { status: r.status, message } as ApiError;
+  }
+  const cabecera = String(r.headers["content-disposition"] || "");
+  const nombre = /filename="?([^";]+)"?/i.exec(cabecera)?.[1] || nombrePorDefecto;
+  const enlace = document.createElement("a");
+  enlace.href = URL.createObjectURL(r.data as Blob);
+  enlace.download = nombre;
+  document.body.appendChild(enlace);
+  enlace.click();
+  enlace.remove();
+  setTimeout(() => URL.revokeObjectURL(enlace.href), 10_000);
+}

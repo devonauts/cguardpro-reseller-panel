@@ -32,6 +32,10 @@ export const en = {
   "comun.siguiente": "Next",
   "comun.sinLimite": "Unlimited",
   "comun.noSePudo": "We couldn't complete the request",
+  "comun.descargando": "Downloading…",
+  "firma.descargarPdf": "Download the signed agreement (PDF)",
+  "facturacion.tuContrato": "Your agreement",
+  "facturacion.tuContratoTexto": "The White Label Reseller Agreement you signed, with your initials, both signatures and the electronic signature certificate.",
   "comun.noSePudoAccion": "We couldn't complete the action.",
 
   "nav.resumen": "Overview",

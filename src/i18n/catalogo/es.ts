@@ -22,6 +22,10 @@ export const es: Record<Clave, string> = {
   "comun.siguiente": "Siguiente",
   "comun.sinLimite": "Sin límite",
   "comun.noSePudo": "No se pudo completar la operación",
+  "comun.descargando": "Descargando…",
+  "firma.descargarPdf": "Descargar el contrato firmado (PDF)",
+  "facturacion.tuContrato": "Tu contrato",
+  "facturacion.tuContratoTexto": "El Contrato de Reventa con Marca Blanca que firmaste, con tus iniciales, las dos firmas y el certificado de la firma electrónica.",
   "comun.noSePudoAccion": "No se pudo completar la acción.",
 
   "nav.resumen": "Resumen",

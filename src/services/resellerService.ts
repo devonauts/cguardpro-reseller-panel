@@ -1,4 +1,4 @@
-import { del, enviarFormulario, get, patch, post, put, subirArchivo } from "@/services/api";
+import { del, descargarArchivo, enviarFormulario, get, patch, post, put, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -535,6 +535,8 @@ export const contratoService = {
     ),
   firmar: (datos: FormData) =>
     enviarFormulario<{ status: string; signedAt: string; documentHash: string }>("/reseller/agreement/sign", datos),
+  /** The signed agreement as a PDF (only once signed). */
+  descargarPdf: () => descargarArchivo("/reseller/agreement/pdf", "CGuardPro-Reseller-Agreement.pdf"),
 };
 
 export const activacionService = {
@@ -942,9 +944,9 @@ export const billingService = {
        Mandar `paymentIntentId` aquí dejaba la confirmación sin identificador. */
     post<PagoDeFactura>(`/reseller/billing/invoices/${invoiceId}/pay/confirm`, { cargo: paymentIntentId }),
 
-  /** La dirección del PDF. Se abre; no se descarga por JavaScript. */
-  pdfUrl: (invoiceId: string) =>
-    `/api/reseller/billing/invoices/${invoiceId}/pdf`,
+  /** The invoice PDF, fetched with the session (a bare link got 403). */
+  descargarPdf: (invoiceId: string, numero?: string) =>
+    descargarArchivo(`/reseller/billing/invoices/${invoiceId}/pdf`, `${numero || invoiceId}.pdf`),
 };
 
 /* ── FASE 16 · DOMINIOS ─────────────────────────────────────────────────── */

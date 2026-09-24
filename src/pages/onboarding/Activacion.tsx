@@ -1,8 +1,9 @@
 import { Icono } from "@/components/cristal";
 import { PagarFactura } from "@/components/panel/Pago";
+import { DescargarPdf } from "@/components/panel/DescargarPdf";
 import { precio } from "@/lib/dinero";
 import {
-  activacionService, type EstadoDeActivacion, type PagoDeFactura,
+  activacionService, contratoService, type EstadoDeActivacion, type PagoDeFactura,
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 
@@ -63,6 +64,10 @@ export function Activacion({
         )}
 
         <p className="alta__apunte">{t("activar.seguro")}</p>
+
+        {estado.agreementSigned && (
+          <DescargarPdf descargar={contratoService.descargarPdf} etiqueta={t("firma.descargarPdf")} />
+        )}
       </div>
     </>
   );
