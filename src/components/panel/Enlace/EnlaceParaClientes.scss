@@ -1,0 +1,44 @@
+.enlace-clientes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-4);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--r-lg);
+  background: var(--surface-raised);
+}
+
+.enlace-clientes--compacto { padding: var(--s-3) var(--s-4); }
+.enlace-clientes--pendiente { border-left-color: var(--warn); }
+
+.enlace-clientes__icono { flex: none; color: var(--text-secondary); display: grid; place-items: center; }
+
+.enlace-clientes__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: min(100%, 260px);
+  font-size: 12.5px;
+  color: var(--text-muted);
+
+  strong { font-size: 14px; color: var(--text-primary); }
+}
+
+.enlace-clientes__url {
+  margin-top: var(--s-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.enlace-clientes__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+
+  .btn { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+}

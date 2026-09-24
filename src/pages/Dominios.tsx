@@ -4,6 +4,7 @@ import {
   Boton, Campo, CampoCopiable, EstadoDeDatos, Estado, Panel, Pildora,
 } from "@/components/cristal";
 import { Pagina } from "@/components/panel";
+import { EnlaceParaClientes } from "@/components/panel/Enlace";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { fechaYHora } from "@/lib/dinero";
 import {
@@ -175,6 +176,9 @@ export function Dominios() {
 
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         {/* ── La que da CGuard Pro ─────────────────────────────────────── */}
+        {/* Lo que el socio viene a buscar aquí casi siempre: el enlace que comparte. */}
+        <EnlaceParaClientes />
+
         <Panel titulo={t("dominios.plataformaTitulo")} nota={t("dominios.plataformaNota")}>
           {dePlataforma.length === 0 && (
             <p className="dominios__vacio">{t("dominios.sinAsignada")}</p>

@@ -95,4 +95,16 @@
   .barra__ficha-texto,
   .barra__ficha-galon { display: none; }
   .barra__ficha { padding: 4px; }
+
+  /* A 380 px la barra se salía 50 px por la derecha y el botón de la CUENTA
+     —el de cerrar sesión— quedaba fuera de la pantalla: un objetivo que no se
+     ve no se puede pulsar. Se compacta lo que se puede compactar sin perder
+     nada: el idioma se queda en su globo (mantiene su nombre accesible) y la
+     píldora de estado se va —un estado que no sea «activo» ya lo gritan el
+     aviso de pago y las pantallas de bloqueo—. */
+  .barra { gap: var(--s-2); }
+  .barra__controles { gap: var(--s-2); }
+  .barra__estado { display: none; }
+  .barra .idioma-menu__actual,
+  .barra .idioma-menu__galon { display: none; }
 }

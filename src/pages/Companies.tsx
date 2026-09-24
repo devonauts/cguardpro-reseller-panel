@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Cifra, Cifras, EstadoDeDatos, Icono, Lista, Panel, Pildora,
+  Boton, EstadoDeDatos, Icono, Lista, Panel, Pildora, type Tono,
 } from "@/components/cristal";
-import { companiesService, type Cupo, type Empresa } from "@/services/resellerService";
+import { EnlaceParaClientes } from "@/components/panel/Enlace";
+import type { Clave } from "@/i18n/idioma";
+import {
+  cobroAEmpresasService, companiesService, type Cupo, type Empresa,
+} from "@/services/resellerService";
 import PersonasDeLaEmpresa from "@/components/empresas/PersonasDeLaEmpresa";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta } from "@/lib/dinero";
@@ -24,6 +28,15 @@ import "./Companies.scss";
  * contrario de la verdad, y es el error fácil cuando el servidor manda `null`.
  */
 
+/** El estado de cobro que se enseña en la fila, cuando el socio cobra por la plataforma. */
+const COBRO: Record<string, { tono: Tono; texto: Clave }> = {
+  trialing: { tono: "neutro", texto: "cobros.estadoPrueba" },
+  active: { tono: "ok", texto: "cobros.estadoAlDia" },
+  past_due: { tono: "aviso", texto: "cobros.estadoMora" },
+  paused: { tono: "peligro", texto: "cobros.estadoPausada" },
+  exempt: { tono: "neutro", texto: "cobros.estadoExenta" },
+};
+
 export function Companies() {
   const navigate = useNavigate();
   const { me, puede } = useResellerAuth();
@@ -38,15 +51,25 @@ export function Companies() {
      listas y se pierde de vista cuál es cuál — y además cada una pide sus
      personas al servidor. */
   const [abierta, setAbierta] = useState<string | null>(null);
+  const [buscar, setBuscar] = useState("");
+  /* El estado de COBRO de cada empresa, si el socio cobra por la plataforma.
+     Es lo que más pregunta quien opera el negocio: ¿me paga o no? */
+  const [cobro, setCobro] = useState<Record<string, string> | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
     setError(null);
     setBloqueadoPorEstado(null);
     try {
-      const r = await companiesService.list({ limit: 100 });
+      const [r, c] = await Promise.all([
+        companiesService.list({ limit: 100 }),
+        cobroAEmpresasService.leer().catch(() => null),
+      ]);
       setFilas(r.rows ?? []);
       setCupo(r.quota ?? null);
+      setCobro(c && c.gateway?.status === "connected" && c.pricing
+        ? Object.fromEntries(c.companies.map((x) => [x.tenantId, x.status]))
+        : null);
     } catch (e: any) {
       if (e?.status === 403 && e?.resellerStatus) setBloqueadoPorEstado(e.resellerStatus);
       else setError(e?.message || t("empresas.noCargo"));
@@ -67,6 +90,12 @@ export function Companies() {
      vacío — un panel en blanco se lee como un fallo. */
   const puedeVerPersonas = puede("reseller.company.users.view");
   const puedeGestionarPersonas = puede("reseller.company.users.manage") && activo;
+
+  const q = buscar.trim().toLowerCase();
+  const visibles = q
+    ? filas.filter((e) => [e.name, e.businessTitle, e.city, e.email]
+      .some((v) => String(v || "").toLowerCase().includes(q)))
+    : filas;
 
   if (bloqueadoPorEstado) {
     return (
@@ -108,21 +137,25 @@ export function Companies() {
           las tarjetas sin un milímetro. Con el contenedor, el hueco es el mismo
           haya cupo o no, haya aviso o no. Es el mismo patrón de Facturación. */}
       <div className="empresas">
+        {/* El cupo en UNA línea con su barra: tres tarjetas enormes para tres
+            números que se leen juntos («4 de 10, te quedan 6») pesaban más que
+            la lista, que es a lo que se viene. */}
         {cupo && (
-          <Cifras>
-            <Cifra etiqueta={t("empresas.titulo")} valor={cupo.used} />
-            <Cifra
-              etiqueta={t("empresas.tuLimite")}
-              valor={cupo.unlimited ? t("comun.sinLimite") : cupo.max}
-            />
-            <Cifra
-              etiqueta={t("empresas.teQuedan")}
-              /* `null` es SIN LÍMITE. Pintar «0» aquí sería decirle a quien no
-                 tiene límite que no le queda ninguna. */
-              valor={cupo.unlimited ? t("comun.sinLimite") : cupo.remaining}
-            />
-          </Cifras>
+          <div className="empresas__cupo">
+            <span className="empresas__cupo-texto">
+              {cupo.unlimited
+                ? t("empresas.cupoSinLimite", { n: cupo.used })
+                : t("empresas.cupo", { n: cupo.used, max: cupo.max ?? 0, quedan: cupo.remaining ?? 0 })}
+            </span>
+            {!cupo.unlimited && (
+              <span className="empresas__cupo-barra" aria-hidden="true">
+                <span style={{ width: `${Math.min(100, (cupo.used / Math.max(1, cupo.max ?? 1)) * 100)}%` }} />
+              </span>
+            )}
+          </div>
         )}
+
+        <EnlaceParaClientes compacto />
 
         {cupo && !cupo.unlimited && !cupo.canCreate && (
           <div className="empresas__aviso">
@@ -144,8 +177,24 @@ export function Companies() {
           {/* `como="ul"`: ahora cada empresa es un `<li>` que contiene su fila
               Y lo desplegado, y un `<li>` suelto dentro de un `<div>` no es
               marcado válido. La hoja ya venía preparada (`list-style: none`). */}
+          <div className="empresas__herramientas">
+            <input
+              type="search"
+              className="empresas__buscar"
+              placeholder={t("empresas.buscar")}
+              aria-label={t("empresas.buscar")}
+              value={buscar}
+              onChange={(ev) => setBuscar(ev.target.value)}
+            />
+          </div>
+          <div className="empresa empresa--cabecera" aria-hidden="true">
+            <span>{t("empresas.colEmpresa")}</span>
+            <span>{t("empresas.colUbicacion")}</span>
+            <span>{t("empresas.colAlta")}</span>
+            <span>{t("empresas.colEstado")}</span>
+          </div>
           <Lista como="ul">
-            {filas.map((e) => {
+            {visibles.map((e) => {
               const desplegada = abierta === e.id;
               return (
                 <li key={e.id} className="empresa-acordeon">
@@ -173,6 +222,8 @@ export function Companies() {
                     <div className="empresa__estado">
                       {e.suspendedAt ? (
                         <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>
+                      ) : cobro?.[e.id] && COBRO[cobro[e.id]] ? (
+                        <Pildora tono={COBRO[cobro[e.id]].tono}>{t(COBRO[cobro[e.id]].texto)}</Pildora>
                       ) : (
                         <Pildora tono="ok">{t("empresas.activa")}</Pildora>
                       )}

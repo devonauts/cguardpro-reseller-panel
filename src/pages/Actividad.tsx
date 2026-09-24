@@ -51,6 +51,35 @@ const ACCION: Record<string, Clave> = {
   "team.role_change": "actividad.accionTeamRoleChange",
   "team.deactivate": "actividad.accionTeamDeactivate",
   "team.reinvite": "actividad.accionTeamReinvite",
+  "analytics.update": "actividad.accionAnalytics",
+  "billing.activation.pay": "actividad.accionActivacionPago",
+  "billing.activation.pay_confirm": "actividad.accionActivacionConfirmada",
+  "billing.invoice.pay": "actividad.accionFacturaPago",
+  "billing.invoice.pay_confirm": "actividad.accionFacturaConfirmada",
+  "billing.payment_method.confirm": "actividad.accionTarjetaGuardada",
+  "billing.payment_method.remove": "actividad.accionTarjetaQuitada",
+  "billing.payment_method.setup_intent": "actividad.accionTarjetaEmpezo",
+  "company_billing.company": "actividad.accionCobroEmpresa",
+  "company_billing.gateway.connect": "actividad.accionPasarelaConectada",
+  "company_billing.gateway.disconnect": "actividad.accionPasarelaDesconectada",
+  "company_billing.pricing": "actividad.accionPrecios",
+  "custom_domain.created": "actividad.accionDominioCreado",
+  "custom_domain.deactivated": "actividad.accionDominioApagado",
+  "custom_domain.primary_changed": "actividad.accionDominioPrincipal",
+  "custom_domain.removed": "actividad.accionDominioQuitado",
+  "onboarding.advance": "actividad.accionAltaPaso",
+  "onboarding.back": "actividad.accionAltaAtras",
+  "onboarding.complete": "actividad.accionAltaTerminada",
+  "reseller.company.addon.activate": "actividad.accionModulo",
+  "reseller.company.self_signup": "actividad.accionAutoservicio",
+  "reseller.company.update": "actividad.accionEmpresaEditada",
+  "reseller.company.users.invite": "actividad.accionPersonaInvitada",
+  "reseller.company.users.restore": "actividad.accionPersonaRestaurada",
+  "reseller.company.users.revoke": "actividad.accionPersonaRevocada",
+  "reseller.company.users.role": "actividad.accionPersonaRol",
+  "reseller.disposition.suspend_executed": "actividad.accionEmpresaSuspendida",
+  "reseller.invoice.emailed": "actividad.accionFacturaEnviada",
+  "reseller.invoice.email_failed": "actividad.accionFacturaNoEnviada",
 };
 
 /**
@@ -70,10 +99,23 @@ const CLAVE: Record<string, Clave> = {
   decision: "actividad.claveDecision",
   tenantName: "actividad.claveTenantName",
   ownerInvited: "actividad.claveOwnerInvited",
+  name: "actividad.claveName",
+  provider: "actividad.claveProvider",
+  mode: "actividad.claveMode",
+  estado: "actividad.claveEstado",
+  via: "actividad.claveVia",
+  hostname: "actividad.claveHostname",
 };
 
-/** Un identificador sin nombre se enseña tal cual: mejor crudo que inventado. */
-const nombreDeAccion = (a: string) => (ACCION[a] ? traducir(ACCION[a]) : a);
+const OBJETO: Record<string, Clave> = {
+  tenant: "actividad.objetoEmpresa",
+  resellerInvoice: "actividad.objetoFactura",
+  team: "actividad.objetoEquipo",
+};
+
+/** Un identificador sin nombre no se enseña crudo: «Cambio en tu cuenta», y el
+    código queda en el `title` para quien lo necesite. */
+const nombreDeAccion = (a: string) => (ACCION[a] ? traducir(ACCION[a]) : traducir("actividad.accionOtra"));
 
 /**
  * El valor de `status` se traduce SEGÚN LA ACCIÓN, no siempre. `archived` sólo
@@ -93,7 +135,9 @@ function valorDeDetalle(accion: string, clave: string, v: unknown): string {
 function Detalles({ accion, d }: { accion: string; d: Record<string, unknown> | null }) {
   const t = useT();
   if (!d) return null;
-  const pares = Object.entries(d);
+  /* Sólo lo que sabemos nombrar: una clave técnica sin traducir («referencia»,
+     «amountCents»…) es ruido para quien lee su historial. */
+  const pares = Object.entries(d).filter(([k, v]) => CLAVE[k] && v !== null && v !== undefined && v !== "");
   if (!pares.length) return null;
   return (
     <ul className="actividad__detalles">
@@ -158,7 +202,7 @@ export function Actividad() {
             {filas.map((f) => (
               <li key={f.id} className="actividad__fila">
                 <div className="actividad__cab">
-                  <span className="actividad__accion">{nombreDeAccion(f.action)}</span>
+                  <span className="actividad__accion" title={f.action}>{nombreDeAccion(f.action)}</span>
                   {f.statusCode && f.statusCode >= 400 && (
                     <Pildora tono="peligro">{t("actividad.error")}</Pildora>
                   )}
@@ -166,7 +210,9 @@ export function Actividad() {
                 <div className="actividad__meta">
                   <span>{fechaYHora(f.at)}</span>
                   {f.actorEmail && <span>· {f.actorEmail}</span>}
-                  {f.targetType && <span>· {f.targetType}</span>}
+                  {/* «tenant», «reseller»: el tipo interno de la fila no le dice
+                      nada a quien lee su historial. Se nombra o no se pinta. */}
+                  {f.targetType && OBJETO[f.targetType] && <span>· {t(OBJETO[f.targetType])}</span>}
                 </div>
                 <Detalles accion={f.action} d={f.details} />
               </li>

@@ -4,6 +4,7 @@ import { EstadoDeDatos, Tarjeta, TarjetaCabecera, Dato, Pildora } from "@/compon
 import { Pagina } from "@/components/panel";
 import { dinero, fecha } from "@/lib/dinero";
 import { portalService, type ContratoDelSocio } from "@/services/resellerService";
+import { Link } from "react-router-dom";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import "./Contrato.scss";
@@ -31,7 +32,7 @@ const INTERVALO: Record<string, Clave> = {
   annual: "contrato.intervaloAnnual",
 };
 
-const POLITICA: Record<string, Clave> = {
+export const POLITICA: Record<string, Clave> = {
   active_all_roles_v1: "contrato.politicaTodos",
   active_staff_only_v1: "contrato.politicaPersonal",
   active_field_only_v1: "contrato.politicaCampo",
@@ -126,7 +127,9 @@ export function Contrato() {
                     INTERVALO[contrato.billingInterval]
                       ? t(INTERVALO[contrato.billingInterval])
                       : contrato.billingInterval
-                  }`}
+                  }${(contrato.monthlyFeeFreeUntilSeats ?? 0) > 0
+                    ? ` · ${t("contrato.desdeUsuarios", { n: contrato.monthlyFeeFreeUntilSeats ?? 0 })}`
+                    : ""}`}
                 />
                 <Dato
                   etiqueta={t("contrato.regaliaPersona")}
@@ -143,9 +146,34 @@ export function Contrato() {
               </p>
             </Tarjeta>
 
+            {/* LO QUE COBRAS TÚ. Decía «CGuard Pro no fija ni limita lo que
+                cobras»: dejó de ser verdad con el precio mínimo de reventa, y
+                una afirmación falsa en el contrato es lo peor que puede decir
+                esta pantalla. */}
             <Tarjeta>
               <TarjetaCabecera titulo={t("contrato.preciosTuyosTitulo")} />
-              <p className="contrato__aviso">{t("contrato.preciosTuyosNota")}</p>
+              <div className="contrato__rejilla">
+                <Dato
+                  etiqueta={t("contrato.minimoPorUsuario")}
+                  valor={dinero(contrato.minResalePerUserCents ?? contrato.royaltyPerUserCents, contrato.currency)}
+                />
+                <Dato
+                  etiqueta={t("contrato.minimoMensual")}
+                  valor={contrato.minResaleMonthlyCents
+                    ? dinero(contrato.minResaleMonthlyCents, contrato.currency)
+                    : t("contrato.sinMinimo")}
+                />
+                <Dato
+                  etiqueta={t("contrato.plazos")}
+                  valor={t("contrato.plazosValor", {
+                    p: contrato.paymentTermDays ?? 15, g: contrato.gracePeriodDays ?? 10,
+                  })}
+                />
+              </div>
+              <p className="contrato__aviso">
+                {t("contrato.preciosTuyosNota")}{" "}
+                <Link to="/company-billing">{t("contrato.irACobros")}</Link>
+              </p>
             </Tarjeta>
           </>
         )}

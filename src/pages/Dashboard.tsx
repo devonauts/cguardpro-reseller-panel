@@ -16,8 +16,9 @@ import { estadoDeDominio } from "@/lib/estadoDeDominio";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { etiquetaIntl } from "@/i18n/idioma";
+import { EnlaceParaClientes } from "@/components/panel/Enlace";
 import {
-  brandingService, companiesService, domainsService, resellerService, usageService,
+  brandingService, cobroAEmpresasService, companiesService, domainsService, resellerService, usageService,
   type Cupo, type DominioDelSocio, type Empresa, type Marca, type ResellerDashboard,
 } from "@/services/resellerService";
 import "./Dashboard.scss";
@@ -77,6 +78,8 @@ export function Dashboard() {
   const [usuarios, setUsuarios] = useState<number | null>(null);
   /** `null` = sin permiso para leer la marca, o la lectura falló. */
   const [marca, setMarca] = useState<{ publicada: Marca | null; pendiente: boolean } | null>(null);
+  /** ¿Cobra ya a sus empresas por la plataforma? `null` = no se pudo saber. */
+  const [cobraEmpresas, setCobraEmpresas] = useState<boolean | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   /** El portero comercial puede negar la lectura entera; no es un fallo. */
@@ -95,12 +98,16 @@ export function Dashboard() {
       /* Lo de los lados NO puede tumbar el tablero: si la lista de dominios
          falla, el resumen sigue siendo útil. Por eso van en `allSettled` y
          cada uno se rellena sólo si salió bien. */
-      const [emp, dom, uso, mar] = await Promise.allSettled([
+      const [emp, dom, uso, mar, cob] = await Promise.allSettled([
         companiesService.list({ limit: 100 }),
         domainsService.listar(),
         usageService.list({ limit: 1 }),
         leeMarca ? brandingService.obtener() : Promise.resolve(null),
+        cobroAEmpresasService.leer(),
       ]);
+      setCobraEmpresas(cob.status === "fulfilled"
+        ? cob.value.gateway?.status === "connected" && !!cob.value.pricing
+        : null);
       if (emp.status === "fulfilled") {
         setEmpresas(emp.value.rows ?? []);
         setCupo(emp.value.quota ?? null);
@@ -207,6 +214,10 @@ export function Dashboard() {
     ...(marca ? [{ id: "asistente", hecho: !!publicada?.agentName,
       titulo: "tablero.pasoAsistente" as Clave, nota: "tablero.pasoAsistenteNota" as Clave,
       a: "/branding" }] : []),
+    /* Cobrar a sus empresas es lo que convierte la plataforma en un negocio.
+       Sólo sale si se pudo leer: marcarlo pendiente sin mirar sería mentir. */
+    ...(cobraEmpresas === null ? [] : [{ id: "cobro", hecho: cobraEmpresas,
+      titulo: "tablero.pasoCobro" as Clave, nota: "tablero.pasoCobroNota" as Clave, a: "/company-billing" }]),
     { id: "empresa", hecho: (datos?.companies.total ?? 0) > 0, titulo: "tablero.pasoEmpresa",
       nota: "tablero.pasoEmpresaNota", a: "/companies/new" },
   ];
@@ -252,6 +263,9 @@ export function Dashboard() {
               a="/domains"
             />
           </div>
+
+          {/* La puerta del negocio, arriba: por aquí entran sus clientes. */}
+          <EnlaceParaClientes />
 
           <div className="tablero__dos">
             <Panel

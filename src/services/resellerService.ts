@@ -266,6 +266,13 @@ export interface ContratoDelSocio {
   billingInterval: string;
   royaltyPerUserCents: number;
   royaltySeatPolicy: string | null;
+  /** Desde cuántos usuarios se cobra la cuota mensual (0 = siempre). */
+  monthlyFeeFreeUntilSeats?: number;
+  paymentTermDays?: number;
+  gracePeriodDays?: number;
+  /** El precio mínimo al que revende a sus empresas (null = su regalía / sin mínimo). */
+  minResalePerUserCents?: number | null;
+  minResaleMonthlyCents?: number | null;
 }
 
 export interface FeatureDef {

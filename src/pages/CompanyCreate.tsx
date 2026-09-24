@@ -1,8 +1,9 @@
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Boton, Campo, Tarjeta, TarjetaCabecera } from "@/components/cristal";
+import { Boton, Campo, Selector, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { companiesService, type AltaDeEmpresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
+import type { Clave } from "@/i18n/idioma";
 import "./CompanyForm.scss";
 
 /**
@@ -19,6 +20,9 @@ import "./CompanyForm.scss";
  * Se explica en la pantalla, además, porque quien la rellena está dando de alta
  * a un cliente suyo y necesita saber qué acaba de pasar.
  */
+/** Los países donde se vende la plataforma, primero; después los vecinos. */
+const PAISES = ["MX", "US", "EC", "PE", "PA", "AR", "CO", "CL", "GT", "CR", "DO", "ES"] as const;
+
 export function CompanyCreate() {
   const navigate = useNavigate();
   const t = useT();
@@ -62,7 +66,7 @@ export function CompanyCreate() {
         },
       };
       const r = await companiesService.create(datos);
-      navigate(`/companies/${r.company.id}`, { replace: true });
+      navigate(`/companies/${r.company.id}`, { replace: true, state: { recienCreada: true } });
     } catch (e: any) {
       /* El 409 del cupo lleno llega aquí. Se enseña el mensaje del servidor tal
          cual: dice cuántas empresas son el límite, que es lo que hace falta
@@ -113,12 +117,17 @@ export function CompanyCreate() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
               />
-              <Campo
+              {/* Un selector y no un campo libre: «Mexico», «MX» y «mx» eran tres
+                  países para el servidor, y el país decide la moneda, la zona
+                  horaria y el identificador fiscal que se le pide. */}
+              <Selector
                 etiqueta={t("altaEmpresa.pais")}
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                ayuda={t("altaEmpresa.paisAyuda")}
-              />
+              >
+                <option value="">{t("altaEmpresa.paisElegir")}</option>
+                {PAISES.map((p) => <option key={p} value={p}>{t(`pais.${p}` as Clave)}</option>)}
+              </Selector>
               <Campo
                 etiqueta={t("altaEmpresa.ciudad")}
                 value={city}

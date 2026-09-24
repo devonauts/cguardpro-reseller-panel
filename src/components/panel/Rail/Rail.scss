@@ -39,6 +39,21 @@
 
 /* El segundo grupo, separado por una línea y un respiro. */
 .rail__nav--secundaria {
+  padding-top: 0;
+}
+
+/* El nombre de cada grupo del menú. */
+.rail__titulo-grupo {
+  margin: 0 0 var(--s-1);
+  padding: 0 var(--s-3);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.rail__titulo-grupo--segundo {
   margin-top: var(--s-4);
   padding-top: var(--s-4);
   border-top: 1px solid var(--glass-border);

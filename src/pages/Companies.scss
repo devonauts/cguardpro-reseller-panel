@@ -102,3 +102,50 @@ button.empresa--abrible {
 @media (max-width: 760px) {
   .empresa { grid-template-columns: minmax(0, 1fr); gap: var(--s-2); }
 }
+
+/* ── El cupo en una línea ────────────────────────────────────────────────── */
+.empresas__cupo { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2) var(--s-4); }
+.empresas__cupo-texto { font-size: 13.5px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+.empresas__cupo-barra {
+  flex: 1;
+  min-width: 140px;
+  max-width: 320px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--line);
+  overflow: hidden;
+
+  span { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
+}
+
+.empresas__herramientas { display: flex; justify-content: flex-end; margin-bottom: var(--s-2); }
+
+.empresas__buscar {
+  width: min(100%, 320px);
+  height: 40px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+
+  &::placeholder { color: var(--text-muted); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.empresa--cabecera {
+  /* El mismo relleno lateral que la fila, para que cada título caiga encima de su columna. */
+  padding-left: clamp(var(--s-3), 2.2vw, var(--s-4));
+  padding-right: calc(clamp(var(--s-3), 2.2vw, var(--s-4)) + 24px);
+  padding-top: 0;
+  padding-bottom: var(--s-2);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) { .empresa--cabecera { display: none; } }

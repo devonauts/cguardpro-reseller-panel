@@ -1,8 +1,9 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useDireccionDeClientes } from "@/components/panel/Enlace";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera,
+  Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, Icono,
 } from "@/components/cristal";
 import { companiesService, type Empresa } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
@@ -64,6 +65,9 @@ export function CompanyDetail() {
   useEffect(() => { cargar(); }, [cargar]);
 
   const puedeEditar = puede("reseller.company.update");
+  const location = useLocation();
+  /* La dirección por la que su gente entra a su CRM: la del socio. */
+  const { host } = useDireccionDeClientes();
 
   const guardar = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -89,6 +93,18 @@ export function CompanyDetail() {
 
   return (
     <div>
+      {/* La vuelta, arriba a la IZQUIERDA y con su destino escrito: es donde
+          la busca la mano (ley de Jakob) y dice a dónde lleva. */}
+      <Link to="/companies" className="miga">
+        <Icono nombre="flecha" tamano={14} className="miga__icono" />
+        {t("empresas.titulo")}
+      </Link>
+      {(location.state as any)?.recienCreada && (
+        <p role="status" className="ficha__creada">
+          <Icono nombre="visto" tamano={16} />
+          {t("fichaEmpresa.recienCreada")}
+        </p>
+      )}
       <header className="cabecera">
         <div>
           <h1 className="cabecera__titulo">{empresa?.name || t("fichaEmpresa.titulo")}</h1>
@@ -98,9 +114,12 @@ export function CompanyDetail() {
         </div>
         <div className="cabecera__acciones">
           {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
-          <Boton variante="fantasma" onClick={() => navigate("/companies")}>
-            {t("comun.volver")}
-          </Boton>
+          {host && (
+            <a className="btn btn--fantasma ficha__crm" href={`https://${host}/login`} target="_blank" rel="noreferrer">
+              {t("fichaEmpresa.abrirCrm")}
+              <Icono nombre="flecha" tamano={14} />
+            </a>
+          )}
           {puedeEditar && !editando && empresa && (
             <Boton variante="suave" onClick={() => setEditando(true)}>
               {t("fichaEmpresa.corregir")}

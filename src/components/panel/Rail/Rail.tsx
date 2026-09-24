@@ -197,9 +197,15 @@ export function Rail({
       <div className="rail__marca"><Marca /></div>
 
       <nav className="rail__nav">
+        {/* Dos grupos CON NOMBRE: lo que se hace a diario con el negocio, y la
+            relación con la plataforma. La línea sola los separaba, pero no
+            decía qué hay en cada lado; con el título se elige el grupo antes
+            de leer las entradas (ley de Hick). */}
+        <p className="rail__titulo-grupo">{t("nav.grupoNegocio")}</p>
         <ul>
           {NAV.map((e) => <Enlace key={e.a} entrada={e} />)}
         </ul>
+        <p className="rail__titulo-grupo rail__titulo-grupo--segundo">{t("nav.grupoCuenta")}</p>
         <ul className="rail__nav--secundaria">
           {NAV_SECUNDARIA.map((e) => <Enlace key={e.a} entrada={e} />)}
         </ul>

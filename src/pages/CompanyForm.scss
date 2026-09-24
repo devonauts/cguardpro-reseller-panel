@@ -88,3 +88,35 @@
   .ficha__pie { flex-direction: column-reverse; }
   .ficha__pie > * { width: 100%; }
 }
+
+/* ── La miga de vuelta y el aviso de recién creada ───────────────────────── */
+.miga {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--s-3);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover { color: var(--text-primary); text-decoration: none; }
+}
+
+.miga__icono { transform: rotate(180deg); }
+
+.ficha__creada {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin-bottom: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--ok-line);
+  border-radius: var(--r-md);
+  background: var(--ok-soft);
+  font-size: 13.5px;
+  color: var(--text-primary);
+
+  svg { color: var(--ok); }
+}
+
+.ficha__crm { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }

@@ -6,6 +6,7 @@ import {
 import { usageService, type PeriodoDeUso } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta, mesDelPeriodo } from "@/lib/dinero";
+import { POLITICA } from "./Contrato";
 import "./Usage.scss";
 
 /**
@@ -101,7 +102,8 @@ export function Usage() {
                 </div>
 
                 <p className="uso__nota">
-                  {t("consumo.nota")} <code>{actual.seatPolicy}</code>.
+                  {/* La política en palabras, no su identificador interno. */}
+                  {t("consumo.nota")} {POLITICA[actual.seatPolicy] ? t(POLITICA[actual.seatPolicy]) : actual.seatPolicy}
                 </p>
 
                 {actual.tenants.length === 0 ? (
