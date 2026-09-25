@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Boton } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
+import { centrarEnPantalla } from "@/lib/centrar";
 import "./CamaraDeFirma.scss";
 
 type Estado = "inicial" | "pidiendo" | "enVivo" | "tomada" | "denegada" | "sinCamara";
@@ -17,6 +18,7 @@ type Estado = "inicial" | "pidiendo" | "enVivo" | "tomada" | "denegada" | "sinCa
 export function CamaraDeFirma({ onCambio }: { onCambio: (foto: File | null, vista: string | null) => void }) {
   const t = useT();
   const video = useRef<HTMLVideoElement>(null);
+  const caja = useRef<HTMLDivElement>(null);
   const flujo = useRef<MediaStream | null>(null);
   const [estado, setEstado] = useState<Estado>("inicial");
   const [vista, setVista] = useState<string | null>(null);
@@ -44,6 +46,8 @@ export function CamaraDeFirma({ onCambio }: { onCambio: (foto: File | null, vist
         if (video.current) {
           video.current.srcObject = s;
           void video.current.play().catch(() => undefined);
+          // The live view in the middle of the screen, with its button under it.
+          centrarEnPantalla(caja.current);
         }
       }, 0);
     } catch (e: any) {
@@ -66,6 +70,7 @@ export function CamaraDeFirma({ onCambio }: { onCambio: (foto: File | null, vist
       setEstado("tomada");
       apagar();
       onCambio(archivo, url);
+      window.setTimeout(() => centrarEnPantalla(caja.current), 50);
     }, "image/jpeg", 0.9);
   };
 
@@ -76,7 +81,7 @@ export function CamaraDeFirma({ onCambio }: { onCambio: (foto: File | null, vist
   };
 
   return (
-    <div className="camara-firma">
+    <div ref={caja} className="camara-firma">
       {estado === "enVivo" && (
         <>
           <video ref={video} className="camara-firma__video" playsInline muted autoPlay aria-label={t("firma.camaraEnVivo")} />

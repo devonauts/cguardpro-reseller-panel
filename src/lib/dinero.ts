@@ -32,7 +32,18 @@ import { etiquetaIntl, t } from "@/i18n/idioma";
  * importes escritos a la española —«1.234,56»— en cuanto el portátil estaba en
  * castellano, que es exactamente la mezcla que este panel no debe tener.
  */
-function separadores(): { miles: string; decimal: string } {
+/**
+ * US dollars are written the way they are in the United States — «$1,500.00
+ * USD» — whatever language the panel is in. Partners pay CGP in dollars; a
+ * Spanish screen writing «1.500» made a registration look like one and a half
+ * dollars.
+ */
+function esDolar(moneda: string): boolean {
+  return String(moneda || "").toUpperCase() === "USD";
+}
+
+function separadores(moneda = ""): { miles: string; decimal: string } {
+  if (esDolar(moneda)) return { miles: ",", decimal: "." };
   try {
     const partes = new Intl.NumberFormat(etiquetaIntl()).formatToParts(1234.5);
     return {
@@ -64,11 +75,12 @@ export function dinero(cents: number | null | undefined, moneda = "USD"): string
   const abs = Math.abs(Math.trunc(n));
   const unidades = Math.floor(abs / 100);
   const centavos = String(abs % 100).padStart(2, "0");
-  const { miles, decimal } = separadores();
+  const { miles, decimal } = separadores(moneda);
 
   const conMiles = String(unidades).replace(/\B(?=(\d{3})+(?!\d))/g, miles);
   // `−` es el signo menos tipográfico, no el guion: se distingue de un rango.
-  return `${negativo ? "−" : ""}${conMiles}${decimal}${centavos} ${moneda}`;
+  const simbolo = esDolar(moneda) ? "$" : "";
+  return `${negativo ? "−" : ""}${simbolo}${conMiles}${decimal}${centavos} ${moneda}`;
 }
 
 /** Una fecha ISO (o `AAAA-MM-DD`) → texto local. `—` si no hay o no vale. */
@@ -132,6 +144,13 @@ export function precio(
   const n = Number(cents);
   if (!Number.isFinite(n)) return "—";
   const entero = Math.trunc(n) % 100 === 0;
+  if (esDolar(moneda)) {
+    const us = new Intl.NumberFormat("en-US", {
+      style: "currency", currency: "USD", currencyDisplay: "narrowSymbol",
+      minimumFractionDigits: entero ? 0 : 2, maximumFractionDigits: entero ? 0 : 2,
+    }).format(n / 100);
+    return `${us} USD`;
+  }
   try {
     return new Intl.NumberFormat(etiquetaIntl(), {
       style: "currency",
