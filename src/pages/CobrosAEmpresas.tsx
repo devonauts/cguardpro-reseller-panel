@@ -219,17 +219,17 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
 
       {(!gw || eligiendo) && (
         <div className="cobros-catalogo">
-          {datos.catalog.map((c) => (
+          {/* Only gateways that work today: nothing "coming soon" is shown. */}
+          {datos.catalog.filter((c) => c.available).map((c) => (
             <button
               key={c.provider}
               type="button"
               className={`cobros-opcion${eligiendo?.provider === c.provider ? " cobros-opcion--elegida" : ""}`}
-              disabled={!c.available || !gestiona}
+              disabled={!gestiona}
               onClick={() => { setEligiendo(c); setValores({}); setError(null); }}
             >
               <strong>{c.name}</strong>
               <span className="cobros-opcion__paises">{c.countries.map((p) => PAISES[p] ?? p).join(" ")}</span>
-              {!c.available && <span className="cobros-opcion__pronto">{t("cobros.proximamente")}</span>}
             </button>
           ))}
         </div>
