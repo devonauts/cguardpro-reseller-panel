@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Boton, Campo, EstadoDeDatos } from "@/components/cristal";
+import { CamaraDeFirma } from "@/components/firma/CamaraDeFirma";
 import { LienzoDeFirma } from "@/components/firma/LienzoDeFirma";
 import { contratoService, type ContratoDelSocio } from "@/services/resellerService";
 import { fechaYHora } from "@/lib/dinero";
@@ -50,7 +51,6 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
   const [licencia, setLicencia] = useState("");
   const [firma, setFirma] = useState<string | null>(null);
   const [foto, setFoto] = useState<File | null>(null);
-  const [vistaFoto, setVistaFoto] = useState<string | null>(null);
   const [ubicacion, setUbicacion] = useState<Ubicacion | null>(null);
   const [errorUbicacion, setErrorUbicacion] = useState<string | null>(null);
   const [consiento, setConsiento] = useState(false);
@@ -59,7 +59,6 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
   const refs = useRef<Record<string, HTMLElement | null>>({});
   /** The initials field of each clause: where "Next pending" lands. */
   const anclas = useRef<Record<string, HTMLElement | null>>({});
-  const entradaFoto = useRef<HTMLInputElement>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -82,7 +81,6 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
   }, [t]);
 
   useEffect(() => { void cargar(); }, [cargar]);
-  useEffect(() => () => { if (vistaFoto) URL.revokeObjectURL(vistaFoto); }, [vistaFoto]);
 
   const bloques = (lengua === "en" ? c?.en : c?.es) ?? [];
   const aIniciar = c?.blocksToInitial ?? [];
@@ -153,12 +151,6 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
     );
   };
 
-  const elegirFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null;
-    e.target.value = "";
-    setFoto(f);
-    setVistaFoto(f ? URL.createObjectURL(f) : null);
-  };
 
   const listoParaFirmar = pendientes.length === 0 && !!nombre.trim() && !!cargo.trim() && !!licencia.trim()
     && !!firma && !!foto && !!ubicacion && consiento;
@@ -317,19 +309,7 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
                 <div className="firmas__paso">
                   <p className="firmas__etiqueta">{t("firma.foto")}</p>
                   <p className="firmas__nota">{t("firma.fotoAyuda")}</p>
-                  {vistaFoto && <img className="firmas__foto" src={vistaFoto} alt={t("firma.fotoAlt")} />}
-                  <input
-                    ref={entradaFoto}
-                    type="file"
-                    accept="image/*"
-                    capture="user"
-                    className="sr-only"
-                    aria-label={t("firma.foto")}
-                    onChange={elegirFoto}
-                  />
-                  <Boton variante="suave" type="button" onClick={() => entradaFoto.current?.click()}>
-                    {t(foto ? "firma.fotoOtra" : "firma.fotoTomar")}
-                  </Boton>
+                  <CamaraDeFirma onCambio={(f) => setFoto(f)} />
                 </div>
 
                 <div className="firmas__paso">

@@ -109,7 +109,6 @@
 .firmas__campos:disabled { opacity: 0.55; }
 .firmas__paso { display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }
 .firmas__etiqueta { margin: 0; font-size: 12.5px; font-weight: 500; color: var(--text-secondary); }
-.firmas__foto { width: 180px; height: 180px; object-fit: cover; border-radius: var(--r-md); border: 1px solid var(--line); }
 .firmas__consentimiento {
   display: flex;
   gap: var(--s-3);
