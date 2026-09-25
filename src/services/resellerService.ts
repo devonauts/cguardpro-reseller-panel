@@ -506,6 +506,8 @@ export interface BloqueDelContrato {
 
 export interface ContratoDelSocio {
   available: boolean;
+  /** What the signature block starts with (application, or the account's owner). */
+  signerDefaults?: { name: string | null; title: string | null; address: string | null; licence: string | null };
   reason?: string;
   id?: string;
   status?: "pending" | "signed" | string;

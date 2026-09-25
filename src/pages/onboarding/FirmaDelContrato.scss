@@ -61,6 +61,12 @@
   border-top: 1px dashed var(--line);
 }
 .clausula__iniciales .campo { width: 160px; }
+/* Where "Next pending" landed: a ring that fades, so the eye finds the field. */
+.clausula__iniciales--destacada {
+  border-radius: var(--r-md);
+  box-shadow: 0 0 0 2px var(--line-strong);
+  transition: box-shadow 0.6s ease;
+}
 
 .clausula__sello {
   display: inline-flex;

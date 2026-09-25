@@ -57,6 +57,8 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
   const [firmando, setFirmando] = useState(false);
   const [errorFirma, setErrorFirma] = useState<string | null>(null);
   const refs = useRef<Record<string, HTMLElement | null>>({});
+  /** The initials field of each clause: where "Next pending" lands. */
+  const anclas = useRef<Record<string, HTMLElement | null>>({});
   const entradaFoto = useRef<HTMLInputElement>(null);
 
   const cargar = useCallback(async () => {
@@ -65,9 +67,13 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
     try {
       const r = await contratoService.ver();
       setC(r);
+      // Everything already known comes filled in; the partner only corrects.
+      const sug = r.signerDefaults;
       const adm = r.values?.scheduleB.authorizedAdmin;
-      setNombre((n) => n || adm?.name || "");
-      setDireccion((d) => d || r.values?.reseller.address || "");
+      setNombre((n) => n || sug?.name || adm?.name || "");
+      setCargo((x) => x || sug?.title || "");
+      setDireccion((d) => d || sug?.address || r.values?.reseller.address || "");
+      setLicencia((x) => x || sug?.licence || "");
     } catch (e: any) {
       setError(e?.message || t("firma.noCargo"));
     } finally {
@@ -83,11 +89,38 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
   const iniciales = c?.initials ?? {};
   const hechas = aIniciar.filter((id) => iniciales[id]).length;
   const pendientes = aIniciar.filter((id) => !iniciales[id]);
-  const sugeridas = useMemo(() => inicialesSugeridas(c?.values?.scheduleB.authorizedAdmin.name), [c]);
+  const sugeridas = useMemo(
+    () => inicialesSugeridas(c?.signerDefaults?.name || c?.values?.scheduleB.authorizedAdmin.name),
+    [c],
+  );
 
+  const [destacada, setDestacada] = useState<string | null>(null);
+
+  /**
+   * To the exact spot where the initials go — not the top of a long clause —
+   * centred on screen, with the field focused and briefly highlighted. Scrolls
+   * whichever container actually scrolls (the page or the wizard's panel).
+   */
   const irA = (id: string | undefined) => {
     if (!id) return;
-    refs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const el = anclas.current[id] ?? refs.current[id];
+    if (!el) return;
+    let p: HTMLElement | null = el.parentElement;
+    while (p && !(/(auto|scroll)/.test(getComputedStyle(p).overflowY) && p.scrollHeight > p.clientHeight)) {
+      p = p.parentElement;
+    }
+    const pagina = (document.scrollingElement as HTMLElement) || document.documentElement;
+    const caja = p ?? pagina;
+    const arriba = caja === pagina ? 0 : caja.getBoundingClientRect().top;
+    const r = el.getBoundingClientRect();
+    const alto = caja === pagina ? window.innerHeight : caja.clientHeight;
+    caja.scrollTo({ top: caja.scrollTop + r.top - arriba - alto / 2 + r.height / 2, behavior: "smooth" });
+    setDestacada(id);
+    window.setTimeout(() => {
+      const campo = el.querySelector<HTMLInputElement>("input, canvas, button");
+      if (campo instanceof HTMLInputElement) { campo.focus({ preventScroll: true }); campo.select(); }
+    }, 450);
+    window.setTimeout(() => setDestacada((d) => (d === id ? null : d)), 1800);
   };
 
   const iniciar = async (id: string) => {
@@ -213,7 +246,10 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
                 {b.parrafos.map((p, i) => <p key={i} className="clausula__texto">{p}</p>)}
 
                 {lleva && (
-                  <div className="clausula__iniciales">
+                  <div
+                    ref={(el) => { anclas.current[b.id] = el; }}
+                    className={`clausula__iniciales${destacada === b.id ? " clausula__iniciales--destacada" : ""}`}
+                  >
                     {puesta ? (
                       <span className="clausula__sello">
                         <strong>{puesta.initials}</strong>
@@ -227,6 +263,8 @@ export function FirmaDelContrato({ onFirmado }: { onFirmado: () => void }) {
                           maxLength={4}
                           autoCapitalize="characters"
                           onChange={(e) => setBorrador((x) => ({ ...x, [b.id]: e.target.value }))}
+                          // Enter initials the clause and moves on: no mouse trip per clause.
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); void iniciar(b.id); } }}
                         />
                         <Boton cargando={ocupado === b.id} onClick={() => iniciar(b.id)}>
                           {t("firma.ponerIniciales")}
