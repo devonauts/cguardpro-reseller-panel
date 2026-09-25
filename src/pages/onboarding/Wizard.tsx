@@ -362,7 +362,7 @@ function Contenido({
         <div className="alta__apilado">
           <BrandingForm
             marca={marca}
-            campos={["brandHue", "brandChroma"]}
+            campos={["brandHue", "brandChroma", "fontFamily"]}
             onCambio={onCambio}
           />
           <BrandingPreview marca={marca} titulo={t("alta.asiSeVera")} />

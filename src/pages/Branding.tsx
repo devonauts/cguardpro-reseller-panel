@@ -163,7 +163,7 @@ export function Branding() {
                      otra en la suya. Nombrar lo que entra hace que el próximo
                      campo nuevo aparezca sólo donde alguien lo ponga. */
                   campos={[
-                    "platformName", "loginTagline", "brandHue", "brandChroma",
+                    "platformName", "loginTagline", "brandHue", "brandChroma", "fontFamily",
                     "supportEmail", "supportPhone", "supportUrl",
                   ]}
                   ranuras={["logo", "logoDark", "favicon", "emailLogo"]}

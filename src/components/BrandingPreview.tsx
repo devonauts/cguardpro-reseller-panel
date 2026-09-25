@@ -54,6 +54,7 @@ function Marco({
         // The same defaults the sliders show: what you see there is what you get here.
         brandHue: marca.brandHue ?? 222,
         brandChroma: marca.brandChroma ?? 0.15,
+        fontFamily: marca.fontFamily ?? null,
         platformName: marca.platformName ?? "",
         loginTagline: marca.loginTagline ?? null,
       }, "*");
@@ -64,7 +65,7 @@ function Marco({
     const t = window.setTimeout(enviar, 60);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marca.brandHue, marca.brandChroma, marca.platformName, marca.loginTagline]);
+  }, [marca.brandHue, marca.brandChroma, marca.fontFamily, marca.platformName, marca.loginTagline]);
 
   useEffect(() => {
     const alRecibir = (e: MessageEvent) => {

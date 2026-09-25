@@ -167,3 +167,29 @@
   color: var(--text-muted);
   font-style: italic;
 }
+
+/* The typeface picker: a grid of samples, each in its own letter. */
+.fuentes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--s-2);
+}
+.fuentes__opcion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 64px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+.fuentes__opcion:hover { border-color: var(--line-strong); }
+.fuentes__opcion--activa { border-color: var(--text-primary); background: var(--surface-hover); }
+.fuentes__opcion:disabled { opacity: 0.5; cursor: default; }
+.fuentes__muestra { font-size: 22px; line-height: 1.1; }
+.fuentes__nombre { font-size: 12px; color: var(--text-secondary); }

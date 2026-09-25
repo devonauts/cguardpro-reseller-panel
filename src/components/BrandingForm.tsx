@@ -1,4 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { FUENTES_DE_MARCA, cargarMuestrasDeFuentes } from "@/lib/fuentesDeMarca";
 import { Boton, Campo } from "@/components/cristal";
 import {
   brandingService, TONOS_DEL_AGENTE,
@@ -43,6 +44,8 @@ export function BrandingForm({
 }: Props) {
   const t = useT();
   const muestra = (c: keyof MarcaEditable) => !campos || campos.includes(c);
+  const conFuente = muestra("fontFamily");
+  useEffect(() => { if (conFuente) cargarMuestrasDeFuentes(); }, [conFuente]);
 
   return (
     <div className="marca-form">
@@ -102,6 +105,34 @@ export function BrandingForm({
               onChange={(v) => onCambio({ brandChroma: v })}
             />
           )}
+        </fieldset>
+      )}
+
+      {muestra("fontFamily") && (
+        <fieldset className="marca-form__grupo">
+          <legend className="marca-form__leyenda">{t("marca.fuenteLeyenda")}</legend>
+          <p className="marca-form__ayuda">{t("marca.fuenteAyuda")}</p>
+          <div className="fuentes" role="radiogroup" aria-label={t("marca.fuenteLeyenda")}>
+            {[{ clave: null as string | null, familia: null as string | null }, ...FUENTES_DE_MARCA].map((f) => {
+              const activa = (marca.fontFamily ?? null) === f.clave;
+              return (
+                <button
+                  key={f.clave ?? "plataforma"}
+                  type="button"
+                  role="radio"
+                  aria-checked={activa}
+                  disabled={deshabilitado}
+                  className={`fuentes__opcion${activa ? " fuentes__opcion--activa" : ""}`}
+                  // Each option written in its own letter: choosing by eye.
+                  style={f.familia ? { fontFamily: `"${f.familia}", sans-serif` } : undefined}
+                  onClick={() => onCambio({ fontFamily: f.clave })}
+                >
+                  <span className="fuentes__muestra">Aa</span>
+                  <span className="fuentes__nombre">{f.familia ?? t("marca.fuentePlataforma")}</span>
+                </button>
+              );
+            })}
+          </div>
         </fieldset>
       )}
 

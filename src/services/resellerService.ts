@@ -97,6 +97,8 @@ export interface Marca {
   platformName: string | null;
   brandHue: number | null;
   brandChroma: number | null;
+  /** A key of the closed typeface list (`lib/fuentesDeMarca`); null = the platform's. */
+  fontFamily?: string | null;
   loginTagline: string | null;
   supportEmail: string | null;
   supportUrl: string | null;
@@ -167,6 +169,7 @@ export interface MarcaEditable {
   platformName?: string | null;
   brandHue?: number | null;
   brandChroma?: number | null;
+  fontFamily?: string | null;
   loginTagline?: string | null;
   supportEmail?: string | null;
   supportUrl?: string | null;
