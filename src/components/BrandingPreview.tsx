@@ -25,11 +25,13 @@ const ALTO = 800;
 const TIPO = "cguard:vista-previa-de-marca";
 
 function Marco({
-  src, etiqueta, marca, onListo,
+  src, etiqueta, marca, visible, onListo,
 }: {
   src: string;
   etiqueta: string;
   marca: Marca;
+  /** Both themes stay loaded; the toggle only shows one, so switching is instant. */
+  visible: boolean;
   onListo?: () => void;
 }) {
   const caja = useRef<HTMLDivElement>(null);
@@ -39,7 +41,7 @@ function Marco({
   useEffect(() => {
     const c = caja.current;
     if (!c || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => setEscala(Math.max(0.1, c.clientWidth / ANCHO)));
+    const ro = new ResizeObserver(() => { if (c.clientWidth) setEscala(c.clientWidth / ANCHO); });
     ro.observe(c);
     return () => ro.disconnect();
   }, []);
@@ -49,8 +51,9 @@ function Marco({
     try {
       marco.current?.contentWindow?.postMessage({
         tipo: TIPO,
-        brandHue: marca.brandHue,
-        brandChroma: marca.brandChroma,
+        // The same defaults the sliders show: what you see there is what you get here.
+        brandHue: marca.brandHue ?? 222,
+        brandChroma: marca.brandChroma ?? 0.15,
         platformName: marca.platformName ?? "",
         loginTagline: marca.loginTagline ?? null,
       }, "*");
@@ -74,26 +77,22 @@ function Marco({
   }, [marca]);
 
   return (
-    <figure className="previa__marco">
-      <figcaption className="previa__etiqueta">{etiqueta}</figcaption>
-      <div className="previa__ventana">
-        <div className="previa__barra" aria-hidden="true">
-          <span className="previa__punto" /><span className="previa__punto" /><span className="previa__punto" />
-        </div>
-        <div ref={caja} className="previa__lienzo" style={{ height: ALTO * escala }}>
-          <iframe
-            ref={marco}
-            title={etiqueta}
-            src={src}
-            className="previa__iframe"
-            style={{ width: ANCHO, height: ALTO, transform: `scale(${escala})` }}
-            loading="lazy"
-            sandbox="allow-scripts allow-same-origin"
-            tabIndex={-1}
-          />
-        </div>
+    <div className="previa__ventana" hidden={!visible}>
+      <div className="previa__barra" aria-hidden="true">
+        <span className="previa__punto" /><span className="previa__punto" /><span className="previa__punto" />
       </div>
-    </figure>
+      <div ref={caja} className="previa__lienzo" style={{ height: ALTO * escala }}>
+        <iframe
+          ref={marco}
+          title={etiqueta}
+          src={src}
+          className="previa__iframe"
+          style={{ width: ANCHO, height: ALTO, transform: `scale(${escala})` }}
+          sandbox="allow-scripts allow-same-origin"
+          tabIndex={-1}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -128,11 +127,28 @@ export function BrandingPreview({
   const version = [marca.logoFileId, marca.logoDarkFileId, marca.faviconFileId, marca.updatedAt].join("|");
   const con = (tema: string) => (url ? `${url}&tema=${tema}&v=${encodeURIComponent(version)}` : "");
 
+  const [tema, setTema] = useState<"claro" | "oscuro">("claro");
+
   return (
     <section className="previa" aria-labelledby="previa-titulo">
       <header className="previa__cabecera">
-        <h2 id="previa-titulo" className="previa__titulo">{titulo ?? t("marca.previaTitulo")}</h2>
-        {nota && <p className="previa__nota">{nota}</p>}
+        <div className="previa__textos">
+          <h2 id="previa-titulo" className="previa__titulo">{titulo ?? t("marca.previaTitulo")}</h2>
+          {nota && <p className="previa__nota">{nota}</p>}
+        </div>
+        <div className="previa__temas" role="group" aria-label={t("marca.previaTema")}>
+          {(["claro", "oscuro"] as const).map((x) => (
+            <button
+              key={x}
+              type="button"
+              aria-pressed={tema === x}
+              className={`previa__tema${tema === x ? " previa__tema--activo" : ""}`}
+              onClick={() => setTema(x)}
+            >
+              {t(x === "claro" ? "marca.previaClaro" : "marca.previaOscuro")}
+            </button>
+          ))}
+        </div>
       </header>
 
       {error ? (
@@ -141,10 +157,10 @@ export function BrandingPreview({
           <Boton variante="suave" onClick={() => void pedir()}>{t("comun.reintentar")}</Boton>
         </div>
       ) : url ? (
-        <div className="previa__pareja">
-          <Marco key={`claro-${version}`} src={con("claro")} etiqueta={t("marca.previaClaro")} marca={marca} />
-          <Marco key={`oscuro-${version}`} src={con("oscuro")} etiqueta={t("marca.previaOscuro")} marca={marca} />
-        </div>
+        <>
+          <Marco key={`claro-${version}`} src={con("claro")} etiqueta={t("marca.previaClaro")} marca={marca} visible={tema === "claro"} />
+          <Marco key={`oscuro-${version}`} src={con("oscuro")} etiqueta={t("marca.previaOscuro")} marca={marca} visible={tema === "oscuro"} />
+        </>
       ) : (
         <p className="previa__nota">{t("comun.cargando")}</p>
       )}

@@ -142,6 +142,11 @@ export function Branding() {
 
       <EstadoDeDatos cargando={cargando} error={error && !borrador ? error : null} onReintentar={() => cargar()}>
         {borrador && (
+          <>
+          {/* The login, big and full width: it is what customers will see. */}
+          <div className="marca__previa">
+            <BrandingPreview marca={borrador} nota={t("marca.previaNota")} />
+          </div>
           <div className="marca">
             <div className="marca__columna">
               <Tarjeta>
@@ -161,7 +166,7 @@ export function Branding() {
                     "platformName", "loginTagline", "brandHue", "brandChroma",
                     "supportEmail", "supportPhone", "supportUrl",
                   ]}
-                  ranuras={["logo", "favicon", "emailLogo"]}
+                  ranuras={["logo", "logoDark", "favicon", "emailLogo"]}
                   onImagenSubida={setBorrador}
                   deshabilitado={publicando}
                 />
@@ -178,11 +183,6 @@ export function Branding() {
             </div>
 
             <div className="marca__columna">
-              <BrandingPreview
-                marca={borrador}
-                nota={t("marca.previaNota")}
-              />
-
               {/* El asistente, en su propia tarjeta y no mezclado con el
                   logotipo: es lo único de esta pantalla que se CONVERSA, y
                   quien viene a cambiar un color no tiene por qué toparse con
@@ -205,6 +205,7 @@ export function Branding() {
               </Tarjeta>
             </div>
           </div>
+          </>
         )}
       </EstadoDeDatos>
     </div>

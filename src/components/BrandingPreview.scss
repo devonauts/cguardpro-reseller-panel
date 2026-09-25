@@ -1,15 +1,42 @@
 /* The login preview: two real frames, light and dark. Only tokens. */
 
 .previa { display: flex; flex-direction: column; gap: var(--s-3); min-width: 0; }
-.previa__cabecera { display: flex; flex-direction: column; gap: 2px; }
+.previa__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.previa__textos { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+/* Light / dark: one segmented toggle, not two small frames. */
+.previa__temas {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-raised);
+}
+.previa__tema {
+  min-height: 34px;
+  padding: 0 var(--s-4);
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.previa__tema--activo { background: var(--surface-hover); color: var(--text-primary); }
 .previa__titulo { font-size: 15px; }
 .previa__nota { font-size: 12px; color: var(--text-muted); }
 
-.previa__pareja { display: grid; gap: var(--s-4); grid-template-columns: 1fr; }
 
-.previa__marco { margin: 0; display: flex; flex-direction: column; gap: var(--s-2); min-width: 0; }
-.previa__etiqueta { font-size: 12px; font-weight: 500; letter-spacing: 0.08em; color: var(--text-muted); }
-
+.previa__ventana[hidden] { display: none; }
 .previa__ventana {
   overflow: hidden;
   border: 1px solid var(--line-strong);

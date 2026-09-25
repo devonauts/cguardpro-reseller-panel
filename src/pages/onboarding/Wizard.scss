@@ -67,6 +67,10 @@ background: var(--glass-elevated);
   margin: 0;
 }
 
+.alta__caja--ancha { max-width: 1180px; }
+/* Form on top, the big login preview under it. */
+.alta__apilado { display: flex; flex-direction: column; gap: var(--s-5); min-width: 0; }
+
 .alta__doble {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

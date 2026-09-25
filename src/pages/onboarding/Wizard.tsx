@@ -154,7 +154,8 @@ export function Wizard() {
             someone in the wrong account, or with no contract yet, was trapped. */}
         <Boton variante="fantasma" onClick={salir}>{t("armazon.cerrarSesion")}</Boton>
       </div>
-      <div className="alta__caja">
+      {/* Wide on the steps that show the login preview: it has to be seen big. */}
+      <div className={`alta__caja${paso === "appearance" || paso === "review" ? " alta__caja--ancha" : ""}`}>
         <EstadoDeDatos
           cargando={cargando}
           error={!est && !activacion?.required ? error : null}
@@ -358,7 +359,7 @@ function Contenido({
 
     case "appearance":
       return (
-        <div className="alta__doble">
+        <div className="alta__apilado">
           <BrandingForm
             marca={marca}
             campos={["brandHue", "brandChroma"]}
@@ -382,7 +383,7 @@ function Contenido({
 
     case "review":
       return (
-        <div className="alta__doble">
+        <div className="alta__apilado">
           <dl className="alta__datos">
             <Dato etiqueta={t("alta.reviewNombre")} valor={marca.platformName} />
             <Dato etiqueta={t("alta.reviewFrase")} valor={marca.loginTagline} />
