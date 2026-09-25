@@ -241,6 +241,8 @@ export const brandingService = {
       `/reseller/branding/assets/${ranura}`,
       archivo,
     ),
+  /** A signed link (two hours) to the real CRM login dressed in the DRAFT. */
+  enlaceDeVistaPrevia: () => get<{ url: string; expiresInSeconds: number }>("/reseller/branding/preview-link"),
   /** Quita la imagen del BORRADOR. Lo publicado no cambia hasta publicar. */
   quitarImagen: (ranura: RanuraDeImagen) =>
     del<{ slot: RanuraDeImagen; draft: Marca }>(

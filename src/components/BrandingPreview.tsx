@@ -1,62 +1,132 @@
-import { CSSProperties, ReactNode } from "react";
-import type { Marca } from "@/services/resellerService";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Boton } from "@/components/cristal";
+import { brandingService, type Marca } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./BrandingPreview.scss";
 
 /**
- * La vista previa de la marca.
+ * ════════════════════════════════════════════════════════════════════════════
+ * THE PARTNER'S LOGIN, EXACTLY AS THEIR CUSTOMERS WILL SEE IT
  *
- * ── ES LOCAL, Y ESO ES LO IMPORTANTE ──────────────────────────────────────
- * Lo que se pinta aquí sale del BORRADOR y no sale de este recuadro. No toca el
- * CRM de ninguna empresa, ni la pantalla pública de entrada, ni el panel de
- * superadmin, ni la sesión de ningún otro socio, ni lo que ya está publicado.
- * Nada de eso cambia hasta que alguien pulsa Publicar y el servidor lo copia.
+ * Not a drawing of a login: the real CRM login page, in two iframes — light
+ * and dark — dressed in the DRAFT branding through a signed preview link (see
+ * the backend's `vistaPreviaDeMarca` and the CRM's `lib/vistaPrevia`). In that
+ * mode the CRM never signs anyone in.
  *
- * Técnicamente, eso se consigue escribiendo las fichas de color en el ESTILO
- * EN LÍNEA de este contenedor, no en `:root`. Escribirlas en la raíz teñiría el
- * panel entero mientras se mueve el deslizador — y entonces «vista previa» y
- * «aplicado» dejarían de distinguirse.
- *
- * ── EL TONO, NO EL COLOR ──────────────────────────────────────────────────
- * El socio elige un TONO y una saturación; la luminosidad la fija el sistema,
- * igual que en el resto del panel. Por eso no hay selector de color ni campo
- * hexadecimal: son la forma de acabar con un botón amarillo y letras blancas.
+ * The frames render at desktop size and are scaled down to fit, so what the
+ * partner sees is the real layout, not the phone layout a narrow column would
+ * trigger. Colours, name and tagline follow the form live (postMessage); a new
+ * logo reloads the frames, since logos come from the saved draft.
+ * ════════════════════════════════════════════════════════════════════════════
  */
 
-/**
- * Las fichas de marca del borrador, acotadas a este contenedor.
- *
- * Se redefinen SÓLO `--brand-h` y `--brand-c`. Los colores compuestos
- * (`--brand`, `--brand-hover`, …) se recalculan solos, porque en `tokens.css`
- * están escritos en función de estas dos y de `--brand-l`.
- *
- * Es lo que impide que la vista previa mienta: la LUMINOSIDAD no se repite
- * aquí, así que no puede quedarse desfasada respecto al sistema de diseño. Y
- * como el socio no elige luminosidad, lo que se ve aquí es exactamente lo que
- * verán sus clientes.
- */
-function fichasDeMarca(hue: number | null, chroma: number | null): CSSProperties {
-  const h = hue === null || hue === undefined ? 222 : hue;
-  const c = chroma === null || chroma === undefined ? 0.15 : chroma;
-  return {
-    "--brand-h": String(h),
-    "--brand-c": String(c),
-  } as CSSProperties;
+const ANCHO = 1280;
+const ALTO = 800;
+const TIPO = "cguard:vista-previa-de-marca";
+
+function Marco({
+  src, etiqueta, marca, onListo,
+}: {
+  src: string;
+  etiqueta: string;
+  marca: Marca;
+  onListo?: () => void;
+}) {
+  const caja = useRef<HTMLDivElement>(null);
+  const marco = useRef<HTMLIFrameElement>(null);
+  const [escala, setEscala] = useState(0.4);
+
+  useEffect(() => {
+    const c = caja.current;
+    if (!c || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setEscala(Math.max(0.1, c.clientWidth / ANCHO)));
+    ro.observe(c);
+    return () => ro.disconnect();
+  }, []);
+
+  /* Live: what the partner is changing right now, to the frame. */
+  const enviar = () => {
+    try {
+      marco.current?.contentWindow?.postMessage({
+        tipo: TIPO,
+        brandHue: marca.brandHue,
+        brandChroma: marca.brandChroma,
+        platformName: marca.platformName ?? "",
+        loginTagline: marca.loginTagline ?? null,
+      }, "*");
+    } catch { /* the frame is still loading */ }
+  };
+
+  useEffect(() => {
+    const t = window.setTimeout(enviar, 60);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marca.brandHue, marca.brandChroma, marca.platformName, marca.loginTagline]);
+
+  useEffect(() => {
+    const alRecibir = (e: MessageEvent) => {
+      if (e.source !== marco.current?.contentWindow) return;
+      if ((e.data as any)?.tipo === `${TIPO}:lista`) { enviar(); onListo?.(); }
+    };
+    window.addEventListener("message", alRecibir);
+    return () => window.removeEventListener("message", alRecibir);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [marca]);
+
+  return (
+    <figure className="previa__marco">
+      <figcaption className="previa__etiqueta">{etiqueta}</figcaption>
+      <div className="previa__ventana">
+        <div className="previa__barra" aria-hidden="true">
+          <span className="previa__punto" /><span className="previa__punto" /><span className="previa__punto" />
+        </div>
+        <div ref={caja} className="previa__lienzo" style={{ height: ALTO * escala }}>
+          <iframe
+            ref={marco}
+            title={etiqueta}
+            src={src}
+            className="previa__iframe"
+            style={{ width: ANCHO, height: ALTO, transform: `scale(${escala})` }}
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin"
+            tabIndex={-1}
+          />
+        </div>
+      </div>
+    </figure>
+  );
 }
 
 export function BrandingPreview({
   marca,
-  logoUrl,
   titulo,
   nota,
 }: {
   marca: Marca;
+  /** Kept for callers that pass it; the logo comes from the saved draft. */
   logoUrl?: string | null;
   titulo?: string;
   nota?: ReactNode;
 }) {
   const t = useT();
-  const nombre = marca.platformName?.trim() || t("marca.previaTuMarca");
+  const [url, setUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const pedir = async () => {
+    setError(null);
+    try {
+      const r = await brandingService.enlaceDeVistaPrevia();
+      setUrl(r.url);
+    } catch (e: any) {
+      setError(e?.message || t("marca.previaNoCargo"));
+    }
+  };
+
+  useEffect(() => { void pedir(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* A new logo is a new saved draft: the frames reload to fetch it. */
+  const version = [marca.logoFileId, marca.logoDarkFileId, marca.faviconFileId, marca.updatedAt].join("|");
+  const con = (tema: string) => (url ? `${url}&tema=${tema}&v=${encodeURIComponent(version)}` : "");
 
   return (
     <section className="previa" aria-labelledby="previa-titulo">
@@ -65,42 +135,19 @@ export function BrandingPreview({
         {nota && <p className="previa__nota">{nota}</p>}
       </header>
 
-      {/* El estilo va AQUÍ, en línea y acotado a este contenedor. */}
-      <div className="previa__lienzo" style={fichasDeMarca(marca.brandHue, marca.brandChroma)}>
-        <div className="previa__tarjeta">
-          <div className="previa__logo">
-            {logoUrl ? (
-              <img src={logoUrl} alt="" className="previa__imagen" />
-            ) : (
-              <span className="previa__inicial" aria-hidden="true">
-                {nombre.slice(0, 1).toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div className="previa__marca">{nombre}</div>
-          {marca.loginTagline && (
-            <p className="previa__lema">{marca.loginTagline}</p>
-          )}
-
-          {/* Un formulario de mentira: se ve el acento donde de verdad se verá. */}
-          <div className="previa__campo" aria-hidden="true">
-            <span className="previa__etiqueta">{t("marca.previaCorreo")}</span>
-            <span className="previa__control" />
-          </div>
-          <div className="previa__campo" aria-hidden="true">
-            <span className="previa__etiqueta">{t("marca.previaContrasena")}</span>
-            <span className="previa__control" />
-          </div>
-          <span className="previa__boton" aria-hidden="true">{t("marca.previaEntrar")}</span>
-
-          {(marca.supportEmail || marca.supportPhone) && (
-            <p className="previa__soporte">
-              {t("marca.previaAyuda")} {marca.supportEmail || marca.supportPhone}
-            </p>
-          )}
+      {error ? (
+        <div className="previa__error">
+          <p role="alert">{error}</p>
+          <Boton variante="suave" onClick={() => void pedir()}>{t("comun.reintentar")}</Boton>
         </div>
-      </div>
+      ) : url ? (
+        <div className="previa__pareja">
+          <Marco key={`claro-${version}`} src={con("claro")} etiqueta={t("marca.previaClaro")} marca={marca} />
+          <Marco key={`oscuro-${version}`} src={con("oscuro")} etiqueta={t("marca.previaOscuro")} marca={marca} />
+        </div>
+      ) : (
+        <p className="previa__nota">{t("comun.cargando")}</p>
+      )}
     </section>
   );
 }

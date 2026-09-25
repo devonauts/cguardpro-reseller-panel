@@ -347,7 +347,9 @@ function Contenido({
           <BrandingForm
             marca={marca}
             campos={[]}
-            ranuras={[paso === "logo" ? "logo" : "favicon"]}
+            // Both logos in the logo step: light-background and dark-background,
+            // since the login shows in both themes.
+            ranuras={paso === "logo" ? ["logo", "logoDark"] : ["favicon"]}
             onCambio={onCambio}
             onImagenSubida={onImagenSubida}
           />

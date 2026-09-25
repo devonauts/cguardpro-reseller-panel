@@ -83,6 +83,20 @@
 .subida__acciones { display: flex; align-items: center; gap: var(--s-3); }
 .subida__puesto { font-size: 12px; color: var(--ok); }
 .subida__error { flex-basis: 100%; font-size: 12px; color: var(--danger); }
+/* What was just uploaded, on the background it is meant for. */
+.subida__vista {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  padding: var(--s-3);
+  border: 1px solid var(--papel-borde);
+  border-radius: var(--r-md);
+  background: var(--papel);
+  img { max-width: 100%; max-height: 120px; object-fit: contain; }
+}
+.subida__vista--oscura { background: var(--papel-oscuro); border-color: var(--line); }
 
 /**
  * La rampa de tonos del deslizador.

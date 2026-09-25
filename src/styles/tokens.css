@@ -76,6 +76,8 @@
   --papel: oklch(0.99 0 0);
   --papel-borde: oklch(0.86 0 0);
   --tinta-firma: oklch(0.2 0 0);
+  /* Where a dark-background logo is previewed: the dark bar it will sit on. */
+  --papel-oscuro: oklch(0.18 0 0);
 
   /* ── El ambiente ───────────────────────────────────────────────────────
      NEUTRO. Sin tono de marca: es lo que hace que el panel no se lea azul.

@@ -1,4 +1,4 @@
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Boton, Campo } from "@/components/cristal";
 import {
   brandingService, TONOS_DEL_AGENTE,
@@ -269,6 +269,12 @@ function SubidaDeImagen({
   const [subiendo, setSubiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const puesto = !!(marca as any)[`${ranura}FileId`];
+  /* The server's signed link; right after choosing a file, the file itself
+     until that link arrives — the partner sees their logo at once. */
+  const [local, setLocal] = useState<string | null>(null);
+  useEffect(() => () => { if (local) URL.revokeObjectURL(local); }, [local]);
+  const vista = puesto ? (marca.assets?.[ranura]?.url ?? local) : null;
+  const oscura = ranura === "logoDark" || ranura === "markDark";
   const meta = ETIQUETA_RANURA[ranura];
   const titulo = t(meta.titulo);
 
@@ -283,6 +289,7 @@ function SubidaDeImagen({
     setSubiendo(true);
     try {
       const r = await brandingService.subirImagen(ranura, archivo);
+      setLocal(URL.createObjectURL(archivo));
       onSubida?.(r.draft);
     } catch (err: any) {
       /* El servidor dice POR QUÉ no vale —un SVG, una imagen enorme, un archivo
@@ -300,6 +307,7 @@ function SubidaDeImagen({
     setSubiendo(true);
     try {
       const r = await brandingService.quitarImagen(ranura);
+      setLocal(null);
       onSubida?.(r.draft);
     } catch (err: any) {
       setError(err?.message || t("marca.quitarFallo"));
@@ -342,6 +350,12 @@ function SubidaDeImagen({
         aria-label={t("marca.subidaAria", { que: titulo.toLowerCase() })}
         onChange={elegir}
       />
+
+      {vista && (
+        <div className={`subida__vista${oscura ? " subida__vista--oscura" : ""}`}>
+          <img src={vista} alt={titulo} />
+        </div>
+      )}
 
       {error && <p role="alert" className="subida__error">{error}</p>}
     </div>
