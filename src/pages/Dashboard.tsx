@@ -217,7 +217,7 @@ export function Dashboard() {
        se ha mirado. */
     ...(marca ? [{ id: "asistente", hecho: !!publicada?.agentName,
       titulo: "tablero.pasoAsistente" as Clave, nota: "tablero.pasoAsistenteNota" as Clave,
-      a: "/branding" }] : []),
+      a: "/assistant" }] : []),
     /* Cobrar a sus empresas es lo que convierte la plataforma en un negocio.
        Sólo sale si se pudo leer: marcarlo pendiente sin mirar sería mentir. */
     ...(cobraEmpresas === null ? [] : [{ id: "cobro", hecho: cobraEmpresas,

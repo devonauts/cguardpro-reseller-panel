@@ -1,0 +1,41 @@
+/* Preview of the assistant as a customer sees it in the CRM. */
+.asist-previa {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.asist-previa__chat {
+  width: 100%;
+  max-width: 320px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+.asist-previa__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-2) var(--s-3);
+  color: var(--brand-ink);
+  font-size: 14px;
+}
+.asist-previa__cuerpo { padding: var(--s-3); min-height: 90px; }
+.asist-previa__globo {
+  margin: 0;
+  display: inline-block;
+  max-width: 90%;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--glass-interactive);
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.asist-previa__burbuja { line-height: 0; }

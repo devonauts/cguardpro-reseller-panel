@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import BrandingForm from "@/components/BrandingForm";
 import BrandingPreview from "@/components/BrandingPreview";
 import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera } from "@/components/cristal";
-import { brandingService, type Marca, type MarcaEditable } from "@/services/resellerService";
+import {
+  CAMPOS_DE_MARCA, CAMPOS_DEL_ASISTENTE, hayCambios, useBorradorDeMarca,
+} from "@/pages/useBorradorDeMarca";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./Branding.scss";
 
@@ -17,112 +19,15 @@ import "./Branding.scss";
  * El botón de publicar sólo se enciende cuando hay algo sin publicar.
  */
 
-/** ¿Difieren en algo que se vaya a publicar? */
-function hayCambios(borrador: Marca | null, publicado: Marca | null): boolean {
-  if (!borrador) return false;
-  if (!publicado) return true;
-  const campos: Array<keyof Marca> = [
-    "platformName", "brandHue", "brandChroma", "loginTagline",
-    "supportEmail", "supportUrl", "supportPhone",
-    "logoFileId", "faviconFileId", "emailLogoFileId",
-    // The assistant is published with the brand: editing only it must still
-    // light up Publish.
-    "agentName", "agentTone", "agentShape", "agentGreeting", "agentAvatarFileId",
-  ];
-  return campos.some((c) => (borrador[c] ?? null) !== (publicado[c] ?? null));
-}
-
 export function Branding() {
   const t = useT();
-  const [borrador, setBorrador] = useState<Marca | null>(null);
-  const [publicado, setPublicado] = useState<Marca | null>(null);
-  const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [aviso, setAviso] = useState<string | null>(null);
-  const [guardando, setGuardando] = useState(false);
-  const [publicando, setPublicando] = useState(false);
+  const {
+    borrador, publicado, cargando, error, aviso, guardando, publicando,
+    cargar, cambiar, publicar, setBorrador,
+  } = useBorradorDeMarca();
 
-  const cargar = useCallback(async (silencioso = false) => {
-    if (!silencioso) {
-      setCargando(true);
-      setError(null);
-    }
-    try {
-      const r = await brandingService.obtener();
-      setBorrador(r.draft);
-      setPublicado(r.published);
-    } catch (e: any) {
-      if (!silencioso) setError(e?.message || t("marca.noCargo"));
-    } finally {
-      if (!silencioso) setCargando(false);
-    }
-  }, [t]);
-
-  useEffect(() => { cargar(); }, [cargar]);
-
-  /* Lo que se teclea se ve al momento, pero se MANDA con retraso. Sin esto, un
-     deslizador de color dispararía una petición por píxel movido. */
-  const pendiente = useRef<MarcaEditable>({});
-  const temporizador = useRef<ReturnType<typeof setTimeout>>();
-
-  const cambiar = (parcial: MarcaEditable) => {
-    setBorrador((b) => (b ? { ...b, ...parcial } as Marca : b));
-    pendiente.current = { ...pendiente.current, ...parcial };
-    setAviso(null);
-    clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(() => { void guardar(); }, 700);
-  };
-
-  /** `true` when there was nothing to save or it saved; `false` on failure. */
-  const guardar = async (): Promise<boolean> => {
-    const cambios = pendiente.current;
-    if (!Object.keys(cambios).length) return true;
-    pendiente.current = {};
-    setGuardando(true);
-    setError(null);
-    try {
-      const fresco = await brandingService.guardar(cambios);
-      // Whatever was typed while this request was in flight wins over the
-      // server's copy; it goes out with the next save.
-      setBorrador({ ...fresco, ...pendiente.current } as Marca);
-      return true;
-    } catch (e: any) {
-      // Reload quietly so the screen stops showing what did not save, and
-      // keep the server's message on screen (a loud reload used to wipe it).
-      await cargar(true);
-      setError(e?.message || t("marca.noGuardo"));
-      return false;
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  /* Leaving the page inside the 700 ms debounce used to drop the last edit. */
-  const guardarRef = useRef(guardar);
-  guardarRef.current = guardar;
-  useEffect(() => () => {
-    clearTimeout(temporizador.current);
-    void guardarRef.current();
-  }, []);
-
-  const publicar = async () => {
-    clearTimeout(temporizador.current);
-    // A failed save must not publish the older draft and report success.
-    if (!(await guardar())) return;
-    setPublicando(true);
-    setError(null);
-    try {
-      const fresco = await brandingService.publicar();
-      setPublicado(fresco);
-      setAviso(t("marca.publicado"));
-    } catch (e: any) {
-      setError(e?.message || t("marca.noPublico"));
-    } finally {
-      setPublicando(false);
-    }
-  };
-
-  const sinPublicar = hayCambios(borrador, publicado);
+  const sinPublicar = hayCambios(borrador, publicado, CAMPOS_DE_MARCA);
+  const asistenteSinPublicar = hayCambios(borrador, publicado, CAMPOS_DEL_ASISTENTE);
 
   return (
     <div>
@@ -134,7 +39,7 @@ export function Branding() {
         <Boton
           onClick={publicar}
           cargando={publicando}
-          disabled={!sinPublicar || cargando}
+          disabled={!(sinPublicar || asistenteSinPublicar) || cargando}
         >
           {t("marca.publicar")}
         </Boton>
@@ -147,6 +52,14 @@ export function Branding() {
           <div className="marca__previa">
             <BrandingPreview marca={borrador} nota={t("marca.previaNota")} />
           </div>
+          {/* Publishing also publishes the assistant (one transaction on the
+              server): if it has unpublished edits, say so here. */}
+          {asistenteSinPublicar && (
+            <p className="marca__nota">
+              {t("marca.asistenteSinPublicar")}{" "}
+              <Link to="/assistant">{t("nav.asistente")}</Link>
+            </p>
+          )}
           <div className="marca">
             <div className="marca__columna">
               <Tarjeta>
@@ -157,22 +70,15 @@ export function Branding() {
                 <BrandingForm
                   marca={borrador}
                   onCambio={cambiar}
-                  /* La lista es OBLIGATORIA aquí, no un adorno: sin ella el
-                     formulario pinta TODO lo editable, y al añadir los campos
-                     del asistente salieron dos veces — una en esta tarjeta y
-                     otra en la suya. Nombrar lo que entra hace que el próximo
-                     campo nuevo aparezca sólo donde alguien lo ponga. */
-                  campos={[
-                    "platformName", "loginTagline", "brandHue", "brandChroma", "fontFamily",
-                    "supportEmail", "supportPhone", "supportUrl",
-                  ]}
-                  ranuras={["logo", "logoDark", "favicon", "emailLogo"]}
+                  /* The list is REQUIRED: without it the form paints every
+                     editable field. The assistant has its own page (/assistant). */
+                  campos={["platformName", "loginTagline", "brandHue", "brandChroma", "fontFamily"]}
+                  ranuras={[]}
                   onImagenSubida={setBorrador}
                   deshabilitado={publicando}
                 />
 
-                {/* Se dice lo que está pasando: «guardando» y los errores se
-                    anuncian, no sólo se pintan. */}
+                {/* Saving and errors are announced, not just painted. */}
                 <p className="marca__estado" role="status" aria-live="polite">
                   {guardando ? t("marca.guardando") : aviso || ""}
                 </p>
@@ -183,22 +89,16 @@ export function Branding() {
             </div>
 
             <div className="marca__columna">
-              {/* El asistente, en su propia tarjeta y no mezclado con el
-                  logotipo: es lo único de esta pantalla que se CONVERSA, y
-                  quien viene a cambiar un color no tiene por qué toparse con
-                  ello. Se publica con todo lo demás, en la misma transacción —
-                  publicar el logotipo nuevo dejando al asistente con el nombre
-                  viejo sería media marca. */}
               <Tarjeta>
                 <TarjetaCabecera
-                  titulo={t("marca.asistente")}
-                  nota={t("marca.asistenteSub")}
+                  titulo={t("marca.logosYSoporte")}
+                  nota={t("marca.logosYSoporteSub")}
                 />
                 <BrandingForm
                   marca={borrador}
                   onCambio={cambiar}
-                  campos={["agentName", "agentShape", "agentTone", "agentGreeting"]}
-                  ranuras={["agentAvatar"]}
+                  campos={["supportEmail", "supportPhone", "supportUrl"]}
+                  ranuras={["logo", "logoDark", "favicon", "emailLogo"]}
                   onImagenSubida={setBorrador}
                   deshabilitado={publicando}
                 />

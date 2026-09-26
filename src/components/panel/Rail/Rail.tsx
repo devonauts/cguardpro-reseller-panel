@@ -84,6 +84,7 @@ const NAV_SECUNDARIA: Entrada[] = [
     hijos: [
       { a: "/account", icono: "engranaje", texto: "nav.cuenta" },
       { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
+      { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
       { a: "/domains", icono: "globo", texto: "nav.dominios" },
       { a: "/analytics", icono: "grafico", texto: "nav.analitica" },
     ],

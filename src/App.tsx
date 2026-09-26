@@ -14,6 +14,7 @@ import Invitacion from "@/pages/Invitacion";
 import RestablecerContrasena from "@/pages/RestablecerContrasena";
 import Dashboard from "@/pages/Dashboard";
 import Branding from "@/pages/Branding";
+import Asistente from "@/pages/Asistente";
 import Companies from "@/pages/Companies";
 import Usage from "@/pages/Usage";
 import Billing from "@/pages/Billing";
@@ -89,6 +90,7 @@ export default function App() {
         }
       />
       <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
+      <Route path="/assistant" element={<ProtectedRoute><Asistente /></ProtectedRoute>} />
       {/* «new» antes que «:tenantId»: si no, la ruta con parámetro se queda con
           el alta y busca una empresa que se llame así. */}
       <Route path="/companies" element={<ProtectedRoute><Companies /></ProtectedRoute>} />
