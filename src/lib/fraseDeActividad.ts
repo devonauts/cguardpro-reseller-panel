@@ -58,6 +58,11 @@ function rolDeEmpresa(v: unknown): string {
   return t(CLAVES[r] ?? "frase.rolEmpresa.otro");
 }
 
+/** «guard» → «la app del vigilante». */
+function appDe(v: unknown): string {
+  return t(texto(v) === "supervisor" ? "frase.appSupervisor" : "frase.appVigilante");
+}
+
 const empresa: Constructor = (d) => ({ empresa: texto(d.name ?? d.tenantName) });
 const dominio: Constructor = (d) => ({ dominio: texto(d.hostname) });
 const monto: Constructor = (d) => ({
@@ -163,6 +168,16 @@ export const FRASES: Record<string, [Clave, Constructor?]> = {
   "company_billing.notice.paused": ["frase.noticePaused"],
 
   "analytics.update": ["frase.analyticsUpdate"],
+
+  // Mis apps
+  "apps.account.save": ["frase.appsCuenta", (d) => ({ tienda: d.store === "google" ? "Google Play" : "App Store" })],
+  "apps.account.step": ["frase.appsPaso", (d) => ({ tienda: d.store === "google" ? "Google Play" : "App Store" })],
+  "apps.account.verify": ["frase.appsVerificar", (d) => ({ tienda: d.store === "google" ? "Google Play" : "App Store" })],
+  "apps.listing.update": ["frase.appsFicha", (d) => ({ app: appDe(d.app) })],
+  "apps.asset.upload": ["frase.appsArteSubido", (d) => ({ app: appDe(d.app) })],
+  "apps.asset.remove": ["frase.appsArteQuitado", (d) => ({ app: appDe(d.app) })],
+  "apps.asset.reorder": ["frase.appsArteOrden", (d) => ({ app: appDe(d.app) })],
+  "apps.submit": ["frase.appsPublicar", (d) => ({ app: appDe(d.app) })],
 };
 
 /** Si una acción no está en el mapa, su familia dice al menos de qué va. */
@@ -180,6 +195,7 @@ const FAMILIAS: Array<[string, Clave]> = [
   ["billing.", "frase.familia.facturacion"],
   ["reseller.invoice.", "frase.familia.facturacion"],
   ["company_billing.", "frase.familia.cobroEmpresas"],
+  ["apps.", "frase.familia.apps"],
 ];
 
 /** La frase de una línea, en el idioma del panel. Nunca un identificador. */

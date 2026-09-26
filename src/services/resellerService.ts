@@ -1129,3 +1129,113 @@ export const modulosDeEmpresaService = {
   activar: (tenantId: string, key: string, priceCents: number) =>
     post<ResultadoDeActivacion>(`/reseller/companies/${tenantId}/addons/${key}`, { priceCents }),
 };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MIS APPS — la app del vigilante y la del supervisor con la marca del socio
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export type AppDelSocio = "guard" | "supervisor";
+export type TiendaDeApps = "apple" | "google";
+export type IdiomaDeFicha = "es" | "en";
+
+export interface CampoDeFicha {
+  clave: string;
+  tienda: TiendaDeApps;
+  max: number;
+  obligatorio: boolean;
+  tipo: "texto" | "largo" | "url" | "palabras";
+}
+
+export interface CampoDeInfo {
+  clave: string;
+  max: number;
+  obligatorio: boolean;
+  tipo: "texto" | "largo" | "url" | "email" | "telefono" | "categoria" | "secreto";
+}
+
+export interface RanuraDeArte {
+  clave: string;
+  tienda: TiendaDeApps;
+  medidas?: Array<[number, number]>;
+  rango?: { min: number; max: number; proporcionMax: number };
+  girar?: boolean;
+  minimo: number;
+  maximo: number;
+  obligatorio: boolean;
+  alfa: boolean;
+  maxBytes: number;
+}
+
+export interface Comprobacion {
+  clave: string;
+  ok: boolean | null;
+  detalle?: string;
+}
+
+export interface CuentaDeTienda {
+  store: TiendaDeApps;
+  data: Record<string, string | null>;
+  hasSecret: boolean;
+  checklist: Record<string, string | null>;
+  steps: string[];
+  verifiedAt: string | null;
+  verification: { ok: boolean; checks: Comprobacion[]; at: string } | null;
+}
+
+export interface ProgresoDeApp {
+  cuentas: boolean;
+  ficha: boolean;
+  artes: boolean;
+  faltanFicha: string[];
+  faltanArtes: string[];
+  listo: boolean;
+}
+
+export interface FichaDeApp {
+  app: AppDelSocio;
+  bundleId: string;
+  suggestedBundleId: string;
+  listing: Partial<Record<IdiomaDeFicha, Partial<Record<TiendaDeApps, Record<string, string>>>>>;
+  info: Record<string, string | boolean | undefined> & { hasReviewPassword?: boolean; primaryLanguage?: string };
+  assets: Record<string, string | string[] | null>;
+  assetUrls: Record<string, string>;
+  status: "draft" | "submitted" | "published" | string;
+  submittedAt: string | null;
+  progress: ProgresoDeApp;
+}
+
+export interface EstadoDeApps {
+  requirements: {
+    apps: AppDelSocio[];
+    idiomas: IdiomaDeFicha[];
+    campos: CampoDeFicha[];
+    info: CampoDeInfo[];
+    categorias: string[];
+    artes: RanuraDeArte[];
+    identificador: string;
+  };
+  publisherEmail: string | null;
+  brandName: string | null;
+  accounts: Record<TiendaDeApps, CuentaDeTienda>;
+  apps: Record<AppDelSocio, FichaDeApp>;
+}
+
+export const appsService = {
+  estado: () => get<EstadoDeApps>("/reseller/apps"),
+  guardarCuenta: (store: TiendaDeApps, datos: Record<string, string>) =>
+    put<EstadoDeApps>(`/reseller/apps/accounts/${store}`, datos),
+  marcarPaso: (store: TiendaDeApps, paso: string, hecho: boolean) =>
+    put<EstadoDeApps>(`/reseller/apps/accounts/${store}/steps/${paso}`, { done: hecho }),
+  verificar: (store: TiendaDeApps) =>
+    post<{ verification: CuentaDeTienda["verification"]; state: EstadoDeApps }>(`/reseller/apps/accounts/${store}/verify`, {}),
+  guardarFicha: (app: AppDelSocio, cambios: Record<string, unknown>) =>
+    put<EstadoDeApps>(`/reseller/apps/${app}`, cambios),
+  subirArte: (app: AppDelSocio, ranura: string, archivo: File) =>
+    subirArchivo<{ upload: { fileId: string; aplanado: boolean; width: number; height: number }; state: EstadoDeApps }>(
+      `/reseller/apps/${app}/assets/${ranura}`, archivo),
+  quitarArte: (app: AppDelSocio, ranura: string, fileId: string) =>
+    del<EstadoDeApps>(`/reseller/apps/${app}/assets/${ranura}/${fileId}`),
+  ordenarArtes: (app: AppDelSocio, ranura: string, ids: string[]) =>
+    put<EstadoDeApps>(`/reseller/apps/${app}/assets/${ranura}/order`, { ids }),
+  pedirPublicacion: (app: AppDelSocio) => post<EstadoDeApps>(`/reseller/apps/${app}/submit`, {}),
+};

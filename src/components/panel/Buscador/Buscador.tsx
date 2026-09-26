@@ -40,6 +40,7 @@ const SECCIONES: Seccion[] = [
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
   { a: "/company-billing", icono: "moneda", texto: "nav.cobros" },
   { a: "/domains", icono: "globo", texto: "nav.dominios" },
+  { a: "/apps", icono: "movil", texto: "nav.apps" },
   { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
   { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },

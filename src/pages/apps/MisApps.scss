@@ -1,0 +1,217 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   MIS APPS — sin `backdrop-filter` (lo pone el kit) y con los tokens del panel.
+   La maqueta del teléfono es la excepción deliberada: va en CLARO porque las
+   dos tiendas son claras, y una vista previa oscura engañaría sobre el icono.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.apps-bloque { display: flex; flex-direction: column; gap: var(--s-5); }
+.apps-intro { margin: 0; color: var(--text-secondary); max-width: 72ch; }
+.apps-aviso {
+  margin: 0; padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--warn-line); border-radius: var(--r-md);
+  background: var(--warn-soft); color: var(--text-primary);
+}
+.apps-sutil { color: var(--text-muted); font-size: 0.82rem; }
+.apps-ok { margin: 0; color: var(--ok-ink); font-size: 0.88rem; }
+.apps-error { margin: 0; color: var(--danger); font-size: 0.88rem; }
+.apps-dos {
+  display: grid; gap: var(--s-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  align-items: start;
+}
+
+/* ── Qué app ─────────────────────────────────────────────────────────────── */
+.apps-cual {
+  display: grid; gap: var(--s-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  margin-bottom: var(--s-4);
+}
+.apps-cual__boton {
+  display: flex; flex-direction: column; gap: 4px; text-align: left;
+  padding: var(--s-4); border-radius: var(--r-lg);
+  border: 1px solid var(--glass-border); background: var(--glass-subtle);
+  color: var(--text-primary); cursor: pointer; font: inherit;
+  transition: border-color var(--motion) var(--ease), background var(--motion) var(--ease);
+  &:hover { border-color: var(--glass-border-highlight); }
+  &:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+.apps-cual__boton--activo { border-color: var(--brand); background: var(--brand-soft); }
+.apps-cual__nombre { font-weight: 600; }
+.apps-cual__nota { color: var(--text-muted); font-size: 0.82rem; }
+.apps-cual__estado { color: var(--ok-ink); font-size: 0.78rem; font-weight: 500; }
+
+/* ── Pasos ───────────────────────────────────────────────────────────────── */
+.apps-pasos { margin-bottom: var(--s-5); overflow-x: auto; }
+.apps-pasos__lista { display: flex; gap: var(--s-2); list-style: none; margin: 0; padding: 0; }
+.apps-pasos__paso {
+  display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap;
+  padding: var(--s-2) var(--s-4); border-radius: var(--r-full);
+  border: 1px solid var(--glass-border); background: transparent;
+  color: var(--text-secondary); font: inherit; font-size: 0.9rem; cursor: pointer;
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+.apps-pasos__paso--activo { color: var(--text-primary); border-color: var(--brand); background: var(--brand-soft); }
+.apps-pasos__paso--hecho .apps-pasos__numero { background: var(--ok); color: var(--ok-ink); }
+.apps-pasos__numero {
+  display: inline-grid; place-items: center; width: 22px; height: 22px;
+  border-radius: var(--r-full); background: var(--glass-standard); font-size: 0.78rem; font-weight: 600;
+}
+
+/* ── Cuentas ─────────────────────────────────────────────────────────────── */
+.apps-cuenta__estado { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+.apps-guia { list-style: none; margin: 0 0 var(--s-5); padding: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+.apps-guia__paso {
+  padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--glass-sunken);
+}
+.apps-guia__paso--hecho { border-color: var(--ok-line); }
+.apps-guia__paso--hecho .apps-guia__numero { background: var(--ok); color: var(--ok-ink); }
+.apps-guia__cabeza { display: flex; align-items: center; gap: var(--s-3); cursor: pointer; }
+.apps-guia__cabeza input { width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+.apps-guia__numero {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; flex: none;
+  border-radius: var(--r-full); background: var(--glass-standard); font-size: 0.78rem; font-weight: 600;
+}
+.apps-guia__titulo { font-weight: 600; color: var(--text-primary); }
+.apps-guia__texto { margin: var(--s-2) 0 0 calc(18px + 22px + 2 * var(--s-3)); color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; overflow-wrap: anywhere; }
+.apps-guia__enlaces { display: flex; flex-wrap: wrap; gap: var(--s-3); margin: var(--s-2) 0 0 calc(18px + 22px + 2 * var(--s-3)); }
+.apps-enlace { color: var(--brand); font-size: 0.86rem; text-decoration: none; &:hover { text-decoration: underline; } }
+
+.apps-formulario { display: flex; flex-direction: column; gap: var(--s-4); }
+.apps-llave {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap;
+  padding: var(--s-3) var(--s-4); border-radius: var(--r-md); border: 1px dashed var(--line-strong);
+}
+.apps-llave__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.apps-llave__titulo { font-weight: 500; }
+.apps-acciones { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.apps-acciones--pie { padding: var(--s-2) 0; }
+.apps-checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+.apps-checks__fila { display: flex; align-items: flex-start; gap: var(--s-3); }
+.apps-checks__texto { font-size: 0.88rem; overflow-wrap: anywhere; }
+
+/* ── Ficha ───────────────────────────────────────────────────────────────── */
+.apps-idiomas { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-4); flex-wrap: wrap; margin-bottom: var(--s-3); }
+.apps-segmentos { display: inline-flex; gap: 4px; padding: 4px; border-radius: var(--r-full); border: 1px solid var(--glass-border); background: var(--glass-sunken); }
+.apps-segmentos__boton {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px var(--s-4); border-radius: var(--r-full); border: 0; background: transparent;
+  color: var(--text-secondary); font: inherit; font-size: 0.88rem; cursor: pointer;
+  &:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+.apps-segmentos__boton--activo { background: var(--surface-raised); color: var(--text-primary); }
+.apps-segmentos__marca { font-size: 0.7rem; color: var(--brand); text-transform: uppercase; letter-spacing: 0.04em; }
+.apps-subtitulo { margin: var(--s-5) 0 var(--s-3); font-size: 1rem; font-weight: 600; }
+.apps-subtitulo-fila { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; }
+.apps-campo { display: flex; flex-direction: column; gap: 4px; }
+.apps-contador { align-self: flex-end; color: var(--text-muted); font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+.apps-contador--mal { color: var(--danger); font-weight: 600; }
+.apps-area { resize: vertical; min-height: 72px; padding: var(--s-3) 0; line-height: 1.5; width: 100%; }
+
+/* ── Artes ───────────────────────────────────────────────────────────────── */
+.apps-ranura { padding: var(--s-4) 0; border-top: 1px solid var(--line); }
+.apps-ranura:first-of-type { border-top: 0; }
+.apps-ranura__cabeza { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--s-3); flex-wrap: wrap; }
+.apps-ranura__texto { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.apps-ranura__titulo { font-weight: 600; }
+.apps-ranura__acciones { display: flex; align-items: center; gap: var(--s-3); }
+.apps-miniaturas { list-style: none; margin: var(--s-3) 0 0; padding: 0; display: flex; gap: var(--s-3); overflow-x: auto; }
+.apps-miniaturas--ancha .apps-miniatura__img { height: 90px; }
+.apps-miniatura { flex: none; display: flex; flex-direction: column; align-items: center; gap: var(--s-2); }
+.apps-miniatura__img { display: block; height: 150px; width: auto; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--tienda-fondo); }
+.apps-miniatura__acciones { display: flex; justify-content: center; gap: 4px; }
+.apps-mini-boton {
+  width: 26px; height: 26px; border-radius: var(--r-full); border: 1px solid var(--glass-border);
+  background: var(--surface-raised); color: var(--text-primary); cursor: pointer; font-size: 0.85rem; line-height: 1;
+  &:disabled { opacity: 0.35; cursor: default; }
+  &:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+.apps-mini-boton--quitar { color: var(--danger); }
+
+/* ── Vista previa ────────────────────────────────────────────────────────── */
+.apps-vista__controles { display: flex; gap: var(--s-3); flex-wrap: wrap; }
+.apps-vista { display: flex; gap: var(--s-6); flex-wrap: wrap; align-items: flex-start; justify-content: center; }
+.apps-vista__notas { flex: 1 1 260px; max-width: 420px; }
+.apps-lista-simple { margin: 0; padding-left: 1.2em; color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6; }
+.apps-lista-simple--numerada { list-style: decimal; }
+
+.apps-telefono {
+  position: relative; flex: none;
+  width: min(100%, 340px); aspect-ratio: 9 / 19.5;
+  border-radius: 46px; padding: 12px; background: var(--tienda-marco); box-shadow: var(--shadow-elevated);
+}
+.apps-telefono__isla {
+  position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+  width: 92px; height: 26px; border-radius: 20px; background: var(--tienda-isla); z-index: 2;
+}
+.apps-telefono__pantalla {
+  height: 100%; overflow-y: auto; overflow-x: hidden; border-radius: 36px;
+  background: var(--tienda-fondo); color: var(--tienda-tinta); padding: 52px 16px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Roboto", system-ui, sans-serif;
+  scrollbar-width: none;
+}
+.apps-telefono--google .apps-telefono__pantalla { font-family: "Roboto", "Google Sans", system-ui, sans-serif; }
+
+.apps-hueco {
+  display: grid; place-items: center; flex: none; padding: 8px; text-align: center;
+  border: 1px dashed var(--tienda-hueco); border-radius: 12px; color: var(--tienda-gris); font-size: 12px;
+}
+.apps-hueco--vertical { width: 150px; height: 300px; }
+
+/* App Store */
+.apps-as { display: flex; flex-direction: column; }
+.apps-as__cabeza { display: flex; gap: 14px; }
+.apps-as__icono {
+  width: 96px; height: 96px; flex: none; border-radius: 22%; overflow: hidden;
+  background: var(--tienda-icono-fondo); display: grid; place-items: center; color: var(--tienda-gris);
+  box-shadow: 0 0 0 0.5px var(--tienda-sombra-icono);
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.apps-as__titulos { display: flex; flex-direction: column; min-width: 0; }
+.apps-as__nombre { font-size: 20px; font-weight: 700; line-height: 1.15; overflow-wrap: anywhere; }
+.apps-as__subtitulo { font-size: 14px; color: var(--tienda-gris); margin-top: 2px; }
+.apps-as__obtener {
+  align-self: flex-start; margin-top: auto; padding: 5px 20px; border-radius: 999px;
+  background: var(--ios-azul); color: var(--tienda-fondo); font-weight: 700; font-size: 14px;
+}
+.apps-as__datos {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 16px 0;
+  padding: 10px 0; border-top: 0.5px solid var(--tienda-linea); border-bottom: 0.5px solid var(--tienda-linea); text-align: center;
+  div { display: flex; flex-direction: column; font-size: 11px; color: var(--tienda-gris); }
+  strong { font-size: 13px; color: var(--tienda-gris-fuerte); }
+}
+.apps-as__promo { font-size: 13px; margin: 0 0 12px; }
+.apps-as__capturas, .apps-gp__capturas { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; }
+.apps-as__captura { height: 300px; width: auto; border-radius: 14px; border: 0.5px solid var(--tienda-linea); }
+.apps-as__descripcion { font-size: 13px; line-height: 1.45; margin: 14px 0 6px; white-space: pre-line; }
+.apps-as__mas { color: var(--ios-azul); }
+.apps-as__desarrollador { color: var(--ios-azul); font-size: 13px; }
+
+/* Google Play */
+.apps-gp { display: flex; flex-direction: column; }
+.apps-gp__destacada { width: calc(100% + 32px); margin: -52px -16px 12px; display: block; aspect-ratio: 1024 / 500; object-fit: cover; }
+.apps-gp__cabeza { display: flex; gap: 14px; align-items: center; }
+.apps-gp__icono {
+  width: 72px; height: 72px; flex: none; border-radius: 20%; overflow: hidden;
+  background: var(--gp-icono-fondo); display: grid; place-items: center; color: var(--gp-gris-claro);
+  box-shadow: 0 1px 3px var(--gp-sombra-icono);
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.apps-gp__nombre { font-size: 20px; font-weight: 500; line-height: 1.2; overflow-wrap: anywhere; }
+.apps-gp__desarrollador { color: var(--gp-verde); font-size: 14px; font-weight: 500; }
+.apps-gp__datos { display: flex; justify-content: space-around; margin: 14px 0; font-size: 12px; color: var(--gp-gris); }
+.apps-gp__instalar {
+  display: block; text-align: center; padding: 9px; border-radius: 8px;
+  background: var(--gp-verde); color: var(--tienda-fondo); font-weight: 500; font-size: 14px; margin-bottom: 14px;
+}
+.apps-gp__captura { height: 260px; width: auto; border-radius: 8px; }
+.apps-gp__acerca {
+  margin-top: 16px;
+  strong { font-size: 16px; font-weight: 500; }
+  p { font-size: 13px; color: var(--gp-gris); line-height: 1.45; margin: 6px 0 0; }
+}
+
+/* ── Publicar ────────────────────────────────────────────────────────────── */
+.apps-resumen { list-style: none; margin: 0 0 var(--s-5); padding: 0; display: flex; flex-direction: column; gap: var(--s-4); }
+.apps-resumen__fila { display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }

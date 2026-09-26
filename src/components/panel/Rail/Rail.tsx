@@ -58,6 +58,8 @@ const NAV: Entrada[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
   { a: "/company-billing", icono: "moneda", texto: "nav.cobros" },
+  // Las apps con su marca: es lo que el socio vende a sus empresas, no un ajuste.
+  { a: "/apps", icono: "movil", texto: "nav.apps" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },
   { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
 ];

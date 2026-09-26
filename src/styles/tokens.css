@@ -251,3 +251,26 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── MAQUETA DE LAS TIENDAS (Mis apps › Vista previa) ────────────────────────
+   Los colores de la App Store y de Google Play, no los del panel: la vista
+   previa tiene que parecerse a lo que verá el cliente, que es claro aunque el
+   panel sea oscuro. Sólo los usa `pages/apps/MisApps.scss`. */
+:root {
+  --tienda-marco: #111;
+  --tienda-isla: #000;
+  --tienda-fondo: #fff;
+  --tienda-tinta: #111;
+  --tienda-hueco: #c7c7cc;
+  --tienda-gris: #8e8e93;
+  --tienda-gris-fuerte: #3c3c43;
+  --tienda-linea: #e5e5ea;
+  --tienda-icono-fondo: #f2f2f7;
+  --tienda-sombra-icono: rgba(0, 0, 0, 0.12);
+  --ios-azul: #007aff;
+  --gp-verde: #01875f;
+  --gp-gris: #5f6368;
+  --gp-gris-claro: #80868b;
+  --gp-icono-fondo: #f1f3f4;
+  --gp-sombra-icono: rgba(60, 64, 67, 0.3);
+}

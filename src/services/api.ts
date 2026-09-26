@@ -23,6 +23,17 @@ import { idioma, t } from "@/i18n/idioma";
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) || "/api";
 const TOKEN_KEY = "cguard_reseller_token";
 
+/**
+ * Los enlaces de archivo que da el servidor («/api/file/download?…») son
+ * relativos. Si la API vive en otro dominio, un <img> los pediría al del
+ * panel: se resuelven contra la misma base que las llamadas.
+ */
+export function urlDeArchivo(ruta: string | null | undefined): string | null {
+  if (!ruta) return null;
+  if (/^https?:\/\//.test(ruta) || !ruta.startsWith("/api/")) return ruta;
+  return API_URL.replace(/\/$/, "") + ruta.slice(4);
+}
+
 let _token: string | null = null;
 try {
   _token = localStorage.getItem(TOKEN_KEY);
@@ -51,6 +62,8 @@ export interface ApiError {
   /** El estado comercial que devuelve el portero cuando contesta 403. */
   resellerStatus?: string | null;
   messageCode?: string | null;
+  /** Campos rechazados por el servidor (formularios largos, como «Mis apps»). */
+  fields?: string[];
 }
 
 const api: AxiosInstance = axios.create({
@@ -107,6 +120,8 @@ function normalizar(error: AxiosError): ApiError {
     /** The server's message key (e.g. `auth.passwordReset.invalidToken`). */
     messageCode: data?.messageCode ?? null,
     resellerStatus: data?.resellerStatus ?? null,
+    /** Los campos que el servidor rechazó, para marcarlos en el formulario. */
+    fields: Array.isArray(data?.fields) ? data.fields : undefined,
   };
 }
 

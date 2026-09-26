@@ -4,6 +4,7 @@ import ProtectedRoute from "@/router/ProtectedRoute";
 import Contrato from "@/pages/Contrato";
 import Derechos from "@/pages/Derechos";
 import Dominios from "@/pages/Dominios";
+import MisApps from "@/pages/apps/MisApps";
 import Actividad from "@/pages/Actividad";
 import Analitica from "@/pages/Analitica";
 import Cuenta from "@/pages/Cuenta";
@@ -103,6 +104,7 @@ export default function App() {
       {/* FASE 16 · la dirección por la que entra su gente: la que da CGuard
           Pro y, si la trae, la suya. */}
       <Route path="/domains" element={<ProtectedRoute><Dominios /></ProtectedRoute>} />
+      <Route path="/apps" element={<ProtectedRoute><MisApps /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Actividad /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analitica /></ProtectedRoute>} />
