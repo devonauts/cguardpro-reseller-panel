@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import BrandingForm from "@/components/BrandingForm";
 import { FormaSvg } from "@/components/SelectorDeForma";
+import { CarasDelAsistente } from "@/components/CarasDelAsistente";
 import { Boton, EstadoDeDatos, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { esForma, FORMA_POR_DEFECTO, siglaDelAgente } from "@/lib/formasDelAgente";
 import {
@@ -30,6 +31,14 @@ export function Asistente() {
   const color = `oklch(0.58 ${borrador?.brandChroma ?? 0.15} ${borrador?.brandHue ?? 222})`;
   const nombre = borrador?.agentName?.trim() || t("asistente.nombrePorDefecto");
   const forma = esForma(borrador?.agentShape) ? borrador!.agentShape! : FORMA_POR_DEFECTO;
+  /* The face as the CRM will show it (signed link from the draft). */
+  const cara = borrador?.agentAvatarFileId ? borrador?.assets?.agentAvatar?.url || null : null;
+  /* After an upload, reload quietly: the upload answer may not carry the
+     signed link yet, and the preview must show the new face at once. */
+  const alSubir = (m: any) => {
+    setBorrador(m);
+    void cargar(true);
+  };
 
   return (
     <div>
@@ -68,9 +77,10 @@ export function Asistente() {
                     onCambio={cambiar}
                     campos={["agentName", "agentShape", "agentTone", "agentGreeting"]}
                     ranuras={["agentAvatar"]}
-                    onImagenSubida={setBorrador}
+                    onImagenSubida={alSubir}
                     deshabilitado={publicando}
                   />
+                  <CarasDelAsistente color={color} onSubida={alSubir} deshabilitado={publicando} />
                   <p className="marca__estado" role="status" aria-live="polite">
                     {guardando ? t("marca.guardando") : aviso || ""}
                   </p>
@@ -88,7 +98,9 @@ export function Asistente() {
                   <div className="asist-previa" aria-hidden>
                     <div className="asist-previa__chat">
                       <div className="asist-previa__cabecera" style={{ background: color }}>
-                        <FormaSvg forma={forma} color="rgba(255,255,255,.25)" sigla={siglaDelAgente(nombre)} tamano={22} />
+                        {cara
+                          ? <img className="asist-previa__cara" src={cara} alt="" />
+                          : <FormaSvg forma={forma} color="rgba(255,255,255,.25)" sigla={siglaDelAgente(nombre)} tamano={22} />}
                         <strong>{nombre}</strong>
                       </div>
                       <div className="asist-previa__cuerpo">
@@ -98,7 +110,8 @@ export function Asistente() {
                       </div>
                     </div>
                     <div className="asist-previa__burbuja">
-                      <FormaSvg forma={forma} color={color} sigla={siglaDelAgente(nombre)} tamano={64} />
+                      <FormaSvg forma={forma} color={color} sigla={cara ? "" : siglaDelAgente(nombre)} tamano={64} />
+                      {cara && <img className="asist-previa__cara asist-previa__cara--grande" src={cara} alt="" />}
                     </div>
                   </div>
                 </Tarjeta>
