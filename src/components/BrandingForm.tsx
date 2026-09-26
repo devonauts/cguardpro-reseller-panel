@@ -8,6 +8,7 @@ import {
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { correoValido, webValida } from "@/lib/formato";
+import { SelectorDeForma } from "@/components/SelectorDeForma";
 import "./BrandingForm.scss";
 
 /**
@@ -211,6 +212,21 @@ export function BrandingForm({
               </label>
             ))}
           </div>
+        </fieldset>
+      )}
+
+      {muestra("agentShape") && (
+        <fieldset className="marca-form__grupo">
+          <legend className="marca-form__leyenda">{t("marca.formaLeyenda")}</legend>
+          <p className="marca-form__ayuda">{t("marca.formaAyuda")}</p>
+          <SelectorDeForma
+            valor={marca.agentShape}
+            onCambio={(forma) => onCambio({ agentShape: forma })}
+            /* The partner's own colour, as the CRM paints the bubble. */
+            color={`oklch(0.58 ${marca.brandChroma ?? 0.15} ${marca.brandHue ?? 222})`}
+            nombreDelAgente={marca.agentName || ""}
+            deshabilitado={deshabilitado}
+          />
         </fieldset>
       )}
 

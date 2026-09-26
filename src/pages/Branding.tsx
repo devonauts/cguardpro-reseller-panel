@@ -27,7 +27,7 @@ function hayCambios(borrador: Marca | null, publicado: Marca | null): boolean {
     "logoFileId", "faviconFileId", "emailLogoFileId",
     // The assistant is published with the brand: editing only it must still
     // light up Publish.
-    "agentName", "agentTone", "agentGreeting", "agentAvatarFileId",
+    "agentName", "agentTone", "agentShape", "agentGreeting", "agentAvatarFileId",
   ];
   return campos.some((c) => (borrador[c] ?? null) !== (publicado[c] ?? null));
 }
@@ -197,7 +197,7 @@ export function Branding() {
                 <BrandingForm
                   marca={borrador}
                   onCambio={cambiar}
-                  campos={["agentName", "agentTone", "agentGreeting"]}
+                  campos={["agentName", "agentShape", "agentTone", "agentGreeting"]}
                   ranuras={["agentAvatar"]}
                   onImagenSubida={setBorrador}
                   deshabilitado={publicando}

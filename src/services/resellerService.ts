@@ -105,6 +105,8 @@ export interface Marca {
   supportPhone: string | null;
   agentName: string | null;
   agentTone: string | null;
+  /** The assistant's silhouette (`lib/formasDelAgente`); null = the orb. */
+  agentShape?: string | null;
   agentGreeting: string | null;
   agentAvatarFileId: string | null;
   logoFileId: string | null;
@@ -176,6 +178,7 @@ export interface MarcaEditable {
   supportPhone?: string | null;
   agentName?: string | null;
   agentTone?: string | null;
+  agentShape?: string | null;
   agentGreeting?: string | null;
 }
 
