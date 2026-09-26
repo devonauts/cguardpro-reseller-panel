@@ -110,6 +110,8 @@ export interface Marca {
   agentTone: string | null;
   /** The assistant's silhouette (`lib/formasDelAgente`); null = the orb. */
   agentShape?: string | null;
+  /** Icon drawn inside the shape (`lib/formasDelAgente`); null = initials. */
+  agentIcon?: string | null;
   agentGreeting: string | null;
   agentAvatarFileId: string | null;
   logoFileId: string | null;
@@ -182,6 +184,7 @@ export interface MarcaEditable {
   agentName?: string | null;
   agentTone?: string | null;
   agentShape?: string | null;
+  agentIcon?: string | null;
   agentGreeting?: string | null;
 }
 

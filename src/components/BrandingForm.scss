@@ -246,3 +246,4 @@
 }
 .forma__opcion--activa { background: var(--glass-interactive); }
 .forma__opcion--elegida { border-color: var(--brand); color: var(--ink); }
+.forma__lista--iconos { grid-template-columns: repeat(4, 1fr); }

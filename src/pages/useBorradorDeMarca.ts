@@ -9,7 +9,7 @@ export const CAMPOS_DE_MARCA: Array<keyof Marca> = [
   "logoFileId", "logoDarkFileId", "faviconFileId", "emailLogoFileId",
 ];
 export const CAMPOS_DEL_ASISTENTE: Array<keyof Marca> = [
-  "agentName", "agentTone", "agentShape", "agentGreeting", "agentAvatarFileId",
+  "agentName", "agentTone", "agentShape", "agentIcon", "agentGreeting", "agentAvatarFileId",
 ];
 
 /** Do draft and published differ in any of these fields? */
