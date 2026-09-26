@@ -132,3 +132,45 @@ background: var(--glass-elevated);
   li { display: flex; align-items: flex-start; gap: var(--s-2); }
   svg { flex: none; margin-top: 2px; color: var(--ok); }
 }
+
+/* ── «Pago recibido»: el sello verde ─────────────────────────────────────── */
+.pagado__cabecera { display: flex; flex-direction: column; align-items: flex-start; }
+
+.pagado__sello {
+  display: inline-grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: var(--s-3);
+  border-radius: 50%;
+  background: var(--ok-soft);
+  box-shadow: 0 0 0 1px var(--ok-line), 0 0 0 10px var(--ok-halo);
+
+  svg { display: block; }
+}
+
+.pagado__aro {
+  fill: var(--ok);
+  stroke: none;
+  transform-origin: 50% 50%;
+  animation: pagado-aro 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+.pagado__visto {
+  fill: none;
+  stroke: var(--ok-ink);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: pagado-visto 360ms 300ms ease-out forwards;
+}
+
+@keyframes pagado-aro { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes pagado-visto { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pagado__aro { animation: none; }
+  .pagado__visto { animation: none; stroke-dashoffset: 0; }
+}

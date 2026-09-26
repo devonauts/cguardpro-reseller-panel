@@ -174,6 +174,10 @@
   --warn-line: oklch(0.78 0.14 80 / 0.32);
   --danger-line: oklch(0.68 0.19 25 / 0.32);
   --danger-hover: oklch(0.68 0.19 25 / 0.24);
+  /* El sello de «pago recibido»: el halo que lo rodea y la tinta del visto
+     que se dibuja SOBRE el verde (ver onboarding/Wizard.scss). */
+  --ok-halo: oklch(0.72 0.15 155 / 0.06);
+  --ok-ink: oklch(0.99 0 0);
 
   /* ── El oro ──────────────────────────────────────────────────────────────
      El dorado de C-Guard Pro (#C8860A), subido de luminosidad para que sobre

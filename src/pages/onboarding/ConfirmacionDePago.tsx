@@ -27,7 +27,15 @@ export function ConfirmacionDePago({ pago, pagadoEn, onContinuar }: {
 
   return (
     <>
-      <header className="alta__cabecera">
+      <header className="alta__cabecera pagado__cabecera">
+        {/* El sello verde: lo primero que se ve es que salió bien. El trazo se
+            dibuja al entrar (ver Wizard.scss); con movimiento reducido, quieto. */}
+        <span className="pagado__sello" aria-hidden="true">
+          <svg viewBox="0 0 52 52" width="64" height="64">
+            <circle className="pagado__aro" cx="26" cy="26" r="24" />
+            <path className="pagado__visto" d="M15 27.5l7.5 7.5L37.5 19" />
+          </svg>
+        </span>
         <p className="alta__contador">{t("pagado.rotulo")}</p>
         <h1 className="alta__titulo">{t("pagado.titulo")}</h1>
       </header>
