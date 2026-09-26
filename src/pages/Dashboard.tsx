@@ -1,3 +1,4 @@
+import { CoverageMap } from "@/components/cobertura/CoverageMap";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -265,6 +266,9 @@ export function Dashboard() {
 
           {/* La puerta del negocio, arriba: por aquí entran sus clientes. */}
           <EnlaceParaClientes />
+
+          {/* Where it sells and where its companies are. */}
+          <CoverageMap />
 
           <div className="tablero__dos">
             <Panel

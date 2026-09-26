@@ -1,3 +1,4 @@
+import type { MultiPolygon, Polygon } from "geojson";
 import { del, descargarArchivo, enviarFormulario, get, patch, post, put, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
@@ -1281,4 +1282,41 @@ export const appsService = {
   ordenarArtes: (app: AppDelSocio, ranura: string, ids: string[]) =>
     put<EstadoDeApps>(`/reseller/apps/${app}/assets/${ranura}/order`, { ids }),
   pedirPublicacion: (app: AppDelSocio) => post<EstadoDeApps>(`/reseller/apps/${app}/submit`, {}),
+};
+
+
+/* ── Coverage map ─────────────────────────────────────────────────────────── */
+
+export interface AreaDeCobertura {
+  id: string;
+  /** As written in the application: «Medellín». */
+  name: string;
+  /** As OSM names it: «Medellín, Antioquia, Colombia». */
+  label: string | null;
+  countryCode: string | null;
+  source: "application" | "superadmin" | string;
+  /** ok = real outline · not_found = the map server does not know it yet · pending. */
+  status: "ok" | "not_found" | "pending" | string;
+  center: { lat: number; lng: number } | null;
+  geojson: Polygon | MultiPolygon | null;
+}
+
+export interface PinDeEmpresa {
+  id: string;
+  name: string;
+  city: string | null;
+  location: { lat: number; lng: number } | null;
+  /** true inside an outline · false outside all · null unknown (no location or no outlines). */
+  inside: boolean | null;
+  areaId: string | null;
+}
+
+export interface MapaDeCobertura {
+  areas: AreaDeCobertura[];
+  companies: PinDeEmpresa[];
+  totals: { companies: number; located: number; outside: number; unlocated: number };
+}
+
+export const coverageService = {
+  leer: () => get<MapaDeCobertura>("/reseller/coverage-map"),
 };
