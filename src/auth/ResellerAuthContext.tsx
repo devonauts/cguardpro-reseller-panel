@@ -7,6 +7,7 @@ import {
 import { resellerService, type ResellerMe } from "@/services/resellerService";
 import { aplicarMarca, limpiarMarca } from "@/branding/marcaDelSocio";
 import { t } from "@/i18n/idioma";
+import { fijarZonaDeLaPlataforma } from "@/lib/horaDeLaPlataforma";
 
 /**
  * La sesión del panel.
@@ -60,6 +61,8 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
          efecto de la pantalla para que no haya un fotograma con el título
          neutro ya pintado. */
       aplicarMarca(me?.branding ?? null);
+      // Y la hora: toda fecha del panel va en la de la plataforma, como los correos.
+      fijarZonaDeLaPlataforma(me?.platformTimezone);
       setEstado({ cargando: false, me, motivo: null, mensaje: null });
       return null;
     } catch (e: any) {

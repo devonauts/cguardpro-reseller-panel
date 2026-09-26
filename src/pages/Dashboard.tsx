@@ -22,6 +22,7 @@ import {
   type Cupo, type DominioDelSocio, type Empresa, type Marca, type ResellerDashboard,
 } from "@/services/resellerService";
 import "./Dashboard.scss";
+import { anioYMes, zonaDeLaPlataforma } from "@/lib/horaDeLaPlataforma";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
@@ -159,22 +160,25 @@ export function Dashboard() {
     );
   }
 
-  const altaDeEsteMes = (() => {
-    const ahora = new Date();
-    return empresas.filter((e) => {
-      const d = e.createdAt ? new Date(e.createdAt) : null;
-      return d && !Number.isNaN(d.getTime())
-        && d.getMonth() === ahora.getMonth() && d.getFullYear() === ahora.getFullYear();
-    }).length;
-  })();
+  /* El mes de cada alta, en la hora de la plataforma: el mismo mes que dicen
+     las facturas (ver lib/horaDeLaPlataforma). */
+  const ahora = anioYMes(new Date());
+  const mesDe = (v: string | null | undefined) => {
+    const d = v ? new Date(v) : null;
+    return d && !Number.isNaN(d.getTime()) ? anioYMes(d) : null;
+  };
+  const altaDeEsteMes = empresas.filter((e) => {
+    const m = mesDe(e.createdAt);
+    return m && m.mes === ahora.mes && m.anio === ahora.anio;
+  }).length;
 
   /* Doce meses del año en curso, contados sobre las fechas de alta reales. */
-  const anio = new Date().getFullYear();
+  const anio = ahora.anio;
   const serie = MESES.map((clave, i) => ({
     etiqueta: t(clave),
     valor: empresas.filter((e) => {
-      const d = e.createdAt ? new Date(e.createdAt) : null;
-      return d && !Number.isNaN(d.getTime()) && d.getFullYear() === anio && d.getMonth() === i;
+      const m = mesDe(e.createdAt);
+      return m && m.anio === anio && m.mes === i + 1;
     }).length,
   }));
 
@@ -524,6 +528,7 @@ function Cabecera({ saludo }: { saludo: string }) {
   const t = useT();
   const hoy = new Date().toLocaleDateString(etiquetaIntl(), {
     weekday: "long", year: "numeric", month: "short", day: "numeric",
+    timeZone: zonaDeLaPlataforma(),
   });
 
   return (

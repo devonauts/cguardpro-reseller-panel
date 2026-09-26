@@ -24,6 +24,7 @@
  */
 
 import { etiquetaIntl, t } from "@/i18n/idioma";
+import { abreviaturaDeLaPlataforma, zonaDeLaPlataforma, zonaPara } from "@/lib/horaDeLaPlataforma";
 
 /**
  * El separador de miles y el decimal DEL IDIOMA ELEGIDO.
@@ -83,12 +84,16 @@ export function dinero(cents: number | null | undefined, moneda = "USD"): string
   return `${negativo ? "−" : ""}${simbolo}${conMiles}${decimal}${centavos} ${moneda}`;
 }
 
-/** Una fecha ISO (o `AAAA-MM-DD`) → texto local. `—` si no hay o no vale. */
+/** Una fecha ISO (o `AAAA-MM-DD`) → texto en la hora de la PLATAFORMA (Texas),
+ *  la misma de los correos. Un día civil `AAAA-MM-DD` no se mueve. Ver
+ *  lib/horaDeLaPlataforma. `—` si no hay o no vale. */
 export function fecha(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(etiquetaIntl(), { year: "numeric", month: "long", day: "numeric" });
+  return d.toLocaleDateString(etiquetaIntl(), {
+    year: "numeric", month: "long", day: "numeric", timeZone: zonaPara(iso),
+  });
 }
 
 /** La misma fecha, corta: la que cabe en una fila de tabla. */
@@ -96,18 +101,25 @@ export function fechaCorta(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString(etiquetaIntl(), { year: "numeric", month: "short", day: "numeric" });
+  return d.toLocaleDateString(etiquetaIntl(), {
+    year: "numeric", month: "short", day: "numeric", timeZone: zonaPara(iso),
+  });
 }
 
-/** Fecha y hora, para el registro de actividad. */
+/** Fecha y hora, para el registro de actividad: en la hora de la plataforma
+ *  y con su abreviatura (CDT/CST), para que nadie la lea como la suya. */
 export function fechaYHora(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleString(etiquetaIntl(), {
+  const texto = d.toLocaleString(etiquetaIntl(), {
     year: "numeric", month: "short", day: "numeric",
     hour: "2-digit", minute: "2-digit",
+    timeZone: zonaDeLaPlataforma(),
   });
+  // La abreviatura en inglés (CDT/CST), la misma que llevan los correos: en
+  // español el navegador escribiría «GMT-5».
+  return `${texto} ${abreviaturaDeLaPlataforma(d)}`;
 }
 
 /**

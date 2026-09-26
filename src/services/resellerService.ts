@@ -36,6 +36,9 @@ export interface ResellerMe {
    * primer fotograma con la identidad equivocada.
    */
   branding?: MarcaParaPintar | null;
+  /** La zona en la que se escriben las fechas: la de la plataforma (Texas).
+   *  Ver lib/horaDeLaPlataforma. */
+  platformTimezone?: string;
 }
 
 export interface ResellerDashboard {
