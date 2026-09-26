@@ -27,13 +27,6 @@ import { etiquetaIntl, t } from "@/i18n/idioma";
 import { abreviaturaDeLaPlataforma, zonaDeLaPlataforma, zonaPara } from "@/lib/horaDeLaPlataforma";
 
 /**
- * El separador de miles y el decimal DEL IDIOMA ELEGIDO.
- *
- * Antes se usaba el del navegador. Eso daba una pantalla en inglés con los
- * importes escritos a la española —«1.234,56»— en cuanto el portátil estaba en
- * castellano, que es exactamente la mezcla que este panel no debe tener.
- */
-/**
  * US dollars are written the way they are in the United States — «$1,500.00
  * USD» — whatever language the panel is in. Partners pay CGP in dollars; a
  * Spanish screen writing «1.500» made a registration look like one and a half
@@ -43,10 +36,28 @@ function esDolar(moneda: string): boolean {
   return String(moneda || "").toUpperCase() === "USD";
 }
 
-function separadores(moneda = ""): { miles: string; decimal: string } {
-  if (esDolar(moneda)) return { miles: ",", decimal: "." };
+/**
+ * The country each currency is written in. Punctuation follows the CURRENCY,
+ * not the panel's language: an Argentine partner reads «$ 1.500,00», a Mexican
+ * one «$1,500.00», whatever language the screen is in. Writing ARS the Mexican
+ * way turns one thousand five hundred pesos into one and a half. Same table as
+ * the server's (lib/money LOCALE_OF_CURRENCY), so emails and screens agree.
+ */
+export const LOCALE_DE_MONEDA: Record<string, string> = {
+  USD: "en-US", MXN: "es-MX", PEN: "es-PE", ARS: "es-AR", PAB: "es-PA",
+  COP: "es-CO", CLP: "es-CL", GTQ: "es-GT", CRC: "es-CR", DOP: "es-DO", BRL: "pt-BR",
+};
+
+function localeDe(moneda: string): string {
+  return LOCALE_DE_MONEDA[String(moneda || "").toUpperCase()] ?? etiquetaIntl();
+}
+
+/** Intl pone espacios duros; se cambian por normales para que corten igual en todas partes. */
+const espacios = (s: string) => s.replace(/[\u00a0\u202f]/g, " ");
+
+export function separadores(moneda = ""): { miles: string; decimal: string } {
   try {
-    const partes = new Intl.NumberFormat(etiquetaIntl()).formatToParts(1234.5);
+    const partes = new Intl.NumberFormat(localeDe(moneda)).formatToParts(1234.5);
     return {
       miles: partes.find((p) => p.type === "group")?.value ?? ",",
       decimal: partes.find((p) => p.type === "decimal")?.value ?? ".",
@@ -156,21 +167,19 @@ export function precio(
   const n = Number(cents);
   if (!Number.isFinite(n)) return "—";
   const entero = Math.trunc(n) % 100 === 0;
-  if (esDolar(moneda)) {
-    const us = new Intl.NumberFormat("en-US", {
-      style: "currency", currency: "USD", currencyDisplay: "narrowSymbol",
-      minimumFractionDigits: entero ? 0 : 2, maximumFractionDigits: entero ? 0 : 2,
-    }).format(n / 100);
-    return `${us} USD`;
-  }
+  const codigo = String(moneda || "USD").toUpperCase();
+  void conCodigo; // the code now always goes after the amount (see below)
   try {
-    return new Intl.NumberFormat(etiquetaIntl(), {
+    /* Symbol AND code, always: «$» alone is a dollar, a Mexican peso and an
+       Argentine peso at once. «$1,500 USD», «$1,500 MXN», «$ 1.500 ARS». */
+    const texto = new Intl.NumberFormat(localeDe(codigo), {
       style: "currency",
-      currency: moneda,
-      currencyDisplay: conCodigo ? "code" : "narrowSymbol",
+      currency: codigo,
+      currencyDisplay: "narrowSymbol",
       minimumFractionDigits: entero ? 0 : 2,
       maximumFractionDigits: entero ? 0 : 2,
     }).format(n / 100);
+    return espacios(`${texto} ${codigo}`);
   } catch {
     return dinero(n, moneda);
   }

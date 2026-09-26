@@ -1,0 +1,13 @@
+/* The brand colours are the gateways', not ours: they arrive inline from
+   LogoDePasarela.tsx and stay out of tokens.css on purpose. */
+.logo-pasarela {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  box-shadow: var(--shadow-sm);
+}
+
+.logo-pasarela__inicial {
+  font-weight: 700;
+  line-height: 1;
+}

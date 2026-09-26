@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { Boton, Campo, Confirmar, EstadoDeDatos, Icono, Pildora, type Tono } from "@/components/cristal";
-import { fechaCorta, precio } from "@/lib/dinero";
+import { fechaCorta, LOCALE_DE_MONEDA, precio, separadores } from "@/lib/dinero";
+import { aCentavos } from "@/lib/importeEscrito";
+import { LogoDePasarela, marcaDePasarela, nombresDePaises } from "@/components/cobros/LogoDePasarela";
 import {
   cobroAEmpresasService, type CobroAEmpresas, type EmpresaCobrada, type PasarelaDelCatalogo,
   type PreciosAEmpresas,
@@ -35,18 +37,23 @@ const ESTADO: Record<string, { tono: Tono; texto: Clave }> = {
   exempt: { tono: "neutro", texto: "cobros.estadoExenta" },
 };
 
-const PAISES: Record<string, string> = {
-  US: "🇺🇸", MX: "🇲🇽", PE: "🇵🇪", EC: "🇪🇨", PA: "🇵🇦", AR: "🇦🇷",
-};
-
-/** «12.50» → 1250. Vacío → null. */
-function aCentavos(v: string): number | null {
-  const s = String(v ?? "").trim().replace(",", ".");
-  if (!s) return null;
-  const n = Math.round(Number(s) * 100);
-  return Number.isFinite(n) && n >= 0 ? n : NaN;
+/** Cents → the text of an input, with the decimal mark of THAT currency («12,50» in ARS). */
+function aTexto(c: number | null | undefined, moneda = "USD"): string {
+  if (c == null) return "";
+  const abs = Math.abs(Math.trunc(c));
+  return `${c < 0 ? "-" : ""}${Math.floor(abs / 100)}${separadores(moneda).decimal}${String(abs % 100).padStart(2, "0")}`;
 }
-const aTexto = (c: number | null | undefined) => (c == null ? "" : (c / 100).toFixed(2));
+
+/** A plain number in the currency's own punctuation (for exchange rates). */
+function numeroEn(moneda: string, n: number, decimales: number): string {
+  try {
+    return new Intl.NumberFormat(LOCALE_DE_MONEDA[moneda] ?? "en-US", {
+      minimumFractionDigits: decimales, maximumFractionDigits: decimales,
+    }).format(n);
+  } catch {
+    return n.toFixed(decimales);
+  }
+}
 
 export function CobrosAEmpresas() {
   const t = useT();
@@ -175,6 +182,28 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
     }
   };
 
+  const marcaElegida = eligiendo ? marcaDePasarela(eligiendo.provider) : null;
+  /* What the pasted keys say about themselves, before anything is sent: a
+     live key pasted while testing, or a secret key in the publishable box, is
+     caught here instead of after a failed verification. */
+  const problemaDe = (clave: string): string | null => {
+    const v = (valores[clave] ?? "").trim();
+    const prefijos = marcaElegida?.prefijos?.[clave];
+    if (!v || !prefijos || prefijos.some((x) => v.startsWith(x))) return null;
+    return t("cobros.claveNoCoincide", { p: prefijos.map((x) => `${x}…`).join(" / ") });
+  };
+  const modoDeLasClaves = (() => {
+    const pre = marcaElegida?.prefijoDePrueba;
+    const escritas = Object.values(valores).map((v) => v.trim()).filter(Boolean);
+    if (!pre || !escritas.length) return null;
+    return escritas.some((v) => v.includes(pre)) ? "test" : "live";
+  })();
+  const hayProblemas = !!eligiendo?.fields.some((f) => problemaDe(f.clave));
+  const marcaConectada = gw ? marcaDePasarela(gw.provider) : null;
+  const enlacePanel = gw && marcaConectada
+    ? (gw.mode !== "live" && marcaConectada.panelDePrueba) || marcaConectada.panel
+    : undefined;
+
   return (
     <section className="bloque" aria-labelledby="cobros-pasarela">
       <header className="bloque__cabecera">
@@ -184,32 +213,41 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
 
       {gw && !eligiendo && (
         <div className="cobros-pasarela">
-          <span className="cobros-pasarela__icono"><Icono nombre="tarjeta" tamano={20} /></span>
+          <LogoDePasarela provider={gw.provider} nombre={gw.name} tamano={44} />
           <span className="cobros-pasarela__datos">
-            <strong>{gw.name}</strong>
+            <span className="cobros-pasarela__nombre">
+              <strong>{gw.name}</strong>
+              <Pildora tono={gw.status === "connected" ? "ok" : gw.status === "pending" ? "aviso" : "peligro"}>
+                {t(gw.status === "connected" ? "cobros.conectada" : gw.status === "pending" ? "cobros.pendienteVerificar" : "cobros.conError")}
+              </Pildora>
+              <Pildora tono={gw.mode === "live" ? "ok" : "aviso"}>
+                {t(gw.mode === "live" ? "cobros.modoReal" : "cobros.modoPrueba")}
+              </Pildora>
+            </span>
             <span>{gw.accountLabel ?? "—"}</span>
           </span>
-          <Pildora tono={gw.status === "connected" ? "ok" : gw.status === "pending" ? "aviso" : "peligro"}>
-            {t(gw.status === "connected" ? "cobros.conectada" : gw.status === "pending" ? "cobros.pendienteVerificar" : "cobros.conError")}
-          </Pildora>
-          <Pildora tono={gw.mode === "live" ? "ok" : "aviso"}>
-            {t(gw.mode === "live" ? "cobros.modoReal" : "cobros.modoPrueba")}
-          </Pildora>
-          {gestiona && (
-            <span className="cobros-pasarela__acciones">
-              <Boton variante="suave" onClick={() => setEligiendo(datos.catalog.find((c) => c.provider === gw.provider) ?? null)}>
-                {t("cobros.cambiarClaves")}
-              </Boton>
-              <Confirmar
-                variante="fantasma"
-                disabled={enviando}
-                pregunta={t("cobros.desconectarPregunta")}
-                onConfirmar={desconectar}
-              >
-                {t("cobros.desconectar")}
-              </Confirmar>
-            </span>
-          )}
+          <span className="cobros-pasarela__acciones">
+            {enlacePanel && (
+              <a className="btn btn--suave" href={enlacePanel} target="_blank" rel="noopener noreferrer">
+                {t("cobros.abrirPanel", { n: gw.name })} <span aria-hidden="true">↗</span>
+              </a>
+            )}
+            {gestiona && (
+              <>
+                <Boton variante="suave" onClick={() => setEligiendo(datos.catalog.find((c) => c.provider === gw.provider) ?? null)}>
+                  {t("cobros.cambiarClaves")}
+                </Boton>
+                <Confirmar
+                  variante="fantasma"
+                  disabled={enviando}
+                  pregunta={t("cobros.desconectarPregunta")}
+                  onConfirmar={desconectar}
+                >
+                  {t("cobros.desconectar")}
+                </Confirmar>
+              </>
+            )}
+          </span>
         </div>
       )}
       {gw && gw.status !== "connected" && gw.lastError && !eligiendo && (
@@ -224,12 +262,24 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
             <button
               key={c.provider}
               type="button"
+              aria-pressed={eligiendo?.provider === c.provider}
               className={`cobros-opcion${eligiendo?.provider === c.provider ? " cobros-opcion--elegida" : ""}`}
               disabled={!gestiona}
               onClick={() => { setEligiendo(c); setValores({}); setError(null); }}
             >
-              <strong>{c.name}</strong>
-              <span className="cobros-opcion__paises">{c.countries.map((p) => PAISES[p] ?? p).join(" ")}</span>
+              <LogoDePasarela provider={c.provider} nombre={c.name} />
+              <span className="cobros-opcion__texto">
+                <strong>{c.name}</strong>
+                <span>{tOr(`cobros.pasarelaDesc.${c.provider}`, "")}</span>
+                {c.countries.length > 0 && (
+                  <span className="cobros-opcion__paises">
+                    {t("cobros.disponibleEn", { l: nombresDePaises(c.countries) })}
+                  </span>
+                )}
+              </span>
+              {eligiendo?.provider === c.provider && (
+                <span className="cobros-opcion__visto" aria-hidden="true"><Icono nombre="visto" tamano={16} /></span>
+              )}
             </button>
           ))}
         </div>
@@ -237,6 +287,22 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
 
       {eligiendo && (
         <div className="cobros-formulario">
+          <div className="cobros-formulario__cabecera">
+            <LogoDePasarela provider={eligiendo.provider} nombre={eligiendo.name} tamano={32} />
+            <strong>{t("cobros.conectaTu", { n: eligiendo.name })}</strong>
+          </div>
+          {marcaElegida?.claves && (
+            <ol className="cobros-pasos">
+              <li>
+                {t("cobros.paso1", { n: eligiendo.name })}{" "}
+                <a href={marcaElegida.claves} target="_blank" rel="noopener noreferrer">
+                  {t("cobros.paso1Enlace")} <span aria-hidden="true">↗</span>
+                </a>
+              </li>
+              <li>{t("cobros.paso2")}</li>
+              <li>{t("cobros.paso3")}</li>
+            </ol>
+          )}
           {eligiendo.fields.map((f) => (
             <Campo
               key={f.clave}
@@ -244,18 +310,27 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
               type={f.secreto ? "password" : "text"}
               revelable={f.secreto}
               autoComplete="off"
+              spellCheck={false}
               value={valores[f.clave] ?? ""}
+              error={problemaDe(f.clave)}
               onChange={(e) => setValores((v) => ({ ...v, [f.clave]: e.target.value }))}
             />
           ))}
-          <p className="bloque__nota">{t("cobros.clavesNota")}</p>
+          {modoDeLasClaves && (
+            <p className={modoDeLasClaves === "test" ? "cobros__alerta" : "cobros__aviso"}>
+              {t(modoDeLasClaves === "test" ? "cobros.clavesDePrueba" : "cobros.clavesReales")}
+            </p>
+          )}
+          <p className="bloque__nota cobros__cifradas">
+            <Icono nombre="candado" tamano={14} /> {t("cobros.clavesNota")}
+          </p>
           {/* Saved cards belong to the gateway ACCOUNT: another account cannot
               charge them. Said before they swap keys, not after the failures. */}
           {gw && <p className="cobros__alerta">{t("cobros.otraCuentaAviso")}</p>}
           {error && <p role="alert" className="cobros__error">{error}</p>}
           <div className="cobros-formulario__botones">
             <Boton variante="fantasma" onClick={() => setEligiendo(null)} disabled={enviando}>{t("comun.cancelar")}</Boton>
-            <Boton onClick={conectar} cargando={enviando}>{t("cobros.conectar")}</Boton>
+            <Boton onClick={conectar} cargando={enviando} disabled={hayProblemas}>{t("cobros.conectar")}</Boton>
           </div>
         </div>
       )}
@@ -279,9 +354,9 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const monedas = datos.currencies?.length ? datos.currencies : [min.currency];
   const [f, setF] = useState(() => ({
     currency: p?.currency ?? min.currency,
-    perUser: aTexto(p?.perUserCents ?? min.perUserCents),
-    monthly: aTexto(p?.monthlyFeeCents ?? min.monthlyFeeCents),
-    setup: aTexto(p?.setupFeeCents ?? 0),
+    perUser: aTexto(p?.perUserCents ?? min.perUserCents, p?.currency ?? min.currency),
+    monthly: aTexto(p?.monthlyFeeCents ?? min.monthlyFeeCents, p?.currency ?? min.currency),
+    setup: aTexto(p?.setupFeeCents ?? 0, p?.currency ?? min.currency),
     trialDays: String(p?.trialDays ?? 14),
     graceDays: String(p?.graceDays ?? 7),
   }));
@@ -327,7 +402,7 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
       graceDays,
     };
     if ([cuerpo.perUserCents, cuerpo.monthlyFeeCents, cuerpo.setupFeeCents].some((n) => Number.isNaN(n))) {
-      setError(t("cobros.importeNoValido"));
+      setError(t("cobros.importeNoValido", { e: aTexto(150050, f.currency) }));
       return;
     }
     setEnviando(true);
@@ -384,7 +459,7 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
           )}
           {otraMoneda && (
             <span className="cobros-moneda__tasa">
-              {tasa ? t("cobros.tasa", { b: base, x: tasa.toFixed(tasa >= 100 ? 0 : 2), m: f.currency }) : t("cobros.sinTasa")}
+              {tasa ? t("cobros.tasa", { b: base, x: numeroEn(f.currency, tasa, tasa >= 100 ? 0 : 2), m: f.currency }) : t("cobros.sinTasa")}
             </span>
           )}
         </label>
@@ -513,10 +588,11 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
 }) {
   const t = useT();
   const o = empresa.override;
+  const monedaAjuste = datos.pricing?.currency ?? datos.minimums.currency;
   const [f, setF] = useState({
-    perUser: aTexto(o?.perUserCents ?? null),
-    monthly: aTexto(o?.monthlyFeeCents ?? null),
-    setup: aTexto(o?.setupFeeCents ?? null),
+    perUser: aTexto(o?.perUserCents ?? null, monedaAjuste),
+    monthly: aTexto(o?.monthlyFeeCents ?? null, monedaAjuste),
+    setup: aTexto(o?.setupFeeCents ?? null, monedaAjuste),
   });
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -532,7 +608,7 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
     /* NaN travels as null in JSON, and null means "remove the override":
        typing "abc" silently wiped this company's special price. */
     if (Object.values(cuerpo).some((n) => n != null && Number.isNaN(n))) {
-      setError(t("cobros.importeNoValido"));
+      setError(t("cobros.importeNoValido", { e: aTexto(150050, monedaAjuste) }));
       return;
     }
     setEnviando(true);
@@ -561,9 +637,9 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
     <div className="cobros-ajuste">
       <p className="bloque__nota">{t("cobros.ajusteNota")}</p>
       <div className="cobros-precios">
-        <Campo etiqueta={t("cobros.porUsuario")} placeholder={aTexto(base?.perUserCents)} {...campo("perUser")} />
-        <Campo etiqueta={t("cobros.cuotaMensual")} placeholder={aTexto(base?.monthlyFeeCents)} {...campo("monthly")} />
-        <Campo etiqueta={t("cobros.cuotaAlta")} placeholder={aTexto(base?.setupFeeCents)} {...campo("setup")} />
+        <Campo etiqueta={t("cobros.porUsuario")} placeholder={aTexto(base?.perUserCents, monedaAjuste)} {...campo("perUser")} />
+        <Campo etiqueta={t("cobros.cuotaMensual")} placeholder={aTexto(base?.monthlyFeeCents, monedaAjuste)} {...campo("monthly")} />
+        <Campo etiqueta={t("cobros.cuotaAlta")} placeholder={aTexto(base?.setupFeeCents, monedaAjuste)} {...campo("setup")} />
       </div>
       {error && <p role="alert" className="cobros__error">{error}</p>}
       {aviso && <p role="status" className="cobros__aviso">{aviso}</p>}
