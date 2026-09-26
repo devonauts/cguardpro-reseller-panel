@@ -15,6 +15,7 @@ import {
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { estadoDeDominio } from "@/lib/estadoDeDominio";
+import { GuiaDns } from "@/components/dominios/GuiaDns";
 import "./Dominios.scss";
 
 /**
@@ -79,6 +80,7 @@ const SECCION: Record<string, Clave> = {
 function Instrucciones({ pasos, dominio }: { pasos: InstruccionDeDns[]; dominio: string }) {
   const t = useT();
   const grupos: Array<{ proposito: string; pasos: InstruccionDeDns[] }> = [];
+  const cname = pasos.find((p) => p.tipo === "CNAME") || null;
   for (const paso of pasos) {
     const ultimo = grupos[grupos.length - 1];
     if (ultimo && ultimo.proposito === paso.proposito) ultimo.pasos.push(paso);
@@ -103,6 +105,13 @@ function Instrucciones({ pasos, dominio }: { pasos: InstruccionDeDns[]; dominio:
           ))}
         </section>
       ))}
+      {cname && (
+        <GuiaDns
+          host={hostRelativo(cname.nombre, dominio)}
+          destino={cname.valor}
+          dominio={dominioRegistrado(dominio)}
+        />
+      )}
       <p className="dns__pie">{t("dominios.dnsPie")}</p>
     </div>
   );

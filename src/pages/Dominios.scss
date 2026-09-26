@@ -241,3 +241,44 @@
   .dns__registro { flex-direction: column; gap: var(--s-2); }
   .dominio__acciones .btn { flex: 1 1 auto; }
 }
+
+/* ── Guía por proveedor ────────────────────────────────────────────────── */
+.guia { margin-top: var(--s-4); }
+.guia__proveedores { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.guia__proveedor {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: .8125rem;
+  cursor: pointer;
+}
+.guia__proveedor:hover { background: var(--glass-interactive); color: var(--ink); }
+.guia__proveedor--activo { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+.guia__cuerpo {
+  margin-top: var(--s-3);
+  padding: var(--s-4);
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+}
+.guia__pasos { margin: 0; padding-left: 1.25rem; line-height: 1.7; font-size: .875rem; }
+.guia__pasos li + li { margin-top: 4px; }
+.guia__valor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: .8125rem;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--glass-interactive);
+  word-break: break-all;
+}
+.guia__ojo {
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  border-radius: 10px;
+  background: var(--warn-soft); border: 1px solid var(--warn-line);
+  font-size: .8125rem;
+  line-height: 1.6;
+}
+.guia__ojo ul { margin: 4px 0 0; padding-left: 1.1rem; }
+.guia__despues { margin: var(--s-3) 0 0; font-size: .8125rem; color: var(--text-secondary); line-height: 1.6; }
