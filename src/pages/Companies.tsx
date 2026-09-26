@@ -137,21 +137,11 @@ export function Companies() {
           las tarjetas sin un milímetro. Con el contenedor, el hueco es el mismo
           haya cupo o no, haya aviso o no. Es el mismo patrón de Facturación. */}
       <div className="empresas">
-        {/* El cupo en UNA línea con su barra: tres tarjetas enormes para tres
-            números que se leen juntos («4 de 10, te quedan 6») pesaban más que
-            la lista, que es a lo que se viene. */}
+        {/* The company cap is enforced but never shown (product decision):
+            only how many companies there are. */}
         {cupo && (
           <div className="empresas__cupo">
-            <span className="empresas__cupo-texto">
-              {cupo.unlimited
-                ? t("empresas.cupoSinLimite", { n: cupo.used })
-                : t("empresas.cupo", { n: cupo.used, max: cupo.max ?? 0, quedan: cupo.remaining ?? 0 })}
-            </span>
-            {!cupo.unlimited && (
-              <span className="empresas__cupo-barra" aria-hidden="true">
-                <span style={{ width: `${Math.min(100, (cupo.used / Math.max(1, cupo.max ?? 1)) * 100)}%` }} />
-              </span>
-            )}
+            <span className="empresas__cupo-texto">{t("empresas.total", { n: cupo.used })}</span>
           </div>
         )}
 

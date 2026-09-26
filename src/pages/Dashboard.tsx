@@ -252,13 +252,8 @@ export function Dashboard() {
               nota={usuarios === null ? t("tablero.sinPeriodo") : t("tablero.usuariosNota")}
               a="/usage"
             />
-            <TarjetaDeMetrica
-              icono="corona"
-              etiqueta={t("tablero.cupo")}
-              valor={!cupo ? "—" : cupo.unlimited ? t("tablero.sinLimite") : (cupo.remaining ?? 0)}
-              nota={cupo ? t("tablero.cupoNota", { n: cupo.used }) : undefined}
-              a="/entitlements"
-            />
+            {/* The company cap is enforced but never shown to the partner
+                (product decision): no "quota" card here. */}
             <TarjetaDeMetrica
               icono="globo"
               etiqueta={t("tablero.dominios")}

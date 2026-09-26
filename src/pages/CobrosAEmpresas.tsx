@@ -12,6 +12,7 @@ import {
 } from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
+import { etiquetaIntl } from "@/i18n/idioma";
 import { tOr } from "@/i18n/idioma";
 import "./CobrosAEmpresas.scss";
 
@@ -42,6 +43,21 @@ function aTexto(c: number | null | undefined, moneda = "USD"): string {
   if (c == null) return "";
   const abs = Math.abs(Math.trunc(c));
   return `${c < 0 ? "-" : ""}${Math.floor(abs / 100)}${separadores(moneda).decimal}${String(abs % 100).padStart(2, "0")}`;
+}
+
+/** The partner's billing currency: its registration country's, from the server. */
+function monedaDe(datos: CobroAEmpresas): string {
+  return datos.currency ?? datos.currencies?.[0] ?? datos.pricing?.currency ?? datos.minimums.currency;
+}
+
+/** «COP» → «peso colombiano», in the panel's language. */
+function nombreDeMoneda(codigo: string): string {
+  try {
+    const n = new Intl.DisplayNames([etiquetaIntl()], { type: "currency" }).of(codigo) ?? codigo;
+    return n.charAt(0).toUpperCase() + n.slice(1);
+  } catch {
+    return codigo;
+  }
 }
 
 /** A plain number in the currency's own punctuation (for exchange rates). */
@@ -80,7 +96,7 @@ export function CobrosAEmpresas() {
 
   useEffect(() => { cargar(); }, [cargar]);
 
-  const moneda = datos?.pricing?.currency ?? datos?.minimums.currency ?? "USD";
+  const moneda = datos ? monedaDe(datos) : "USD";
   const activo = datos?.gateway?.status === "connected" && !!datos?.pricing;
   const enPrueba = activo && datos?.gateway?.mode !== "live";
   /* Invoices in a currency other than today's pricing one are listed apart,
@@ -270,7 +286,9 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
             {gw.events.status === "active"
               ? t("cobros.avisosActivos", { n: gw.name })
               : gw.events.error
-                ? t("cobros.avisosFaltanPorque", { m: gw.events.error })
+                ? gw.events.error === "webhook_permission"
+                  ? t("cobros.avisosPermiso", { n: gw.name })
+                  : t("cobros.avisosFaltanPorque", { m: gw.events.error })
                 : t("cobros.avisosFaltan")}
             {gw.events.status === "active" && gw.events.lastAt && (
               <span className="cobros-avisos__ultimo"> · {t("cobros.avisosUltimo", { f: fechaCorta(gw.events.lastAt) })}</span>
@@ -382,11 +400,15 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const min = datos.minimums;
   const fx = datos.fx;
   const base = fx?.base ?? min.currency;
-  const monedas = datos.currencies?.length ? datos.currencies : [min.currency];
+  /* ONE currency, not a choice: the one of the country the partner registered
+     with (the server decides it; see cobroAEmpresas.MONEDA_POR_PAIS). */
+  const moneda = monedaDe(datos);
+  const tasaDeLaMoneda = moneda === base ? 1 : (fx?.rates?.[moneda] ?? null);
   const [f, setF] = useState(() => ({
-    currency: p?.currency ?? min.currency,
-    perUser: aTexto(p?.perUserCents ?? min.perUserCents, p?.currency ?? min.currency),
-    setup: aTexto(p?.setupFeeCents ?? 0, p?.currency ?? min.currency),
+    currency: moneda,
+    // With no prices yet, the suggestion is the minimum IN THEIR currency.
+    perUser: aTexto(p?.perUserCents ?? (tasaDeLaMoneda ? Math.ceil(min.perUserCents * tasaDeLaMoneda) : null), moneda),
+    setup: aTexto(p?.setupFeeCents ?? 0, moneda),
     trialDays: String(p?.trialDays ?? 14),
     graceDays: String(p?.graceDays ?? 7),
   }));
@@ -473,25 +495,18 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
       )}
 
       <div className="cobros-precios">
-        <label className="cobros-moneda">
+        <div className="cobros-moneda">
           <span className="cobros-moneda__etiqueta">{t("cobros.moneda")}</span>
-          <select
-            className="cobros-moneda__control"
-            value={f.currency}
-            disabled={!gestiona}
-            onChange={(e) => setF((v) => ({ ...v, currency: e.target.value }))}
-          >
-            {monedas.map((m) => <option key={m} value={m}>{m}</option>)}
-          </select>
-          {p && f.currency !== p.currency && datos.companies.some((e) => e.override && Object.values(e.override).some((v) => v != null)) && (
-            <span className="cobros-moneda__tasa" role="alert">{t("cobros.monedaAjustesAviso", { m: p.currency })}</span>
-          )}
+          <span className="cobros-moneda__fija">
+            <strong>{moneda}</strong> · {nombreDeMoneda(moneda)}
+          </span>
+          <span className="cobros-moneda__tasa">{t("cobros.monedaDelRegistro")}</span>
           {otraMoneda && (
             <span className="cobros-moneda__tasa">
               {tasa ? t("cobros.tasa", { b: base, x: numeroEn(f.currency, tasa, tasa >= 100 ? 0 : 2), m: f.currency }) : t("cobros.sinTasa")}
             </span>
           )}
-        </label>
+        </div>
         <Campo etiqueta={t("cobros.porUsuario")} inputMode="decimal" {...campo("perUser")}
           ayuda={ayudaMinimo(minPorUsuario, min.perUserCents) + equivalente(porUsuario)} />
         <Campo etiqueta={t("cobros.cuotaAlta")} inputMode="decimal" {...campo("setup")}
@@ -609,7 +624,7 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
 }) {
   const t = useT();
   const o = empresa.override;
-  const monedaAjuste = datos.pricing?.currency ?? datos.minimums.currency;
+  const monedaAjuste = monedaDe(datos);
   const [f, setF] = useState({
     perUser: aTexto(o?.perUserCents ?? null, monedaAjuste),
     setup: aTexto(o?.setupFeeCents ?? null, monedaAjuste),

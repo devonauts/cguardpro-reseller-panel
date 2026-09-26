@@ -72,14 +72,7 @@ export function Derechos() {
                 etiqueta={t("derechos.empresasAlta")}
                 valor={String(d.quota.used)}
               />
-              <Cifra
-                etiqueta={t("derechos.limiteEmpresas")}
-                valor={d.quota.unlimited ? t("comun.sinLimite") : String(d.quota.max ?? "—")}
-              />
-              <Cifra
-                etiqueta={t("derechos.teQuedan")}
-                valor={d.quota.unlimited ? "—" : String(d.quota.remaining ?? 0)}
-              />
+              {/* The company cap is enforced but not shown (product decision). */}
             </div>
 
             <Tarjeta>

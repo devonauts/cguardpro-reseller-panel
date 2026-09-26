@@ -241,3 +241,15 @@
 .cuadre__total strong { color: var(--ok) !important; font-size: 15px; }
 .cuadre__total--negativo strong { color: var(--danger) !important; }
 .cuadre__nota { font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+
+.cobros-moneda__fija {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--s-3);
+  border: 1px dashed var(--line);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  color: var(--text-secondary);
+  strong { color: var(--text-primary); margin-right: 4px; }
+}

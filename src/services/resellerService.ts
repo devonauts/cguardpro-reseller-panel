@@ -1065,6 +1065,8 @@ export interface EmpresaCobrada {
 
 export interface CobroAEmpresas {
   /** Las monedas en que puede cobrar a sus empresas. */
+  /** The ONE currency the partner charges in: its registration country's. */
+  currency?: string;
   currencies?: string[];
   /** Tipos de cambio: 1 unidad de `base` (la del contrato) = `rates[X]` de X. */
   fx?: { base: string; rates: Record<string, number | null>; updatedAt: string | null; source: string };

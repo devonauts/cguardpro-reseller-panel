@@ -46,6 +46,7 @@ function esDolar(moneda: string): boolean {
 export const LOCALE_DE_MONEDA: Record<string, string> = {
   USD: "en-US", MXN: "es-MX", PEN: "es-PE", ARS: "es-AR", PAB: "es-PA",
   COP: "es-CO", CLP: "es-CL", GTQ: "es-GT", CRC: "es-CR", DOP: "es-DO", BRL: "pt-BR",
+  BOB: "es-BO", UYU: "es-UY", HNL: "es-HN", NIO: "es-NI", CAD: "en-CA", EUR: "es-ES",
 };
 
 function localeDe(moneda: string): string {
