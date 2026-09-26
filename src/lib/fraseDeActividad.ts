@@ -119,6 +119,9 @@ export const FRASES: Record<string, [Clave, Constructor?]> = {
   "team.deactivate": ["frase.teamDeactivate"],
   "team.reinvite": ["frase.teamReinvite"],
 
+  // Soporte
+  "reseller.support.ticket.create": ["frase.supportTicketCreate"],
+
   // Dominios
   "custom_domain.created": ["frase.domainCreatedNombre", dominio],
   "custom_domain.verification_requested": ["frase.domainVerifyRequestedNombre", dominio],

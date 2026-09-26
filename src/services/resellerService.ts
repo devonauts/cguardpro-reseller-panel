@@ -563,6 +563,43 @@ export const activacionService = {
     post<PagoDeFactura>("/reseller/billing/activation/pay/confirm", { cargo: paymentIntentId }),
 };
 
+/* ══════════════════════════════════════════════════════════════════════════
+   SOPORTE — los tickets que el socio abre a la plataforma
+   ══════════════════════════════════════════════════════════════════════════ */
+
+export type CategoriaDeTicket = "problema" | "pregunta" | "sugerencia" | "facturacion" | "otro";
+export type PrioridadDeTicket = "baja" | "normal" | "alta";
+
+export interface TicketDeSoporte {
+  id: string;
+  subject: string;
+  message: string;
+  category: CategoriaDeTicket;
+  priority: PrioridadDeTicket;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  /** La respuesta de la plataforma, si ya la hay. */
+  reply: string | null;
+  tenant: { id: string; name: string | null } | null;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface TicketNuevo {
+  subject: string;
+  message: string;
+  category: CategoriaDeTicket;
+  priority: PrioridadDeTicket;
+  /** Si el problema es con una empresa cliente: tiene que ser del socio. */
+  tenantId?: string;
+  pageUrl?: string;
+}
+
+export const soporteService = {
+  lista: () => get<{ rows: TicketDeSoporte[] }>("/reseller/support/tickets"),
+  crear: (datos: TicketNuevo) => post<TicketDeSoporte>("/reseller/support/tickets", datos),
+};
+
 export const onboardingService = {
   estado: () => get<EstadoDelAlta>("/reseller/onboarding"),
   /** `step` es «de qué paso vengo», no «a dónde quiero ir»: el servidor lo

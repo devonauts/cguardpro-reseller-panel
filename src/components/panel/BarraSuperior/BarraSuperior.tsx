@@ -1,4 +1,5 @@
 import { ReactNode, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Boton, Emergente, Icono } from "@/components/cristal";
 import { Avatar } from "../Avatar";
@@ -59,6 +60,16 @@ export function BarraSuperior({
 
       <div className="barra__controles">
         <SelectorDeIdioma />
+        {/* Soporte: a la vista siempre. Cuando algo falla es cuando menos se
+            busca por el menú, y un ticket es lo que avisa a la plataforma. */}
+        <Link
+          to="/support"
+          className="barra__soporte"
+          aria-label={t("soporte.abrir")}
+          title={t("soporte.abrir")}
+        >
+          <Icono nombre="auriculares" tamano={18} />
+        </Link>
         <Avisos />
 
         <div className="barra__cuenta">

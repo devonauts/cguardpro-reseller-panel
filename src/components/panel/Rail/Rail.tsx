@@ -79,6 +79,7 @@ const NAV_SECUNDARIA: Entrada[] = [
   { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/contract", icono: "escudo", texto: "nav.contrato" },
   { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
+  { a: "/support", icono: "auriculares", texto: "nav.soporte" },
   {
     a: "/account",
     icono: "engranaje",

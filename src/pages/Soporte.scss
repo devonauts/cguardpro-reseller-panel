@@ -1,0 +1,56 @@
+.soporte { display: grid; gap: var(--s-5); }
+
+.soporte__form { display: grid; gap: var(--s-4); }
+.soporte__fila {
+  display: grid; gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+/* El `textarea` hereda la caja de `Campo`; sólo le falta crecer en alto. */
+.soporte__mensaje { min-height: 140px; resize: vertical; font: inherit; line-height: 1.5; }
+
+.soporte__error { margin: 0; color: var(--danger); font-size: 0.875rem; }
+.soporte__ok { margin: 0; color: var(--ok); font-size: 0.875rem; }
+.soporte__acciones { display: flex; justify-content: flex-end; }
+
+.soporte__lista { list-style: none; margin: 0; padding: 0; }
+.soporte__ticket {
+  padding: var(--s-4) 0 var(--s-5);
+  border-bottom: 1px solid var(--glass-border);
+}
+.soporte__ticket:last-child { border-bottom: 0; }
+
+.soporte__cab { display: flex; align-items: center; gap: var(--s-3); flex-wrap: wrap; }
+.soporte__asunto { font-weight: 500; color: var(--text-primary); overflow-wrap: anywhere; }
+
+.soporte__meta {
+  margin-top: var(--s-2);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+
+.soporte__texto {
+  margin: var(--s-3) 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.soporte__respuesta {
+  margin-top: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-left: 3px solid var(--ok);
+  border-radius: var(--r-sm);
+  background: var(--surface-raised);
+}
+.soporte__respuesta-titulo {
+  display: block;
+  font-size: 11px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.soporte__respuesta p {
+  margin: var(--s-2) 0 0; color: var(--text-primary); font-size: 0.9rem;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.soporte__pendiente { margin: var(--s-3) 0 0; color: var(--text-muted); font-size: 0.82rem; }

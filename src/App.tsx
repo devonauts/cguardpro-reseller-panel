@@ -9,6 +9,7 @@ import Actividad from "@/pages/Actividad";
 import Analitica from "@/pages/Analitica";
 import Cuenta from "@/pages/Cuenta";
 import Equipo from "@/pages/Equipo";
+import Soporte from "@/pages/Soporte";
 import AuthLayout from "@/layouts/AuthLayout";
 import Login from "@/pages/Login";
 import Invitacion from "@/pages/Invitacion";
@@ -109,6 +110,7 @@ export default function App() {
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analitica /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><Equipo /></ProtectedRoute>} />
+      <Route path="/support" element={<ProtectedRoute><Soporte /></ProtectedRoute>} />
       <Route path="/companies/new" element={<ProtectedRoute><CompanyCreate /></ProtectedRoute>} />
       <Route path="/companies/:tenantId" element={<ProtectedRoute><CompanyDetail /></ProtectedRoute>} />
       {/* El asistente va SIN el armazón: durante el alta no hay barra lateral

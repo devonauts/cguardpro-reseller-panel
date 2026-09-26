@@ -108,3 +108,21 @@
   .barra .idioma-menu__actual,
   .barra .idioma-menu__galon { display: none; }
 }
+
+/* El botón de soporte: el mismo objeto que la campana, para que la fila de
+   controles se lea como una sola familia. */
+.barra__soporte {
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  @include m.reactivo;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-full);
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
