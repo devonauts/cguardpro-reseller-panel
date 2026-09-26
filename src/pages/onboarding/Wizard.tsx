@@ -4,11 +4,12 @@ import BrandingPreview from "@/components/BrandingPreview";
 import { Boton, Dato, EstadoDeDatos, TodaviaNo } from "@/components/cristal";
 import {
   activacionService, onboardingService,
-  type EstadoDeActivacion, type EstadoDelAlta, type MarcaEditable, type PasoDelAlta,
+  type EstadoDeActivacion, type EstadoDelAlta, type MarcaEditable, type PagoDeFactura, type PasoDelAlta,
 } from "@/services/resellerService";
 import { useNavigate } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { Activacion } from "./Activacion";
+import { ConfirmacionDePago } from "./ConfirmacionDePago";
 import { FirmaDelContrato } from "./FirmaDelContrato";
 import { useT } from "@/i18n/IdiomaProvider";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
@@ -56,6 +57,9 @@ export function Wizard() {
   /* PRIMERO SE PAGA EL ALTA. Si falta, el asistente enseña la activación en
      su mismo marco; el servidor no le abriría los pasos de todas formas. */
   const [activacion, setActivacion] = useState<EstadoDeActivacion | null>(null);
+  /* Recién pagado el alta: se enseña «Pago recibido» y se espera al OK antes de
+     llevarle a los pasos (ver ConfirmacionDePago). */
+  const [pagado, setPagado] = useState<{ pago: PagoDeFactura; en: string } | null>(null);
   const { recargar, salir, me } = useResellerAuth();
   const navigate = useNavigate();
 
@@ -173,10 +177,11 @@ export function Wizard() {
             />
           )}
 
-          {activacion?.required && activacion.agreementSigned && (
-            <Activacion
-              estado={activacion}
-              onPagada={async () => {
+          {pagado && (
+            <ConfirmacionDePago
+              pago={pagado.pago}
+              pagadoEn={pagado.en}
+              onContinuar={async () => {
                 /* El pago movió el estado del socio (a `onboarding`, o a
                    `active` si ya había terminado el asistente): se relee `/me`
                    y, si ya está activo, se le lleva a su panel. */
@@ -184,7 +189,19 @@ export function Wizard() {
                 const a = await activacionService.estado().catch(() => null);
                 setActivacion(a);
                 await cargar();
+                setPagado(null);
+                window.scrollTo({ top: 0, behavior: "smooth" });
                 navigate("/", { replace: true });
+              }}
+            />
+          )}
+
+          {!pagado && activacion?.required && activacion.agreementSigned && (
+            <Activacion
+              estado={activacion}
+              onPagada={(r) => {
+                setPagado({ pago: r, en: new Date().toISOString() });
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
             />
           )}
