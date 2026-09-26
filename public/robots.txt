@@ -1,0 +1,11 @@
+# partners.mainconnector.com es el PANEL DE SOCIOS: nada de aquí debe salir en
+# un buscador (cada respuesta lleva además X-Robots-Tag: noindex).
+User-agent: *
+Disallow: /
+
+# Esta dirección NO existe como función del producto: es una TRAMPA, la misma
+# del CRM. Quien la pide es alguien que lee este archivo para ir justo a donde
+# dice que no vaya, y queda anotado. Contesta un 404 idéntico al de cualquier
+# ruta inexistente, a propósito. Si alguien limpia este archivo, que sepa que
+# esta línea está aquí a posta.
+Disallow: /api/v1/respaldo-completo

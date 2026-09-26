@@ -17,6 +17,12 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- TRAMPA PARA CLONADORES (plan anti-copia, fase 3). Invisible, fuera del
+         orden de tabulación y oculto a lectores de pantalla: ninguna persona
+         llega a él, y `nofollow` aparta a los buscadores serios. Quien lo sigue
+         es una herramienta que copia la web entera (HTTrack, wget -m…), y
+         queda anotada en /api/v1/respaldo-completo (señal `honeypot`). -->
+    <a href="/api/v1/respaldo-completo" rel="nofollow" tabindex="-1" aria-hidden="true" style="display:none">respaldo</a>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

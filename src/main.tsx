@@ -5,6 +5,7 @@ import App from "./App";
 import { ResellerAuthProvider } from "./auth/ResellerAuthContext";
 import { IdiomaProvider } from "./i18n/IdiomaProvider";
 import "./styles/global.css";
+import { iniciarCentinela } from "./lib/centinela";
 
 /**
  * El panel vive en la RAÍZ de su propio anfitrión (`partners.cguardpro.com`),
@@ -15,6 +16,11 @@ import "./styles/global.css";
  * NADA. La pantalla queda en negro, el título es el correcto y la consola
  * calla — por eso se comprueba también sobre el paquete construido.
  */
+/* El centinela de integridad (Fase 2 del plan anti-copia), el mismo del CRM y
+   del superadmin. Antes del render y fuera de React: mira el documento tal y
+   como llegó. Ver `lib/centinela`. */
+iniciarCentinela();
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
