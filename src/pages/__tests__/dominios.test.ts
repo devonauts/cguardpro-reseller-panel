@@ -145,8 +145,11 @@ describe("Fase 16 · la pantalla de tu dirección", () => {
        valor ORIGINAL — nunca lo que se ve en pantalla, que va partido para
        caber. Copiar lo pintado sería copiar un registro a medias. */
     expect(COPIABLE).toMatch(/clipboard\.writeText\(valor\)/);
-    /* Y la pantalla le pasa el NOMBRE y el VALOR, no sólo el valor. */
-    expect(P).toMatch(/<CampoCopiable[\s\S]*?valor=\{paso\.nombre\}/);
+    /* Y la pantalla le pasa el NOMBRE y el VALOR, no sólo el valor. The name
+       is the HOST relative to the registered domain: DNS providers append the
+       domain themselves, and pasting the full name doubled it. */
+    expect(P).toMatch(/const host = hostRelativo\(paso\.nombre, dominio\)/);
+    expect(P).toMatch(/<CampoCopiable[\s\S]*?valor=\{host\}/);
     expect(P).toMatch(/valor=\{paso\.valor\}/);
   });
 

@@ -1026,6 +1026,8 @@ export const en = {
   "dominios.desactivadoAyuda": "This address isn't in use. You can enable it again by verifying it.",
   "dominios.dnsTipo": "Type",
   "dominios.dnsNombre": "Name",
+  "dominios.dnsHost": "Host (name)",
+  "dominios.dnsHostAyuda": "In the “Host” field type ONLY what is shown, without “{dominio}”: your provider adds it. If you paste the full name, the record ends up at “….{dominio}.{dominio}” and does not work.",
   "dominios.dnsValor": "Value",
   "dominios.dnsValorTitularidad": "Value (to verify it's yours)",
   "dominios.comprobado": "Checked {f}",

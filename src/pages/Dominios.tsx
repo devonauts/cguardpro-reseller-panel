@@ -1,3 +1,4 @@
+import { dominioRegistrado, hostRelativo } from "@/lib/nombreDns";
 import { useCallback, useEffect, useState } from "react";
 
 import {
@@ -40,14 +41,15 @@ import "./Dominios.scss";
  */
 
 /** Un registro: su tipo, su nombre y su valor, en un bloque hundido. */
-function Registro({ paso }: { paso: InstruccionDeDns }) {
+function Registro({ paso, dominio }: { paso: InstruccionDeDns; dominio: string }) {
   const t = useT();
   const esCname = paso.tipo === "CNAME";
+  const host = hostRelativo(paso.nombre, dominio);
   return (
     <div className="dns__registro">
       <span className="dns__tipo">{paso.tipo}</span>
       <div className="dns__campos">
-        <CampoCopiable etiqueta={t("dominios.dnsNombre")} valor={paso.nombre} />
+        <CampoCopiable etiqueta={t("dominios.dnsHost")} valor={host} />
         <CampoCopiable
           etiqueta={t(esCname ? "dominios.dnsDestino" : "dominios.dnsValor")}
           valor={paso.valor}
@@ -74,7 +76,7 @@ const SECCION: Record<string, Clave> = {
   certificado: "dominios.seccionCertificado",
 };
 
-function Instrucciones({ pasos }: { pasos: InstruccionDeDns[] }) {
+function Instrucciones({ pasos, dominio }: { pasos: InstruccionDeDns[]; dominio: string }) {
   const t = useT();
   const grupos: Array<{ proposito: string; pasos: InstruccionDeDns[] }> = [];
   for (const paso of pasos) {
@@ -88,13 +90,16 @@ function Instrucciones({ pasos }: { pasos: InstruccionDeDns[] }) {
       <p className="dns__intro">
         {t(pasos.length === 1 ? "dominios.dnsIntroUno" : "dominios.dnsIntroVarios")}
       </p>
+      <p className="dns__intro">
+        {t("dominios.dnsHostAyuda", { dominio: dominioRegistrado(dominio) })}
+      </p>
       {grupos.map((g, i) => (
         <section key={`${g.proposito}-${i}`} className="dns__seccion">
           <h4 className="dns__seccion-titulo">
             {t(SECCION[g.proposito] ?? "dominios.seccionOtro")}
           </h4>
           {g.pasos.map((paso, j) => (
-            <Registro key={`${paso.tipo}-${j}`} paso={paso} />
+            <Registro key={`${paso.tipo}-${j}`} paso={paso} dominio={dominio} />
           ))}
         </section>
       ))}
@@ -341,7 +346,7 @@ export function Dominios() {
                 )}
 
                 {abierto && detalle[d.id]?.instrucciones && (
-                  <Instrucciones pasos={detalle[d.id].instrucciones!} />
+                  <Instrucciones pasos={detalle[d.id].instrucciones!} dominio={d.hostname || ""} />
                 )}
               </div>
             );

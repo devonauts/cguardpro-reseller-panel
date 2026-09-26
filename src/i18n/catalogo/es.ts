@@ -1016,6 +1016,8 @@ export const es: Record<Clave, string> = {
   "dominios.desactivadoAyuda": "Esta dirección no está en uso. Puedes volver a activarla verificándola.",
   "dominios.dnsTipo": "Tipo",
   "dominios.dnsNombre": "Nombre",
+  "dominios.dnsHost": "Host (nombre)",
+  "dominios.dnsHostAyuda": "En el campo «Host» escribe SOLO lo de arriba, sin «{dominio}»: tu proveedor lo añade solo. Si pegas el nombre completo, el registro queda en «….{dominio}.{dominio}» y no funciona.",
   "dominios.dnsValor": "Valor",
   "dominios.dnsValorTitularidad": "Valor (para verificar que es tuyo)",
   "dominios.comprobado": "Comprobado {f}",
