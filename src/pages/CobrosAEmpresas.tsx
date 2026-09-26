@@ -355,7 +355,6 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const [f, setF] = useState(() => ({
     currency: p?.currency ?? min.currency,
     perUser: aTexto(p?.perUserCents ?? min.perUserCents, p?.currency ?? min.currency),
-    monthly: aTexto(p?.monthlyFeeCents ?? min.monthlyFeeCents, p?.currency ?? min.currency),
     setup: aTexto(p?.setupFeeCents ?? 0, p?.currency ?? min.currency),
     trialDays: String(p?.trialDays ?? 14),
     graceDays: String(p?.graceDays ?? 7),
@@ -369,14 +368,12 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
   const aBase = (c: number | null) => (c == null || !tasa ? null : Math.round(c / tasa));
   const enSuMoneda = (c: number) => (tasa ? Math.ceil(c * tasa) : null);
   const minPorUsuario = enSuMoneda(min.perUserCents);
-  const minMensual = enSuMoneda(min.monthlyFeeCents);
   const otraMoneda = f.currency !== base;
   // Con dos monedas en pantalla, siempre con su código: «MXN 60», «USD 2.50».
   const $b = (c: number | null) => (c == null ? "—" : precio(c, base, otraMoneda));
   const $m = (c: number | null) => (c == null ? "—" : precio(c, f.currency, otraMoneda));
 
   const porUsuario = aCentavos(f.perUser);
-  const mensual = aCentavos(f.monthly);
   const plataforma = datos.platform;
   const margen = porUsuario != null && !Number.isNaN(porUsuario) && plataforma && tasa
     ? aBase(porUsuario)! - plataforma.perUserCents : null;
@@ -396,12 +393,13 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
     const cuerpo: PreciosAEmpresas = {
       currency: f.currency,
       perUserCents: porUsuario ?? 0,
-      monthlyFeeCents: mensual ?? 0,
+      // Partners never charge a monthly fee: the only one is the platform's.
+      monthlyFeeCents: 0,
       setupFeeCents: aCentavos(f.setup) ?? 0,
       trialDays,
       graceDays,
     };
-    if ([cuerpo.perUserCents, cuerpo.monthlyFeeCents, cuerpo.setupFeeCents].some((n) => Number.isNaN(n))) {
+    if ([cuerpo.perUserCents, cuerpo.setupFeeCents].some((n) => Number.isNaN(n))) {
       setError(t("cobros.importeNoValido", { e: aTexto(150050, f.currency) }));
       return;
     }
@@ -465,8 +463,6 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
         </label>
         <Campo etiqueta={t("cobros.porUsuario")} inputMode="decimal" {...campo("perUser")}
           ayuda={ayudaMinimo(minPorUsuario, min.perUserCents) + equivalente(porUsuario)} />
-        <Campo etiqueta={t("cobros.cuotaMensual")} inputMode="decimal" {...campo("monthly")}
-          ayuda={ayudaMinimo(minMensual, min.monthlyFeeCents) + equivalente(mensual)} />
         <Campo etiqueta={t("cobros.cuotaAlta")} inputMode="decimal" {...campo("setup")}
           ayuda={t("cobros.cuotaAltaAyuda") + equivalente(aCentavos(f.setup))} />
         <Campo etiqueta={t("cobros.diasPrueba")} inputMode="numeric" {...campo("trialDays")} />
@@ -498,12 +494,6 @@ function Precios({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestion
             {plataforma.monthlyFeeFreeUntilSeats > 0
               ? t("cobros.cuadreCuotaUmbral", { c: $b(plataforma.monthlyFeeCents), n: plataforma.monthlyFeeFreeUntilSeats })
               : t("cobros.cuadreCuota", { c: $b(plataforma.monthlyFeeCents) })}
-            {" "}
-            {plataforma.monthlyFeeCents > 0 && mensual != null && !Number.isNaN(mensual) && mensual > 0 && tasa
-              ? t("cobros.cuadreEmpresas", {
-                c: $m(mensual), n: Math.max(1, Math.ceil(plataforma.monthlyFeeCents / Math.max(1, aBase(mensual) ?? 1))),
-              })
-              : ""}
           </p>
           {otraMoneda && (
             <p className="cuadre__nota">
@@ -591,7 +581,6 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
   const monedaAjuste = datos.pricing?.currency ?? datos.minimums.currency;
   const [f, setF] = useState({
     perUser: aTexto(o?.perUserCents ?? null, monedaAjuste),
-    monthly: aTexto(o?.monthlyFeeCents ?? null, monedaAjuste),
     setup: aTexto(o?.setupFeeCents ?? null, monedaAjuste),
   });
   const [enviando, setEnviando] = useState(false);
@@ -602,7 +591,6 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
   const guardar = async (extra: { exempt?: boolean } = {}) => {
     const cuerpo = {
       perUserCents: aCentavos(f.perUser),
-      monthlyFeeCents: aCentavos(f.monthly),
       setupFeeCents: aCentavos(f.setup),
     };
     /* NaN travels as null in JSON, and null means "remove the override":
@@ -638,7 +626,6 @@ function Ajuste({ empresa, datos, gestiona, onCambio }: {
       <p className="bloque__nota">{t("cobros.ajusteNota")}</p>
       <div className="cobros-precios">
         <Campo etiqueta={t("cobros.porUsuario")} placeholder={aTexto(base?.perUserCents, monedaAjuste)} {...campo("perUser")} />
-        <Campo etiqueta={t("cobros.cuotaMensual")} placeholder={aTexto(base?.monthlyFeeCents, monedaAjuste)} {...campo("monthly")} />
         <Campo etiqueta={t("cobros.cuotaAlta")} placeholder={aTexto(base?.setupFeeCents, monedaAjuste)} {...campo("setup")} />
       </div>
       {error && <p role="alert" className="cobros__error">{error}</p>}

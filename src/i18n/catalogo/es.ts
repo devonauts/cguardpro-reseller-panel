@@ -682,7 +682,7 @@ export const es: Record<Clave, string> = {
   "cobros.conectar": "Conectar y verificar",
   "cobros.noConecto": "No se pudo conectar la pasarela.",
   "cobros.preciosTitulo": "Tus precios",
-  "cobros.preciosSub": "Lo que te pagan tus empresas. Puedes ajustar una empresa concreta más abajo.",
+  "cobros.preciosSub": "Lo que te pagan tus empresas: un precio por usuario al mes y, si quieres, una implementación de pago único. No hay cuota mensual por empresa. Puedes ajustar una empresa concreta más abajo.",
   "cobros.porUsuario": "Por usuario / mes",
   "cobros.cuotaMensual": "Cuota mensual",
   "cobros.cuotaAlta": "Implementación (pago único)",

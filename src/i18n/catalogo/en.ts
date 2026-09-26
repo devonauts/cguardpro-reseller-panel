@@ -692,7 +692,7 @@ export const en = {
   "cobros.conectar": "Connect and verify",
   "cobros.noConecto": "Couldn't connect the gateway.",
   "cobros.preciosTitulo": "Your prices",
-  "cobros.preciosSub": "What your companies pay you. You can adjust a single company below.",
+  "cobros.preciosSub": "What your companies pay you: a price per user per month and, if you like, a one-off setup fee. There is no monthly fee per company. You can adjust a single company below.",
   "cobros.porUsuario": "Per user / month",
   "cobros.cuotaMensual": "Monthly fee",
   "cobros.cuotaAlta": "Setup fee",
