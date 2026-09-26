@@ -1038,6 +1038,8 @@ export interface PasarelaConectada {
   status: "pending" | "connected" | "error" | string;
   accountLabel: string | null;
   lastError: string | null;
+  /** The webhook the server registered in the partner's own gateway. */
+  events?: { status: "active" | "missing" | string; error: string | null; lastAt: string | null };
   verifiedAt: string | null;
 }
 
@@ -1089,6 +1091,8 @@ export const cobroAEmpresasService = {
   conectar: (provider: string, credentials: Record<string, string>) =>
     put<PasarelaConectada>("/reseller/company-billing/gateway", { provider, credentials }),
   desconectar: () => del<{ removed: boolean }>("/reseller/company-billing/gateway"),
+  /** Registers again, with the saved keys, the webhook in the partner's gateway. */
+  activarAvisos: () => post<PasarelaConectada>("/reseller/company-billing/gateway/events", {}),
   guardarPrecios: (precios: PreciosAEmpresas) =>
     put<PreciosAEmpresas>("/reseller/company-billing/pricing", precios),
   ajustarEmpresa: (tenantId: string, datos: Partial<{

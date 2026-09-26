@@ -168,6 +168,19 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
     }
   };
 
+  const activarAvisos = async () => {
+    setEnviando(true);
+    setError(null);
+    try {
+      await cobroAEmpresasService.activarAvisos();
+      onCambio();
+    } catch (e: any) {
+      setError(e?.message || t("cobros.noConecto"));
+    } finally {
+      setEnviando(false);
+    }
+  };
+
   const desconectar = async () => {
     setEnviando(true);
     setError(null);
@@ -248,6 +261,24 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
               </>
             )}
           </span>
+        </div>
+      )}
+      {gw && gw.status === "connected" && !eligiendo && gw.events && (
+        <div className={`cobros-avisos${gw.events.status === "active" ? "" : " cobros-avisos--falta"}`}>
+          <Icono nombre={gw.events.status === "active" ? "visto" : "puntos"} tamano={15} />
+          <span className="cobros-avisos__texto">
+            {gw.events.status === "active"
+              ? t("cobros.avisosActivos", { n: gw.name })
+              : gw.events.error
+                ? t("cobros.avisosFaltanPorque", { m: gw.events.error })
+                : t("cobros.avisosFaltan")}
+            {gw.events.status === "active" && gw.events.lastAt && (
+              <span className="cobros-avisos__ultimo"> · {t("cobros.avisosUltimo", { f: fechaCorta(gw.events.lastAt) })}</span>
+            )}
+          </span>
+          {gestiona && gw.events.status !== "active" && (
+            <Boton variante="suave" onClick={activarAvisos} cargando={enviando}>{t("cobros.avisosActivar")}</Boton>
+          )}
         </div>
       )}
       {gw && gw.status !== "connected" && gw.lastError && !eligiendo && (

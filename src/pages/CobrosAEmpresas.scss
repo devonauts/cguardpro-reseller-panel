@@ -55,6 +55,18 @@
 .cobros-pasarela__acciones { display: flex; gap: var(--s-2); flex-wrap: wrap; }
 .cobros-pasarela__acciones a.btn { text-decoration: none; }
 
+.cobros-avisos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2) var(--s-3);
+  font-size: 13px;
+  color: var(--ok);
+}
+.cobros-avisos--falta { color: var(--warn); }
+.cobros-avisos__texto { flex: 1; min-width: 20ch; }
+.cobros-avisos__ultimo { color: var(--text-muted); }
+
 .cobros-catalogo {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
