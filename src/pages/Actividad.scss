@@ -18,18 +18,13 @@
   display: flex; gap: 6px; flex-wrap: wrap;
 }
 
-.actividad__detalles {
-  list-style: none; margin: var(--s-3) 0 0; padding: 0;
-  display: flex; gap: var(--s-3); flex-wrap: wrap;
+.actividad__motivo {
+  margin: var(--s-2) 0 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  /* Un motivo largo se parte en vez de desbordar la fila. */
+  overflow-wrap: anywhere;
 }
-.actividad__detalles li {
-  display: flex; gap: 6px; align-items: baseline;
-  font-size: 0.8rem;
-  /* Un valor largo se parte en vez de estirar la fila y desbordar la página. */
-  max-width: 100%; overflow-wrap: anywhere;
-}
-.actividad__clave { color: var(--text-muted); }
-.actividad__valor { color: var(--text-secondary); }
 
 .actividad__paginas {
   display: flex; align-items: center; justify-content: center;

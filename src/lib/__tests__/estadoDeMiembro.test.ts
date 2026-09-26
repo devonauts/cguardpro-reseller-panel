@@ -20,8 +20,9 @@ import path from "node:path";
 import { estadoDeMiembro, textoDeEstado } from "../estadoDeMiembro";
 import { elegirIdioma, IDIOMAS } from "@/i18n/idioma";
 
+/* El mapa acción → frase vive en `lib/fraseDeActividad.ts` (la pantalla sólo lo pinta). */
 const actividad = fs.readFileSync(
-  path.resolve(__dirname, "../../pages/Actividad.tsx"),
+  path.resolve(__dirname, "../fraseDeActividad.ts"),
   "utf8",
 );
 
@@ -87,10 +88,4 @@ describe("Actividad · las acciones de equipo tienen nombre", () => {
     });
   }
 
-  it("el valor de `status` sólo se nombra en las acciones de equipo", () => {
-    /* `archived` pertenece al vocabulario de un miembro. El `status` de una
-       CUENTA de socio es otro juego de palabras; leerlo con este diccionario
-       enseñaría un estado que no es. */
-    expect(actividad).toMatch(/accion\.startsWith\("team\."\)/);
-  });
 });

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { Emergente, Icono } from "@/components/cristal";
 import { fechaYHora } from "@/lib/dinero";
-import { nombreDeAccion } from "@/pages/Actividad";
+import { fraseDeActividad } from "@/lib/fraseDeActividad";
 import { useT } from "@/i18n/IdiomaProvider";
 import { portalService, type LineaDeActividad } from "@/services/resellerService";
 import "./Avisos.scss";
@@ -89,7 +89,7 @@ export function Avisos() {
           <ul className="avisos__lista">
             {filas.map((f) => (
               <li key={f.id}>
-                <span className="avisos__accion">{nombreDeAccion(f.action)}</span>
+                <span className="avisos__accion">{fraseDeActividad(f)}</span>
                 <span className="avisos__cuando">{fechaYHora(f.at)}</span>
               </li>
             ))}
