@@ -618,6 +618,9 @@ export const companiesService = {
   list: (params: { page?: number; limit?: number; search?: string } = {}) =>
     get<{ rows: Empresa[]; count: number; quota: Cupo }>("/reseller/companies", params),
   detail: (tenantId: string) => get<Empresa>(`/reseller/companies/${tenantId}`),
+  /** Single-use URL that signs our support into the company's CRM (30 min). */
+  supportAccess: (tenantId: string) =>
+    post<{ url: string; expiresIn: number }>(`/reseller/companies/${tenantId}/support-access`, {}),
   create: (data: AltaDeEmpresa) =>
     post<{ company: Empresa; quota: { used: number; max: number | null };
            ownerInvited: boolean; ignoredFields: string[] }>(

@@ -713,6 +713,8 @@ export const en = {
   "pais.DO": "Dominican Republic",
   "pais.ES": "Spain",
   "fichaEmpresa.abrirCrm": "Open its CRM",
+  "fichaEmpresa.entrando": "Opening…",
+  "fichaEmpresa.noEntro": "Could not open its CRM. Try again.",
   "fichaEmpresa.recienCreada": "Company created. Its administrator got an email invitation to set a password and sign in with your brand.",
   "contrato.desdeUsuarios": "from {n} users",
   "contrato.minimoPorUsuario": "Minimum per user",

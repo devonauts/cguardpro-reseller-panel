@@ -68,6 +68,32 @@ export function CompanyDetail() {
   const location = useLocation();
   /* La dirección por la que su gente entra a su CRM: la del socio. */
   const { host } = useDireccionDeClientes();
+  const puedeEntrar = puede("reseller.company.support_access");
+  const [entrando, setEntrando] = useState(false);
+
+  /* "Open their CRM": straight in as support, with a banner and an exit in the
+     CRM. The tab is opened NOW, inside the click, so no popup blocker stops it;
+     it is pointed at the single-use URL once the server hands it over. */
+  const entrarAlCrm = async () => {
+    if (entrando) return;
+    const pestana = window.open("", "_blank");
+    setEntrando(true);
+    setError(null);
+    try {
+      const { url } = await companiesService.supportAccess(tenantId);
+      if (pestana) {
+        pestana.opener = null;
+        pestana.location.href = url;
+      } else {
+        window.location.href = url;
+      }
+    } catch (e: any) {
+      pestana?.close();
+      setError(e?.message || t("fichaEmpresa.noEntro"));
+    } finally {
+      setEntrando(false);
+    }
+  };
 
   const guardar = async (ev: FormEvent) => {
     ev.preventDefault();
@@ -114,7 +140,13 @@ export function CompanyDetail() {
         </div>
         <div className="cabecera__acciones">
           {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
-          {host && (
+          {puedeEntrar && empresa && (
+            <button type="button" className="btn btn--fantasma ficha__crm" onClick={entrarAlCrm} disabled={entrando}>
+              {entrando ? t("fichaEmpresa.entrando") : t("fichaEmpresa.abrirCrm")}
+              <Icono nombre="flecha" tamano={14} />
+            </button>
+          )}
+          {!puedeEntrar && host && (
             <a className="btn btn--fantasma ficha__crm" href={`https://${host}/login`} target="_blank" rel="noreferrer">
               {t("fichaEmpresa.abrirCrm")}
               <Icono nombre="flecha" tamano={14} />

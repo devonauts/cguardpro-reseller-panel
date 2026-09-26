@@ -703,6 +703,8 @@ export const es: Record<Clave, string> = {
   "pais.DO": "República Dominicana",
   "pais.ES": "España",
   "fichaEmpresa.abrirCrm": "Abrir su CRM",
+  "fichaEmpresa.entrando": "Abriendo…",
+  "fichaEmpresa.noEntro": "No se pudo abrir su CRM. Inténtalo de nuevo.",
   "fichaEmpresa.recienCreada": "Empresa creada. Su administrador recibió un correo para poner su contraseña y entrar con tu marca.",
   "contrato.desdeUsuarios": "desde {n} usuarios",
   "contrato.minimoPorUsuario": "Mínimo por usuario",
