@@ -3,11 +3,26 @@
 /* The panel is full width in the dashboard grid: the map reads better wide. */
 .cobertura { grid-column: 1 / -1; }
 
-.cobertura__cifras { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-3); font-size: 12.5px; color: var(--text-secondary); }
-.cobertura__cifra--fuera { color: var(--warn); font-weight: 600; }
+.cobertura__carrusel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  border-radius: var(--r-md);
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+/* Map left, the card's figures right; stacked on a phone. */
+.cobertura__cuerpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: var(--s-4);
+
+  @include r.hasta(tableta) { grid-template-columns: minmax(0, 1fr); }
+}
 
 .cobertura__mapa {
-  height: 380px;
+  height: 420px;
   border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid var(--line);
@@ -22,31 +37,143 @@
   .leaflet-control-attribution a { color: var(--text-secondary); }
   .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface-raised); color: var(--text-primary); }
 
-  @include r.hasta(movil) { height: 300px; }
+  @include r.hasta(movil) { height: 320px; }
 }
 
-/* The outline and the pins take the panel's own colours (tokens), set here and
-   not inline: Leaflet's SVG accepts the class, and CSS wins over its attributes. */
-.cobertura__area { stroke: var(--brand); stroke-width: 2.5; fill: var(--brand); fill-opacity: 0.28; }
-.cobertura__pin { stroke: var(--surface); stroke-width: 2; fill: var(--ok); fill-opacity: 1; }
+/* Outlines and pins take the panel's tokens here, not inline: Leaflet's SVG
+   takes the class, and CSS wins over its attributes. */
+.cobertura__pais { stroke: var(--text-secondary); stroke-width: 1.5; stroke-dasharray: 4 4; fill: var(--text-secondary); fill-opacity: 0.04; }
+.cobertura__area { stroke: var(--brand); stroke-width: 2.5; fill: var(--brand); fill-opacity: 0.28; cursor: pointer; transition: fill-opacity 0.3s ease, stroke-opacity 0.3s ease; }
+.cobertura__area--activa { stroke-width: 3; fill-opacity: 0.34; }
+.cobertura__area--apagada { stroke-opacity: 0.35; fill-opacity: 0.08; }
+.cobertura__pin { stroke: var(--surface); stroke-width: 2; fill: var(--ok); fill-opacity: 1; transition: opacity 0.3s ease; }
 .cobertura__pin--fuera { fill: var(--warn); }
+.cobertura__pin--apagado { opacity: 0.25; }
 .cobertura__popup-fuera { color: var(--warn); font-weight: 600; }
+
+/* ── The card beside the map ───────────────────────────────────────────── */
+.cobertura__carta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  min-width: 0;
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-raised);
+  touch-action: pan-y;
+  user-select: none;
+  animation: 0.35s ease both cobertura-entra-derecha;
+}
+.cobertura__carta--entra-izquierda { animation-name: cobertura-entra-izquierda; }
+
+@keyframes cobertura-entra-derecha { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes cobertura-entra-izquierda { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) { .cobertura__carta { animation: none; } }
+
+.cobertura__antetitulo { margin: 0; font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+.cobertura__nombre { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); overflow-wrap: anywhere; }
+.cobertura__etiqueta { margin: -6px 0 0; font-size: 12.5px; color: var(--text-muted); overflow-wrap: anywhere; }
+
+.cobertura__cifras {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+  margin: 0;
+
+  div { display: flex; flex-direction: column; gap: 2px; padding: var(--s-2) var(--s-3); border-radius: var(--r-sm, 8px); background: var(--surface); }
+  dt { font-size: 12px; color: var(--text-muted); }
+  dd { margin: 0; font-size: 20px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+}
+
+.cobertura__estados { display: flex; flex-wrap: wrap; gap: 6px; }
+.cobertura__estado { padding: 3px 9px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); color: var(--text-secondary); }
+.cobertura__estado--active { color: var(--ok); }
+.cobertura__estado--past_due { color: var(--warn); }
+.cobertura__estado--paused { color: var(--danger); }
+
+.cobertura__alertas { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-3); font-size: 12.5px; color: var(--text-secondary); }
+.cobertura__alerta { color: var(--warn); font-weight: 600; }
 
 .cobertura__ciudades {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-2);
-  margin: var(--s-3) 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
-  font-size: 13px;
-  color: var(--text-primary);
 
-  li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; }
-  em { font-style: normal; color: var(--text-muted); }
+  button {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+
+    &:hover { border-color: var(--brand); }
+    &:focus-visible { outline: none; box-shadow: var(--focus); }
+  }
 }
 
+.cobertura__cuantas { font-size: 11.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .cobertura__muestra { width: 10px; height: 10px; border-radius: 3px; background: var(--brand); opacity: 0.8; }
-.cobertura__ciudad--pendiente .cobertura__muestra { background: transparent; border: 1px dashed var(--text-muted); }
+.cobertura__muestra--pendiente { background: transparent; border: 1px dashed var(--text-muted); }
 
-.cobertura__vacio, .cobertura__nota { font-size: 12.5px; color: var(--text-muted); margin: var(--s-2) 0 0; }
+.cobertura__lista {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: 13px;
+  color: var(--text-primary);
+  max-height: 160px;
+  overflow: auto;
+
+  span { color: var(--text-muted); }
+}
+
+.cobertura__nota { font-size: 12.5px; color: var(--text-muted); margin: 0; }
+
+/* ── Navigation ────────────────────────────────────────────────────────── */
+.cobertura__navegacion { display: flex; align-items: center; justify-content: center; gap: var(--s-3); }
+
+.cobertura__flecha {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  svg { transform: rotate(180deg); }
+  &:hover { border-color: var(--brand); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+.cobertura__flecha--siguiente svg { transform: none; }
+
+.cobertura__puntos { display: flex; gap: 6px; }
+
+.cobertura__punto {
+  appearance: none;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease;
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+.cobertura__punto--activo { width: 22px; background: var(--brand); }

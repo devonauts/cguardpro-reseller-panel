@@ -1287,6 +1287,17 @@ export const appsService = {
 
 /* ── Coverage map ─────────────────────────────────────────────────────────── */
 
+/** Commercial figures of a card (never operational ones). */
+export interface CifrasDeCobertura {
+  companies: number;
+  newThisMonth: number;
+  /** Active users: what the partner bills for. */
+  seats: number;
+  billing: { active: number; trialing: number; past_due: number; paused: number; exempt: number };
+  /** What the partner charges these companies a month, in its currency; null when it has no prices yet. */
+  monthlyCents: number | null;
+}
+
 export interface AreaDeCobertura {
   id: string;
   /** As written in the application: «Medellín». */
@@ -1295,10 +1306,11 @@ export interface AreaDeCobertura {
   label: string | null;
   countryCode: string | null;
   source: "application" | "superadmin" | string;
-  /** ok = real outline · not_found = the map server does not know it yet · pending. */
+  /** ok = real outline · not_found = no outline yet · pending. */
   status: "ok" | "not_found" | "pending" | string;
   center: { lat: number; lng: number } | null;
   geojson: Polygon | MultiPolygon | null;
+  stats: CifrasDeCobertura;
 }
 
 export interface PinDeEmpresa {
@@ -1306,16 +1318,30 @@ export interface PinDeEmpresa {
   name: string;
   city: string | null;
   location: { lat: number; lng: number } | null;
-  /** true inside an outline · false outside all · null unknown (no location or no outlines). */
+  /** true inside an outline · false outside all · null unknown. */
   inside: boolean | null;
   areaId: string | null;
+  seats: number;
+  billingStatus: string | null;
+  createdAt: string | null;
 }
 
 export interface MapaDeCobertura {
-  /** The partner's country and its frame [south, west, north, east]: what the map opens on when there is nothing else. */
-  country: { code: string; bbox: [number, number, number, number] } | null;
+  /** The partner's country: its frame [south, west, north, east] and its outline. */
+  country: {
+    code: string;
+    bbox: [number, number, number, number] | null;
+    label: string | null;
+    geojson: Polygon | MultiPolygon | null;
+  } | null;
+  /** The partner's billing currency (null without prices). */
+  currency: string | null;
   areas: AreaDeCobertura[];
   companies: PinDeEmpresa[];
+  /** Figures of the companies outside every city. */
+  outside: CifrasDeCobertura;
+  /** Figures of every company (the country card). */
+  stats: CifrasDeCobertura;
   totals: { companies: number; located: number; outside: number; unlocated: number };
 }
 
