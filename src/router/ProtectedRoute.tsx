@@ -1,10 +1,11 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import AppLayout from "@/layouts/AppLayout";
 import AuthLayout from "@/layouts/AuthLayout";
 import { Boton } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
+import api from "@/services/api";
 
 /**
  * La puerta de las rutas del panel.
@@ -26,6 +27,14 @@ export function ProtectedRoute({
   const { cargando, autenticado, motivo, mensaje, recargar, salir } = useResellerAuth();
   const location = useLocation();
   const t = useT();
+
+  /* La pantalla que abre, para el Historial del distribuidor en superadmin
+     (dónde entra, dónde se atasca). Sólo la RUTA, sin consulta; el servidor
+     la cuenta una vez cada 10 minutos. Nunca frena ni avisa de nada. */
+  useEffect(() => {
+    if (!autenticado) return;
+    api.post("/reseller/journey/page", { path: location.pathname }).catch(() => undefined);
+  }, [autenticado, location.pathname]);
 
   // Mientras se valida la sesión guardada no se enseña ni el armazón: pintar
   // media pantalla y quitarla después es peor que esperar un momento.
