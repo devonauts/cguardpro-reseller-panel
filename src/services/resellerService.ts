@@ -1312,6 +1312,8 @@ export interface PinDeEmpresa {
 }
 
 export interface MapaDeCobertura {
+  /** The partner's country and its frame [south, west, north, east]: what the map opens on when there is nothing else. */
+  country: { code: string; bbox: [number, number, number, number] } | null;
   areas: AreaDeCobertura[];
   companies: PinDeEmpresa[];
   totals: { companies: number; located: number; outside: number; unlocated: number };

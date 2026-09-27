@@ -3,7 +3,6 @@ import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, useMap } from "r
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
-import useModoOscuro from "@/branding/useModoOscuro";
 import { EstadoDeDatos, Panel } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
 import { coverageService, type MapaDeCobertura } from "@/services/resellerService";
@@ -22,12 +21,15 @@ import "./CoverageMap.scss";
  * placed on the map; it is counted apart.
  *
  * Base map: OpenStreetMap's tiles, no brand of ours anywhere; the platform's
- * own tile server replaces them when it carries these countries.
+ * own tile server replaces them when it carries these countries. The panel is
+ * ALWAYS dark (html { color-scheme: dark }), whatever the operating system
+ * says, so the tiles are always toned dark — asking the OS gave a white map
+ * on a dark panel.
  * ════════════════════════════════════════════════════════════════════════════
  */
 
-/* OpenStreetMap's own tiles, attributed. In dark mode the same tiles are toned
-   down with a CSS filter (see the .scss), so there is one source, no key. */
+/* OpenStreetMap's own tiles, attributed, toned dark with a CSS filter (the
+   .scss): one source, no key. */
 const TILES = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const ATRIBUCION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
@@ -41,14 +43,19 @@ function Encuadre({ datos }: { datos: MapaDeCobertura }) {
       else if (a.center) caja.extend([a.center.lat, a.center.lng]);
     }
     for (const e of datos.companies) if (e.location) caja.extend([e.location.lat, e.location.lng]);
-    if (caja.isValid()) mapa.fitBounds(caja, { padding: [28, 28], maxZoom: 12 });
+    if (caja.isValid()) {
+      mapa.fitBounds(caja, { padding: [28, 28], maxZoom: 12 });
+    } else if (datos.country) {
+      // Nothing to frame yet: the partner's country, never the open ocean.
+      const [s, w, n, e] = datos.country.bbox;
+      mapa.fitBounds([[s, w], [n, e]], { padding: [16, 16] });
+    }
   }, [datos, mapa]);
   return null;
 }
 
 export function CoverageMap() {
   const t = useT();
-  const oscuro = useModoOscuro();
   const [datos, setDatos] = useState<MapaDeCobertura | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +97,7 @@ export function CoverageMap() {
             {!datos.areas.length ? (
               <p className="cobertura__vacio">{t("cobertura.sinCiudades")}</p>
             ) : (
-              <div className={`cobertura__mapa${oscuro ? " cobertura__mapa--oscuro" : ""}`}>
+              <div className="cobertura__mapa">
                 <MapContainer center={[20, -80]} zoom={3} scrollWheelZoom={false} attributionControl>
                   <TileLayer url={TILES} attribution={ATRIBUCION} maxZoom={18} />
                   {datos.areas.filter((a) => a.geojson).map((a) => (
