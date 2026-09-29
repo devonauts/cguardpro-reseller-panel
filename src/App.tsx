@@ -8,6 +8,7 @@ import MisApps from "@/pages/apps/MisApps";
 import Actividad from "@/pages/Actividad";
 import Analitica from "@/pages/Analitica";
 import Cuenta from "@/pages/Cuenta";
+import Perfil from "@/pages/Perfil";
 import Equipo from "@/pages/Equipo";
 import Soporte from "@/pages/Soporte";
 import AuthLayout from "@/layouts/AuthLayout";
@@ -108,6 +109,7 @@ export default function App() {
       <Route path="/apps" element={<ProtectedRoute><MisApps /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Actividad /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Cuenta /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
       <Route path="/analytics" element={<ProtectedRoute><Analitica /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><Equipo /></ProtectedRoute>} />
       <Route path="/support" element={<ProtectedRoute><Soporte /></ProtectedRoute>} />

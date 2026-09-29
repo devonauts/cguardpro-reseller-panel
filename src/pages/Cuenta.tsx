@@ -8,8 +8,6 @@ import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { nombreDeRol } from "@/lib/rolDeSocio";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import { CambiarContrasena } from "@/components/cuenta/CambiarContrasena";
-import { MiPerfil } from "@/components/cuenta/MiPerfil";
 import "./Cuenta.scss";
 
 /**
@@ -17,8 +15,9 @@ import "./Cuenta.scss";
  * TU CUENTA — Y POR QUÉ ESTA PANTALLA NO GUARDA NADA
  *
  * Se auditó qué puede cambiar un socio de sí mismo: de la EMPRESA, nada que no
- * viva ya en otra pantalla. De la PERSONA sí: su nombre y su foto (`MiPerfil`)
- * y su contraseña (`CambiarContrasena`).
+ * viva ya en otra pantalla. Lo de la PERSONA —foto, nombre y contraseña— vive
+ * en «Mi perfil» (`/profile`), al que se entra desde la ficha de la barra
+ * superior.
  *
  *   · correo, teléfono y web de soporte, y el lema → son de la MARCA, que tiene
  *     su propia pantalla con borrador y publicación. Duplicarlos aquí daría dos
@@ -75,9 +74,6 @@ export function Cuenta() {
   return (
     <Pagina titulo={t("cuenta.titulo")} nota={t("cuenta.nota")}>
 
-      {/* Nombre y foto de la persona: lo suyo, para cualquier rol. */}
-      <MiPerfil />
-
       {!veCuenta && me && (
         <Tarjeta>
           <TarjetaCabecera titulo={t("cuenta.tuSesion")} />
@@ -86,6 +82,7 @@ export function Cuenta() {
             <Dato etiqueta={t("cuenta.correo")} valor={me.user.email || "—"} />
             <Dato etiqueta={t("cuenta.rol")} valor={me.membership?.role ? nombreDeRol(me.membership.role) : "—"} />
           </div>
+          <p className="cuenta__nota"><Link to="/profile">{t("perfil.pagina")}</Link> · {t("cuenta.enlacePerfil")}</p>
         </Tarjeta>
       )}
 
@@ -121,26 +118,14 @@ export function Cuenta() {
               <p className="cuenta__nota">{t("cuenta.notaFacturacion")}</p>
             </Tarjeta>
 
-            <Tarjeta>
-              <TarjetaCabecera titulo={t("cuenta.tuSesion")} />
-              <div className="cuenta__rejilla">
-                <Dato
-                  etiqueta={t("cuenta.persona")}
-                  valor={c.session.fullName || c.session.email || "—"}
-                />
-                <Dato etiqueta={t("cuenta.correo")} valor={c.session.email || "—"} />
-                <Dato
-                  etiqueta={t("cuenta.rol")}
-                  /* El MISMO nombre que en Equipo: esta pantalla tenía su
-                     propia tabla, y una de las dos iba a quedarse vieja. */
-                  valor={c.session.role ? nombreDeRol(c.session.role) : "—"}
-                />
-              </div>
-            </Tarjeta>
 
             <Tarjeta>
               <TarjetaCabecera titulo={t("cuenta.dondeSeCambia")} />
               <ul className="cuenta__enlaces">
+                <li>
+                  <Link to="/profile">{t("perfil.pagina")}</Link>
+                  <span>{t("cuenta.enlacePerfil")}</span>
+                </li>
                 <li>
                   <Link to="/branding">{t("nav.marca")}</Link>
                   <span>{t("cuenta.enlaceMarca")}</span>
@@ -159,8 +144,6 @@ export function Cuenta() {
         )}
       </EstadoDeDatos>
       )}
-
-      <CambiarContrasena />
     </Pagina>
   );
 }

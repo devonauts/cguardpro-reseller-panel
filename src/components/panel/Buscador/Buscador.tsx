@@ -52,6 +52,7 @@ const SECCIONES: Seccion[] = [
   { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
   { a: "/support", icono: "auriculares", texto: "nav.soporte" },
   { a: "/account", icono: "engranaje", texto: "nav.ajustesCorto" },
+  { a: "/profile", icono: "personas", texto: "armazon.miPerfil" },
 ];
 
 /** ⌘K on a Mac, Ctrl K everywhere else — both work, but say the right one. */

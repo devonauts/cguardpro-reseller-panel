@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Boton, Emergente, Icono } from "@/components/cristal";
 import { Avatar } from "../Avatar";
@@ -42,6 +42,7 @@ export function BarraSuperior({
 }) {
   const t = useT();
   const [cuentaAbierta, setCuentaAbierta] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <header className="barra">
@@ -95,8 +96,25 @@ export function BarraSuperior({
             onCerrar={() => setCuentaAbierta(false)}
             etiqueta={t("armazon.miCuenta")}
           >
-            {correo && <div className="barra__correo">{correo}</div>}
-            <Boton variante="fantasma" bloque role="menuitem" onClick={onSalir}>
+            <div className="barra__quien">
+              <Avatar nombre={persona} foto={foto} tamano={40} />
+              <div className="barra__quien-texto">
+                <span className="barra__quien-nombre">{persona}</span>
+                {correo && <span className="barra__correo">{correo}</span>}
+              </div>
+            </div>
+            <Boton
+              variante="fantasma"
+              bloque
+              role="menuitem"
+              className="barra__opcion"
+              onClick={() => { setCuentaAbierta(false); navigate("/profile"); }}
+            >
+              <Icono nombre="personas" tamano={16} />
+              {t("armazon.miPerfil")}
+            </Boton>
+            <Boton variante="fantasma" bloque role="menuitem" className="barra__opcion" onClick={onSalir}>
+              <Icono nombre="flecha" tamano={16} />
               {t("armazon.cerrarSesion")}
             </Boton>
           </Emergente>
