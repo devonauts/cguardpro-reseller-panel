@@ -1180,6 +1180,41 @@ export interface FacturasAClientes {
   months: string[];
 }
 
+/** UNA factura del socio a un cliente, entera: qué, cuántos usuarios y por dónde se pagó. */
+export interface DetalleDeFacturaACliente {
+  id: string;
+  folio: string;
+  kind: string;
+  status: string;
+  currency: string;
+  totalCents: number;
+  amountPaidCents: number;
+  refundedCents: number;
+  disputeStatus: string | null;
+  issuedAt: string | null;
+  dueAt: string | null;
+  paidAt: string | null;
+  period: { desde: string; hasta: string } | null;
+  users: number;
+  lines: FacturaACliente["lines"];
+  payment: {
+    provider: string | null;
+    mode: string | null;
+    accountLabel: string | null;
+    cardBrand: string | null;
+    cardLast4: string | null;
+    /** La referencia del cobro en la pasarela del socio (sólo si está pagada). */
+    reference: string | null;
+    attempts: number;
+    lastAttemptAt: string | null;
+    lastError: string | null;
+  };
+  company: {
+    id: string; name: string | null; legalName: string | null; taxNumber: string | null;
+    email: string | null; phone: string | null; address: string | null;
+  };
+}
+
 /** Cómo son las facturas del socio: numeración, emisor y estilo. */
 export interface FormatoDeFacturas {
   prefix: string;
@@ -1211,6 +1246,8 @@ export const cobroAEmpresasService = {
     obtenerArchivo("/reseller/company-billing/formato/vista-previa", {
       ...f, showLogo: f.showLogo ? "1" : "0", sendToClient: undefined, nextFolio: undefined, brandColor: undefined,
     }),
+  factura: (id: string) =>
+    get<DetalleDeFacturaACliente>(`/reseller/company-billing/invoices/${encodeURIComponent(id)}`),
   descargarFactura: (id: string, folio: string) =>
     descargarArchivo(`/reseller/company-billing/invoices/${encodeURIComponent(id)}/pdf`, `${folio}.pdf`),
   /** Las facturas a SUS clientes: pagadas y por cobrar. */

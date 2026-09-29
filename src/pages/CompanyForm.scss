@@ -232,3 +232,4 @@
   .ficha-facturas__fila { grid-template-columns: minmax(0, 1fr) auto; }
   .ficha-facturas__fila > :nth-child(3) { display: none; }
 }
+.ficha-facturas__principal { text-decoration: none; color: inherit; &:hover .ficha-facturas__folio { text-decoration: underline; } }

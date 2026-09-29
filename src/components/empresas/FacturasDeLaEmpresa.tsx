@@ -61,12 +61,12 @@ export function FacturasDeLaEmpresa({ tenantId, filas, total }: {
         <ul className="ficha-facturas">
           {filas.map((f) => (
             <li key={f.id} className="ficha-facturas__fila">
-              <div className="ficha-facturas__principal">
+              <Link to={`/revenue/${f.id}`} className="ficha-facturas__principal">
                 <span className="ficha-facturas__folio">{f.folio}</span>
                 <span className="ficha-facturas__meta">
                   {CONCEPTO[f.kind] ? t(CONCEPTO[f.kind]) : f.kind} · {fechaCorta(f.issuedAt)}
                 </span>
-              </div>
+              </Link>
               <span className="ficha-facturas__importe">{dinero(f.totalCents, f.currency)}</span>
               <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
                 {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}

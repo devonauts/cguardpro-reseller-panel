@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { Boton, EstadoDeDatos, Icono, Pildora, Selector, type Tono } from "@/components/cristal";
 import { Grafica } from "@/components/panel/Grafica";
@@ -8,7 +8,6 @@ import type { Clave } from "@/i18n/idioma";
 import { dinero, fechaCorta, precio } from "@/lib/dinero";
 import {
   cobroAEmpresasService,
-  type FacturaACliente,
   type FacturasAClientes as Respuesta,
 } from "@/services/resellerService";
 import "./Billing.scss";
@@ -54,6 +53,7 @@ const POR_PAGINA = 50;
 
 export function Ingresos() {
   const { t, idioma } = useIdioma();
+  const navigate = useNavigate();
   const [filtro, setFiltro] = useState<Filtro>("");
   /* Desde la ficha de una empresa se llega ya filtrado (`?empresa=<id>`). */
   const [params] = useSearchParams();
@@ -62,7 +62,6 @@ export function Ingresos() {
   const [empresas, setEmpresas] = useState<Array<{ id: string; name: string | null }>>([]);
   /** La moneda en que cobra el socio (la de su país): manda en los totales. */
   const [monedaDeCobro, setMonedaDeCobro] = useState<string | null>(null);
-  const [abierta, setAbierta] = useState<string | null>(null);
   const [cargando, setCargando] = useState(true);
   const [masCargando, setMasCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -198,7 +197,7 @@ export function Ingresos() {
                     type="button"
                     aria-pressed={filtro === v}
                     className={`pestanas__boton${filtro === v ? " pestanas__boton--activa" : ""}`}
-                    onClick={() => { setFiltro(v); setAbierta(null); }}
+                    onClick={() => { setFiltro(v); }}
                   >
                     {t(texto)}
                   </button>
@@ -209,7 +208,7 @@ export function Ingresos() {
                   compacto
                   etiquetaOculta={t("ingresos.filtroEmpresa")}
                   value={empresa}
-                  onChange={(e) => { setEmpresa(e.target.value); setAbierta(null); }}
+                  onChange={(e) => { setEmpresa(e.target.value); }}
                 >
                   <option value="">{t("ingresos.todasLasEmpresas")}</option>
                   {empresas.map((e) => <option key={e.id} value={e.id}>{e.name || t("empresas.sinNombre")}</option>)}
@@ -240,12 +239,12 @@ export function Ingresos() {
                 </div>
                 {datos.rows.map((f) => (
                   <div key={f.id} className="facturas__grupo">
+                    {/* Pulsar abre el DETALLE de la factura (qué, cuántos usuarios y por dónde se pagó). */}
                     <button
                       type="button"
                       role="row"
-                      className={`facturas__fila${f.id === abierta ? " facturas__fila--abierta" : ""}`}
-                      aria-expanded={f.id === abierta}
-                      onClick={() => setAbierta((a) => (a === f.id ? null : f.id))}
+                      className="facturas__fila"
+                      onClick={() => navigate(`/revenue/${f.id}`)}
                     >
                       <span role="cell" className="facturas__numero">{f.folio}</span>
                       <span role="cell" className="ingresos__cliente">{f.company.name || t("empresas.sinNombre")}</span>
@@ -258,7 +257,6 @@ export function Ingresos() {
                         </Pildora>
                       </span>
                     </button>
-                    {f.id === abierta && <Detalle f={f} />}
                   </div>
                 ))}
                 {datos.rows.length < datos.count && (
@@ -274,86 +272,6 @@ export function Ingresos() {
         </section>
       </div>
     </>
-  );
-}
-
-function Detalle({ f }: { f: FacturaACliente }) {
-  const { t } = useIdioma();
-  const [bajando, setBajando] = useState(false);
-  const [fallo, setFallo] = useState<string | null>(null);
-  const saldo = f.totalCents - f.amountPaidCents;
-
-  const descargar = async () => {
-    setBajando(true);
-    setFallo(null);
-    try {
-      await cobroAEmpresasService.descargarFactura(f.id, f.folio);
-    } catch (e: any) {
-      setFallo(e?.message || t("ingresos.noDescargo"));
-    } finally {
-      setBajando(false);
-    }
-  };
-
-  return (
-    <div className="facturas__detalle">
-      <p className="facturas__meta">
-        {t("ingresos.metaEmitida", { f: fechaCorta(f.issuedAt) })}
-        {f.paidAt
-          ? ` · ${t("ingresos.metaPagada", { f: fechaCorta(f.paidAt) })}`
-          : f.dueAt ? ` · ${t("ingresos.metaVence", { f: fechaCorta(f.dueAt) })}` : ""}
-        {f.attempts > 0 && f.status !== "paid" ? ` · ${t("ingresos.metaIntentos", { n: f.attempts })}` : ""}
-      </p>
-      {f.lastError && (
-        <p className="ingresos__fallo" role="note">{t("ingresos.ultimoFallo", { m: f.lastError })}</p>
-      )}
-      <ul className="lineas">
-        {f.lines.map((l, i) => (
-          <li key={i} className="linea">
-            <div className="linea__texto">
-              <span className="linea__concepto">
-                {l.kind && LINEA[l.kind] ? t(LINEA[l.kind]) : (l.description || "—")}
-              </span>
-              {l.quantity > 1 && (
-                <span className="linea__detalle">{`${l.quantity} × ${dinero(l.unitAmountCents, f.currency)}`}</span>
-              )}
-            </div>
-            <span className="linea__importe">{dinero(l.amountCents, f.currency)}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="totales">
-        <div className="totales__fila totales__fila--fuerte">
-          <span>{t("ingresos.total")}</span>
-          <span>{dinero(f.totalCents, f.currency)}</span>
-        </div>
-        <div className="totales__fila">
-          <span>{t("ingresos.pagado")}</span>
-          <span>{dinero(f.amountPaidCents, f.currency)}</span>
-        </div>
-        {f.status === "open" && saldo > 0 && (
-          <div className="totales__fila">
-            <span>{t("ingresos.saldo")}</span>
-            <span>{dinero(saldo, f.currency)}</span>
-          </div>
-        )}
-        {f.refundedCents > 0 && (
-          <div className="totales__fila">
-            <span>{t("ingresos.reembolsado")}</span>
-            <span>{dinero(f.refundedCents, f.currency)}</span>
-          </div>
-        )}
-      </div>
-      {fallo && <p role="alert" className="ingresos__fallo">{fallo}</p>}
-      <div className="facturas__acciones">
-        <Boton variante="suave" cargando={bajando} onClick={descargar}>
-          {t("ingresos.descargarPdf")}
-        </Boton>
-        <Link to={`/companies/${f.company.id}`} className="bloque__enlace">
-          {t("ingresos.verEmpresa")} <Icono nombre="flecha" tamano={14} />
-        </Link>
-      </div>
-    </div>
   );
 }
 
