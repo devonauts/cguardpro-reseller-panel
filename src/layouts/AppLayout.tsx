@@ -70,6 +70,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
           menuAbierto={menuAbierto}
           onAlternarMenu={() => setMenuAbierto((v) => !v)}
           persona={persona}
+          foto={me?.user.avatarUrl}
           rol={me?.membership?.role ? nombreDeRol(me.membership.role) : null}
           correo={me?.user.email}
           onSalir={salir}

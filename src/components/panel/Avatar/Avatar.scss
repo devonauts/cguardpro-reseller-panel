@@ -12,4 +12,7 @@
   letter-spacing: 0.02em;
   /* Las iniciales no se seleccionan: son un adorno, no un dato que copiar. */
   user-select: none;
+  overflow: hidden;
 }
+
+.avatar__foto { width: 100%; height: 100%; object-fit: cover; display: block; }

@@ -1,12 +1,19 @@
+import { useEffect, useState } from "react";
+
 import "./Avatar.scss";
 
 /**
  * Las iniciales de una persona, en un disco de cristal.
  *
- * Sin foto: el panel de socio no guarda ninguna, y un hueco gris donde debería
- * ir una cara se lee como un error. Dos letras siempre están bien.
+ * Con `foto`, la foto; sin ella —o si no carga— las iniciales: un hueco gris
+ * donde debería ir una cara se lee como un error. Dos letras siempre están bien.
  */
-export function Avatar({ nombre, tamano = 36 }: { nombre: string; tamano?: number }) {
+export function Avatar({
+  nombre, tamano = 36, foto,
+}: { nombre: string; tamano?: number; foto?: string | null }) {
+  const [rota, setRota] = useState(false);
+  useEffect(() => { setRota(false); }, [foto]);
+
   const iniciales = nombre
     .split(/\s+/)
     .filter(Boolean)
@@ -20,7 +27,9 @@ export function Avatar({ nombre, tamano = 36 }: { nombre: string; tamano?: numbe
       style={{ width: tamano, height: tamano, fontSize: Math.round(tamano * 0.36) }}
       aria-hidden="true"
     >
-      {iniciales}
+      {foto && !rota
+        ? <img className="avatar__foto" src={foto} alt="" onError={() => setRota(true)} />
+        : iniciales}
     </span>
   );
 }

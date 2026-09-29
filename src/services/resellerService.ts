@@ -23,6 +23,8 @@ export interface ResellerMe {
     firstName: string | null;
     lastName: string | null;
     fullName: string | null;
+    /** Foto de perfil (enlace firmado), o null. */
+    avatarUrl?: string | null;
   };
   membership: { role: string | null; status: string | null };
   /** Permisos EFECTIVOS. Sirven para esconder, nunca para autorizar: cada ruta

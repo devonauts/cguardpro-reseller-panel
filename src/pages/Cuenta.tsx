@@ -9,14 +9,16 @@ import type { Clave } from "@/i18n/idioma";
 import { nombreDeRol } from "@/lib/rolDeSocio";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import { CambiarContrasena } from "@/components/cuenta/CambiarContrasena";
+import { MiPerfil } from "@/components/cuenta/MiPerfil";
 import "./Cuenta.scss";
 
 /**
  * ════════════════════════════════════════════════════════════════════════════
  * TU CUENTA — Y POR QUÉ ESTA PANTALLA NO GUARDA NADA
  *
- * Se auditó qué puede cambiar un socio de sí mismo. Hoy la respuesta es: nada
- * que no viva ya en otra pantalla.
+ * Se auditó qué puede cambiar un socio de sí mismo: de la EMPRESA, nada que no
+ * viva ya en otra pantalla. De la PERSONA sí: su nombre y su foto (`MiPerfil`)
+ * y su contraseña (`CambiarContrasena`).
  *
  *   · correo, teléfono y web de soporte, y el lema → son de la MARCA, que tiene
  *     su propia pantalla con borrador y publicación. Duplicarlos aquí daría dos
@@ -72,6 +74,9 @@ export function Cuenta() {
 
   return (
     <Pagina titulo={t("cuenta.titulo")} nota={t("cuenta.nota")}>
+
+      {/* Nombre y foto de la persona: lo suyo, para cualquier rol. */}
+      <MiPerfil />
 
       {!veCuenta && me && (
         <Tarjeta>

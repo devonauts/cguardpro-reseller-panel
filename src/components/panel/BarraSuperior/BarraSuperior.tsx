@@ -28,11 +28,13 @@ import "./BarraSuperior.scss";
  * ════════════════════════════════════════════════════════════════════════════
  */
 export function BarraSuperior({
-  menuAbierto, onAlternarMenu, persona, rol, correo, onSalir, estado,
+  menuAbierto, onAlternarMenu, persona, foto, rol, correo, onSalir, estado,
 }: {
   menuAbierto: boolean;
   onAlternarMenu: () => void;
   persona: string;
+  /** Foto de perfil de la persona; sin ella, iniciales. */
+  foto?: string | null;
   rol?: string | null;
   correo?: string | null;
   onSalir: () => void;
@@ -80,7 +82,7 @@ export function BarraSuperior({
             aria-haspopup="menu"
             onClick={() => setCuentaAbierta((v) => !v)}
           >
-            <Avatar nombre={persona} tamano={34} />
+            <Avatar nombre={persona} foto={foto} tamano={34} />
             <span className="barra__ficha-texto">
               <span className="barra__ficha-nombre">{persona}</span>
               {rol && <span className="barra__ficha-rol">{rol}</span>}
