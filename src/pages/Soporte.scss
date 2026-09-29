@@ -54,3 +54,18 @@
   white-space: pre-wrap; overflow-wrap: anywhere;
 }
 .soporte__pendiente { margin: var(--s-3) 0 0; color: var(--text-muted); font-size: 0.82rem; }
+
+/* El ticket al que se llega desde la campana: un halo que se apaga solo. */
+.soporte__ticket--destacado {
+  border-radius: var(--r-sm);
+  animation: soporte-destacado 2.4s ease-out;
+}
+
+@keyframes soporte-destacado {
+  0%, 35% { box-shadow: 0 0 0 2px var(--glass-border-highlight); background: var(--glass-interactive); }
+  100% { box-shadow: 0 0 0 0 transparent; background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .soporte__ticket--destacado { animation: none; background: var(--glass-interactive); }
+}

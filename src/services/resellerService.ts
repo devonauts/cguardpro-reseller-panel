@@ -598,6 +598,26 @@ export interface TicketNuevo {
   pageUrl?: string;
 }
 
+/** Un aviso de la campana. El texto lo escribe el panel según `tipo` y `datos`. */
+export interface Notificacion {
+  id: string;
+  /** `ticket.respuesta` · `ticket.en_curso` · `ticket.resuelto` · `ticket.reabierto` */
+  tipo: string;
+  datos: { ticketId?: string; asunto?: string; estado?: string; respuesta?: string | null; [k: string]: any };
+  /** Ruta del panel a la que lleva (p. ej. `/support?ticket=…`). */
+  enlace: string | null;
+  leido: boolean;
+  createdAt: string;
+}
+
+export const notificacionesService = {
+  lista: (limit = 30) =>
+    get<{ rows: Notificacion[]; noLeidos: number }>("/reseller/notificaciones", { limit }),
+  /** Sin `ids`: todas. */
+  marcarLeidas: (ids?: string[]) =>
+    post<{ marcados: number }>("/reseller/notificaciones/leidas", ids ? { ids } : {}),
+};
+
 export const soporteService = {
   lista: () => get<{ rows: TicketDeSoporte[] }>("/reseller/support/tickets"),
   crear: (datos: TicketNuevo) => post<TicketDeSoporte>("/reseller/support/tickets", datos),

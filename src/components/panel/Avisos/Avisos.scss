@@ -20,26 +20,70 @@
   &:focus-visible { outline: none; box-shadow: var(--focus); }
 }
 
-/* El punto va en ROJO semántico y con borde del lienzo, para que se recorte
-   contra el cristal en vez de fundirse con él. */
-.avisos__punto {
+/* Cuando llega un aviso en vivo, la campana se mueve un momento. */
+.avisos__boton--timbre svg { animation: avisos-timbre 0.9s ease-in-out; transform-origin: 50% 15%; }
+
+@keyframes avisos-timbre {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(14deg); }
+  30% { transform: rotate(-12deg); }
+  45% { transform: rotate(9deg); }
+  60% { transform: rotate(-6deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avisos__boton--timbre svg { animation: none; }
+}
+
+/* El contador va en ROJO semántico y con borde del lienzo, para que se
+   recorte contra el cristal en vez de fundirse con él. */
+.avisos__contador {
   position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 7px;
-  height: 7px;
+  top: 4px;
+  right: 3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
   border-radius: var(--r-full);
   background: var(--danger);
+  color: var(--text-primary);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1;
   box-shadow: 0 0 0 2px var(--canvas);
 }
 
-.avisos__titulo {
+.avisos__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
   padding: var(--s-1) var(--s-2) var(--s-3);
+  min-width: 300px;
+}
+
+.avisos__titulo {
+  margin: 0;
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--text-muted);
+}
+
+.avisos__marcar {
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
 }
 
 .avisos__lista {
@@ -48,22 +92,88 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  max-height: 260px;
+  gap: 2px;
+  max-height: 360px;
   overflow-y: auto;
-
-  li { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--s-2); }
+  width: min(340px, calc(100vw - 48px));
 }
+
+.avisos__item {
+  display: flex;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-2);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+/* El punto de «no leído»; en los leídos queda el hueco para que todo alinee. */
+.avisos__marca {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-top: 6px;
+  border-radius: var(--r-full);
+}
+.avisos__item--nuevo .avisos__marca { background: var(--danger); }
+
+.avisos__cuerpo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 
 .avisos__accion {
   font-size: 13px;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   overflow-wrap: anywhere;
+}
+.avisos__item--nuevo .avisos__accion { color: var(--text-primary); font-weight: 600; }
+
+.avisos__detalle { font-size: 12.5px; color: var(--text-primary); overflow-wrap: anywhere; }
+
+.avisos__respuesta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .avisos__cuando { font-size: 11.5px; color: var(--text-muted); }
 
-.avisos__vacio { padding: var(--s-3) var(--s-2); font-size: 13px; color: var(--text-muted); }
+.avisos__esqueleto {
+  height: 44px;
+  margin: 0 var(--s-2) var(--s-2);
+  border-radius: var(--r-sm);
+  background: var(--glass-interactive);
+  animation: avisos-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes avisos-latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avisos__esqueleto { animation: none; }
+}
+
+.avisos__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-5) var(--s-2);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  width: min(340px, calc(100vw - 48px));
+}
 
 .avisos__todo {
   display: block;

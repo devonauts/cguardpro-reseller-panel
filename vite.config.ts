@@ -47,6 +47,8 @@ export default defineConfig({
       "/api": {
         target: process.env.VITE_DEV_API_TARGET || "http://localhost:8080",
         changeOrigin: true,
+        // El websocket de la campana (`/api/socket.io`) también pasa por aquí.
+        ws: true,
       },
     },
   },

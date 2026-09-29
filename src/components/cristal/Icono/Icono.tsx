@@ -19,9 +19,15 @@ export type NombreDeIcono =
   | "globo" | "galon" | "flecha" | "grafico"
   | "casa" | "edificio" | "paleta" | "personas" | "tarjeta" | "engranaje"
   | "lupa" | "corona" | "libro" | "auriculares" | "bocadillo" | "mas"
-  | "sol" | "puntos" | "visto" | "moneda" | "copiar" | "movil";
+  | "sol" | "puntos" | "visto" | "moneda" | "copiar" | "movil" | "campana";
 
 const TRAZOS: Record<NombreDeIcono, JSX.Element> = {
+  campana: (
+    <>
+      <path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2H4.5l1.5-2Z" />
+      <path d="M10 20.5a2 2 0 0 0 4 0" />
+    </>
+  ),
   movil: (
     <>
       <rect x="6.5" y="2.5" width="11" height="19" rx="2.5" />

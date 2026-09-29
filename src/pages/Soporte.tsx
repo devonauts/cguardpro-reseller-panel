@@ -1,7 +1,9 @@
 import { FormEvent, useCallback, useEffect, useId, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Boton, Campo, EstadoDeDatos, Pildora, Selector, Tarjeta, TarjetaCabecera, type Tono } from "@/components/cristal";
 import { Pagina } from "@/components/panel";
+import { EVENTO_AVISO } from "@/components/panel/Avisos";
 import { fechaYHora } from "@/lib/dinero";
 import {
   companiesService, soporteService,
@@ -156,19 +158,42 @@ export function Soporte() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const cargar = useCallback(async () => {
-    setCargando(true);
+  const [params] = useSearchParams();
+  const destacado = params.get("ticket");
+
+  const cargar = useCallback(async (silencioso = false) => {
+    if (!silencioso) setCargando(true);
     setError(null);
     try {
       setTickets((await soporteService.lista()).rows ?? []);
     } catch (e: any) {
-      setError(e?.message || t("soporte.noCargo"));
+      if (!silencioso) setError(e?.message || t("soporte.noCargo"));
     } finally {
-      setCargando(false);
+      if (!silencioso) setCargando(false);
     }
   }, [t]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  /* Llega un aviso por el websocket (el superadmin cambió o contestó un
+     ticket): la lista se refresca SOLA, sin esqueleto ni parpadeo. */
+  useEffect(() => {
+    const alAviso = () => { void cargar(true); };
+    window.addEventListener(EVENTO_AVISO, alAviso);
+    return () => window.removeEventListener(EVENTO_AVISO, alAviso);
+  }, [cargar]);
+
+  /* Desde la campana se llega con `?ticket=<id>`: ése se centra y se resalta. */
+  useEffect(() => {
+    if (!destacado || cargando) return;
+    /* Un instante después y SIN animación: al cerrarse la campana devuelve el
+       foco a su botón, y eso cancelaba un desplazamiento suave lanzado antes.
+       El halo del ticket ya dice cuál es. */
+    const id = window.setTimeout(() => {
+      document.getElementById(`ticket-${destacado}`)?.scrollIntoView({ block: "center" });
+    }, 300);
+    return () => window.clearTimeout(id);
+  }, [destacado, cargando]);
 
   useEffect(() => {
     let vivo = true;
@@ -190,11 +215,15 @@ export function Soporte() {
             error={error}
             vacio={!cargando && !error && tickets.length === 0}
             etiquetaVacio={t("soporte.vacio")}
-            onReintentar={cargar}
+            onReintentar={() => cargar()}
           >
             <ul className="soporte__lista">
               {tickets.map((k) => (
-                <li key={k.id} className="soporte__ticket">
+                <li
+                  key={k.id}
+                  id={`ticket-${k.id}`}
+                  className={`soporte__ticket${k.id === destacado ? " soporte__ticket--destacado" : ""}`}
+                >
                   <div className="soporte__cab">
                     <span className="soporte__asunto">{k.subject}</span>
                     <Pildora tono={TONO[k.status] ?? "neutro"}>

@@ -1,1 +1,1 @@
-export { Avisos, default } from "./Avisos";
+export { Avisos, EVENTO_AVISO, default } from "./Avisos";
