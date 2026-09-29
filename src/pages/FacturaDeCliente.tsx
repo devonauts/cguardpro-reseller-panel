@@ -6,6 +6,7 @@ import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { dinero, fechaCorta, precio } from "@/lib/dinero";
 import { cobroAEmpresasService, type DetalleDeFacturaACliente } from "@/services/resellerService";
+import { claveDelFallo, esDelSocio } from "@/lib/falloDeCobro";
 import "./Billing.scss";
 import "./FacturaDeCliente.scss";
 
@@ -150,7 +151,7 @@ export function FacturaDeCliente() {
                 </span>
               </section>
               <section className="saldo-ficha">
-                <span className="saldo-ficha__etiqueta">{t("facturaCliente.metodo")}</span>
+                <span className="saldo-ficha__etiqueta">{t(pagada ? "facturaCliente.metodo" : "facturaCliente.seCobraCon")}</span>
                 <span className="saldo-ficha__valor factura-cliente__valor-texto">
                   {tarjeta || (f.payment.provider ? PASARELA[f.payment.provider] || f.payment.provider : "—")}
                 </span>
@@ -246,8 +247,14 @@ export function FacturaDeCliente() {
                     )}
                     <div><dt>{t("facturaCliente.intentos")}</dt><dd>{f.payment.attempts || (pagada ? 1 : 0)}</dd></div>
                   </dl>
-                  {f.payment.lastError && (
-                    <p className="ingresos__fallo factura-cliente__fallo">{t("ingresos.ultimoFallo", { m: f.payment.lastError })}</p>
+                  {claveDelFallo(f.payment.lastErrorKind, f.payment.lastErrorCode) && (
+                    <div className={`factura-cliente__fallo-caja${esDelSocio(f.payment.lastErrorKind) ? " factura-cliente__fallo-caja--socio" : ""}`} role="note">
+                      <strong>{t(esDelSocio(f.payment.lastErrorKind) ? "fallo.tituloSocio" : "fallo.tituloCliente")}</strong>
+                      <span>{t(claveDelFallo(f.payment.lastErrorKind, f.payment.lastErrorCode)!)}</span>
+                      {esDelSocio(f.payment.lastErrorKind) && (
+                        <Link to="/company-billing" className="bloque__enlace">{t("fallo.revisarPasarela")} <Icono nombre="flecha" tamano={13} /></Link>
+                      )}
+                    </div>
                   )}
                   {f.disputeStatus && (
                     <p className="ingresos__fallo factura-cliente__fallo">{t("facturaCliente.disputa", { e: f.disputeStatus })}</p>

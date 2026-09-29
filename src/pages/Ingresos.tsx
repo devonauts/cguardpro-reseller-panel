@@ -10,6 +10,7 @@ import {
   cobroAEmpresasService,
   type FacturasAClientes as Respuesta,
 } from "@/services/resellerService";
+import { claveDelFallo } from "@/lib/falloDeCobro";
 import "./Billing.scss";
 import "./Ingresos.scss";
 
@@ -255,6 +256,9 @@ export function Ingresos() {
                         <Pildora tono={ESTADO[f.status]?.tono ?? "neutro"}>
                           {ESTADO[f.status] ? t(ESTADO[f.status].texto) : f.status}
                         </Pildora>
+                        {claveDelFallo(f.lastErrorKind, f.lastErrorCode) && (
+                          <span className="ingresos__motivo">{t(claveDelFallo(f.lastErrorKind, f.lastErrorCode)!)}</span>
+                        )}
                       </span>
                     </button>
                   </div>

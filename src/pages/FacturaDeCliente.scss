@@ -94,3 +94,19 @@
   .factura-cliente__fila { grid-template-columns: minmax(0, 1fr) auto; }
   .factura-cliente__fila > :nth-child(2), .factura-cliente__fila > :nth-child(3) { display: none; }
 }
+
+.factura-cliente__fallo-caja {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  margin-top: var(--s-3);
+  padding: var(--s-3);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--r-sm);
+  background: var(--warn-soft);
+  font-size: 13px;
+  color: var(--text-primary);
+
+  strong { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--warn); }
+}
+.factura-cliente__fallo-caja--socio { border-color: var(--danger-line); background: var(--danger-soft); strong { color: var(--danger); } }

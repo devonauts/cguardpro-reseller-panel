@@ -297,8 +297,15 @@ function Pasarela({ datos, gestiona, onCambio }: { datos: CobroAEmpresas; gestio
           )}
         </div>
       )}
+      {/* La pasarela conectada que DEJÓ de aceptar sus claves: lo dice el
+          motor al fallar un cobro. Nunca el texto de Stripe. */}
+      {gw && gw.status === "connected" && /^gateway_(auth|request)/.test(gw.lastError || "") && !eligiendo && (
+        <p role="alert" className="cobros__error">
+          {t(/^gateway_auth/.test(gw.lastError || "") ? "fallo.clavesDeLaPasarela" : "fallo.configuracionDeLaPasarela")}
+        </p>
+      )}
       {gw && gw.status !== "connected" && gw.lastError && !eligiendo && (
-        <p role="alert" className="cobros__error">{gw.lastError}</p>
+        <p role="alert" className="cobros__error">{t("fallo.pasarelaNoConectada")}</p>
       )}
       {error && !eligiendo && <p role="alert" className="cobros__error">{error}</p>}
 

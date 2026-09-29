@@ -1165,8 +1165,11 @@ export interface FacturaACliente {
   dueAt: string | null;
   paidAt: string | null;
   attempts: number;
-  /** Por qué falló el último cobro (sólo si sigue por cobrar). */
+  /** Ya no trae texto: siempre null. El motivo va en `lastErrorKind`/`lastErrorCode`. */
   lastError: string | null;
+  /** De quién es el último fallo: tarjeta · autenticacion · configuracion · temporal. */
+  lastErrorKind?: string | null;
+  lastErrorCode?: string | null;
   company: { id: string; name: string | null };
 }
 
@@ -1208,6 +1211,8 @@ export interface DetalleDeFacturaACliente {
     attempts: number;
     lastAttemptAt: string | null;
     lastError: string | null;
+    lastErrorKind?: string | null;
+    lastErrorCode?: string | null;
   };
   company: {
     id: string; name: string | null; legalName: string | null; taxNumber: string | null;

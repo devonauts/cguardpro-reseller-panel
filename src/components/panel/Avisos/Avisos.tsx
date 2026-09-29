@@ -35,6 +35,7 @@ const TITULO: Record<string, Clave> = {
   "ticket.en_curso": "notificaciones.ticketEnCurso",
   "ticket.resuelto": "notificaciones.ticketResuelto",
   "ticket.reabierto": "notificaciones.ticketReabierto",
+  "cobro.pasarela": "notificaciones.pasarelaRota",
 };
 
 /** «hace 5 min», «ayer»… en el idioma del panel. */

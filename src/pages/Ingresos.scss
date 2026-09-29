@@ -56,3 +56,5 @@
 /* Las cifras en pesos son largas («$ 4.522.189,16 COP»): un punto menos para
    que quepan en una línea en las cuatro fichas. */
 .ingresos__resumen .saldo-ficha__valor { font-size: clamp(20px, 2vw, 26px); white-space: nowrap; }
+
+.ingresos__motivo { display: block; margin-top: 4px; font-size: 11.5px; color: var(--warn); text-align: right; }
