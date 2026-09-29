@@ -1147,8 +1147,38 @@ export interface CobroAEmpresas {
   companies: EmpresaCobrada[];
 }
 
+/** Una factura que el socio emite a UNA de sus empresas (su pasarela la cobra). */
+export interface FacturaACliente {
+  id: string;
+  number: string;
+  /** `inicio` (alta + primer ciclo) · `renovacion` · `asientos` (usuarios nuevos, prorrateado) */
+  kind: string;
+  status: "open" | "paid" | "void" | "refunded" | string;
+  currency: string;
+  totalCents: number;
+  amountPaidCents: number;
+  refundedCents: number;
+  lines: Array<{ kind: string | null; description: string | null; quantity: number; unitAmountCents: number; amountCents: number }>;
+  issuedAt: string | null;
+  dueAt: string | null;
+  paidAt: string | null;
+  attempts: number;
+  /** Por qué falló el último cobro (sólo si sigue por cobrar). */
+  lastError: string | null;
+  company: { id: string; name: string | null };
+}
+
+export interface FacturasAClientes {
+  count: number;
+  rows: FacturaACliente[];
+  totalsByCurrency: Record<string, { porCobrarCents: number; cobrado30Cents: number; cobradoTotalCents: number }>;
+}
+
 export const cobroAEmpresasService = {
   leer: () => get<CobroAEmpresas>("/reseller/company-billing"),
+  /** Las facturas a SUS clientes: pagadas y por cobrar. */
+  facturas: (q: { status?: string; tenantId?: string; limit?: number; offset?: number } = {}) =>
+    get<FacturasAClientes>("/reseller/company-billing/invoices", q),
   /** Las credenciales van una vez y no vuelven: el servidor nunca las devuelve. */
   conectar: (provider: string, credentials: Record<string, string>) =>
     put<PasarelaConectada>("/reseller/company-billing/gateway", { provider, credentials }),

@@ -555,3 +555,75 @@
 }
 
 .recibo__linea--aviso .recibo__concepto { color: var(--warn); }
+
+/* ── Las dos pestañas: tu cuenta con CGuard Pro · facturas a tus clientes ── */
+.pestanas {
+  display: inline-flex;
+  gap: var(--s-1);
+  padding: var(--s-1);
+  margin-bottom: var(--s-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--glass-interactive);
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.pestanas__boton {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: var(--s-2) var(--s-4);
+  border-radius: var(--r-full);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--motion) var(--ease), color var(--motion) var(--ease);
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.pestanas__boton--activa {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--glass-border-highlight);
+}
+
+.pestanas--pequenas {
+  margin-bottom: 0;
+  .pestanas__boton { padding: var(--s-1) var(--s-3); font-size: 12.5px; }
+}
+
+/* ── Facturas a tus clientes ─────────────────────────────────────────────── */
+.facturas-clientes__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.facturas-clientes__filtros { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+.facturas--clientes .facturas__fila {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 0.9fr) minmax(0, 0.9fr);
+}
+
+.facturas-clientes__cliente { color: var(--text-primary); overflow-wrap: anywhere; }
+
+.facturas-clientes__fallo { margin: 0 0 var(--s-3); font-size: 12.5px; color: var(--warn); }
+
+.facturas-clientes__mas { display: flex; justify-content: center; padding-top: var(--s-4); }
+
+.facturas-clientes__vacio { display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }
+
+.facturas-clientes__nota { margin: var(--s-4) 0 0; font-size: 12px; color: var(--text-muted); }
+
+@include r.hasta(movil) {
+  .facturas--clientes .facturas__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .facturas--clientes .facturas__fila > :nth-child(n + 2):nth-child(-n + 4) { display: none; }
+  .facturas--clientes .facturas__fila > :nth-child(5) { display: none; }
+}
