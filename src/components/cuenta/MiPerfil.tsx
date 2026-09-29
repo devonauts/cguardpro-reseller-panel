@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 
-import { Boton, Campo, Tarjeta, TarjetaCabecera } from "@/components/cristal";
+import { Boton, Campo, Dato, Tarjeta, TarjetaCabecera } from "@/components/cristal";
 import { Avatar } from "@/components/panel/Avatar";
 import { put } from "@/services/api";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
@@ -13,6 +13,10 @@ import { useT } from "@/i18n/IdiomaProvider";
  * sesión, así que no hace falta ningún permiso de socio. La foto se reduce en
  * el navegador a 512 px antes de subirla: una foto del teléfono pesa varios MB
  * y aquí sólo se pinta en un círculo.
+ *
+ * El nombre se LEE por defecto y se edita con «Editar» → «Guardar»/«Cancelar».
+ * Tras guardar se usa `refrescarPerfil` (silencioso), nunca `recargar`: éste
+ * cambia el panel entero por la pantalla de carga y se veía un parpadeo.
  */
 const LADO_MAXIMO = 512;
 const PESO_MAXIMO_ORIGINAL = 15 * 1024 * 1024;
@@ -39,9 +43,10 @@ function reducirFoto(archivo: File): Promise<string> {
 
 export function MiPerfil() {
   const t = useT();
-  const { me, recargar } = useResellerAuth();
+  const { me, refrescarPerfil } = useResellerAuth();
   const entrada = useRef<HTMLInputElement>(null);
 
+  const [editando, setEditando] = useState(false);
   const [nombres, setNombres] = useState("");
   const [apellidos, setApellidos] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -49,36 +54,54 @@ export function MiPerfil() {
   const [error, setError] = useState<string | null>(null);
   const [hecho, setHecho] = useState<string | null>(null);
 
+  const actuales = { nombres: me?.user.firstName || "", apellidos: me?.user.lastName || "" };
+
   useEffect(() => {
-    setNombres(me?.user.firstName || "");
-    setApellidos(me?.user.lastName || "");
-  }, [me?.user.firstName, me?.user.lastName]);
+    if (!editando) { setNombres(actuales.nombres); setApellidos(actuales.apellidos); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actuales.nombres, actuales.apellidos, editando]);
 
   if (!me) return null;
 
   const nombreVisible = me.user.fullName || me.user.email || "?";
   const foto = me.user.avatarUrl || null;
-  const cambioNombre =
-    nombres.trim() !== (me.user.firstName || "") || apellidos.trim() !== (me.user.lastName || "");
 
   const guardarPerfil = async (data: Record<string, unknown>, aviso: string) => {
     setError(null);
     setHecho(null);
     await put("/auth/profile", { data });
-    await recargar();
+    await refrescarPerfil();
     setHecho(aviso);
+  };
+
+  const empezarEdicion = () => {
+    setNombres(actuales.nombres);
+    setApellidos(actuales.apellidos);
+    setError(null);
+    setHecho(null);
+    setEditando(true);
+  };
+
+  const cancelar = () => {
+    setEditando(false);
+    setError(null);
   };
 
   const enviarNombre = async (e: FormEvent) => {
     e.preventDefault();
     if (enviando) return;
     if (!nombres.trim()) { setError(t("perfil.faltaNombre")); return; }
+    if (nombres.trim() === actuales.nombres && apellidos.trim() === actuales.apellidos) {
+      setEditando(false);
+      return;
+    }
     setEnviando(true);
     try {
       await guardarPerfil(
         { firstName: nombres.trim(), lastName: apellidos.trim() },
         t("perfil.nombreGuardado"),
       );
+      setEditando(false);
     } catch (err: any) {
       setError(err?.message || t("perfil.noGuardo"));
     } finally {
@@ -114,21 +137,35 @@ export function MiPerfil() {
     }
   };
 
+  const botones = editando ? (
+    <div className="perfil__botones">
+      <Boton variante="fantasma" disabled={enviando} onClick={cancelar}>
+        {t("perfil.cancelar")}
+      </Boton>
+      <Boton type="submit" form="perfil-nombre" cargando={enviando}>{t("perfil.guardar")}</Boton>
+    </div>
+  ) : (
+    <div className="perfil__botones">
+      <Boton variante="suave" onClick={empezarEdicion}>{t("perfil.editar")}</Boton>
+    </div>
+  );
+
   return (
     <Tarjeta>
-      <TarjetaCabecera titulo={t("perfil.titulo")} />
+      <div className="perfil__cabecera">
+        <TarjetaCabecera titulo={t("perfil.titulo")} />
+        {botones}
+      </div>
       <div className="perfil">
         <div className="perfil__foto">
-          <Avatar nombre={nombreVisible} foto={foto} tamano={88} />
-          <div className="perfil__acciones">
-            <input
-              ref={entrada}
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={elegirFoto}
-            />
-            <Boton variante="suave" cargando={subiendoFoto} onClick={() => entrada.current?.click()}>
+          <Avatar nombre={nombreVisible} foto={foto} cargando={subiendoFoto} tamano={96} />
+          <input ref={entrada} type="file" accept="image/*" hidden onChange={elegirFoto} />
+          <div className="perfil__foto-acciones">
+            <Boton
+              variante="suave"
+              disabled={subiendoFoto}
+              onClick={() => entrada.current?.click()}
+            >
               {foto ? t("perfil.cambiarFoto") : t("perfil.subirFoto")}
             </Boton>
             {foto && (
@@ -139,29 +176,32 @@ export function MiPerfil() {
           </div>
         </div>
 
-        <form className="cuenta__clave" onSubmit={enviarNombre} noValidate>
-          <Campo
-            etiqueta={t("perfil.nombres")}
-            autoComplete="given-name"
-            value={nombres}
-            maxLength={80}
-            onChange={(e) => setNombres(e.target.value)}
-          />
-          <Campo
-            etiqueta={t("perfil.apellidos")}
-            autoComplete="family-name"
-            value={apellidos}
-            maxLength={80}
-            onChange={(e) => setApellidos(e.target.value)}
-          />
-          <div>
-            <Boton type="submit" cargando={enviando} disabled={!cambioNombre}>
-              {t("perfil.guardarNombre")}
-            </Boton>
-          </div>
-        </form>
+        {editando ? (
+          <form id="perfil-nombre" className="perfil__campos" onSubmit={enviarNombre} noValidate>
+            <Campo
+              etiqueta={t("perfil.nombres")}
+              autoComplete="given-name"
+              value={nombres}
+              maxLength={80}
+              autoFocus
+              onChange={(e) => setNombres(e.target.value)}
+            />
+            <Campo
+              etiqueta={t("perfil.apellidos")}
+              autoComplete="family-name"
+              value={apellidos}
+              maxLength={80}
+              onChange={(e) => setApellidos(e.target.value)}
+            />
+          </form>
+        ) : (
+          <dl className="perfil__campos">
+            <Dato etiqueta={t("perfil.nombres")} valor={actuales.nombres || "—"} />
+            <Dato etiqueta={t("perfil.apellidos")} valor={actuales.apellidos || "—"} />
+          </dl>
+        )}
       </div>
-      {error && <p role="alert" className="cuenta__error">{error}</p>}
+      {error && <p role="alert" className="cuenta__error perfil__aviso">{error}</p>}
       {hecho && <p role="status" className="cuenta__nota">{hecho}</p>}
     </Tarjeta>
   );

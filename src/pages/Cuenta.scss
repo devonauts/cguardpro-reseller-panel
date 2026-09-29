@@ -18,7 +18,31 @@
 .cuenta__clave { display: flex; flex-direction: column; gap: var(--s-4); max-width: 420px; }
 .cuenta__error { margin: 0; font-size: 13px; color: var(--danger); }
 
-.perfil { display: flex; flex-wrap: wrap; gap: var(--s-6, 24px); align-items: flex-start; }
-.perfil__foto { display: flex; flex-direction: column; align-items: center; gap: var(--s-3); }
-.perfil__acciones { display: flex; flex-direction: column; gap: var(--s-2, 8px); align-items: stretch; }
-.perfil .cuenta__clave { flex: 1 1 260px; }
+/* Tu perfil: título con «Editar» (o «Cancelar»/«Guardar») a la derecha; la
+   foto a la izquierda y nombre y apellidos a su lado. En el teléfono se apila. */
+.perfil__cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.perfil__cabecera .tarjeta__cabecera { margin-bottom: var(--s-4); }
+.perfil {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-6, 24px);
+  align-items: center;
+}
+.perfil__foto { display: flex; align-items: center; gap: var(--s-4); }
+.perfil__foto-acciones { display: flex; flex-direction: column; gap: var(--s-2, 8px); }
+.perfil__campos {
+  flex: 1 1 320px;
+  max-width: 560px;
+  display: grid;
+  gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  align-items: start;
+  margin: 0;
+}
+.perfil__botones { display: flex; gap: var(--s-2, 8px); flex-wrap: wrap; justify-content: flex-end; }
+.perfil__aviso { margin-top: var(--s-4); }

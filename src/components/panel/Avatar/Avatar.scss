@@ -16,3 +16,18 @@
 }
 
 .avatar__foto { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* El esqueleto: el mismo disco, latiendo despacio. */
+.avatar--esqueleto {
+  background: var(--glass-interactive);
+  animation: avatar-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes avatar-latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .avatar--esqueleto { animation: none; }
+}

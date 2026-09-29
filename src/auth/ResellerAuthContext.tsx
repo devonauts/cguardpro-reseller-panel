@@ -39,6 +39,11 @@ interface Contexto extends Estado {
   entrar: (email: string, password: string) => Promise<void>;
   salir: () => void;
   recargar: () => Promise<void>;
+  /** Vuelve a pedir `/me` SIN pasar por «cargando»: para cambios de la propia
+   *  persona (nombre, foto). `recargar` cambia el panel entero por la pantalla
+   *  de carga un instante, y eso se veía como un parpadeo feo. Si falla, se
+   *  queda lo que había. */
+  refrescarPerfil: () => Promise<void>;
   puede: (permiso: string) => boolean;
 }
 
@@ -128,6 +133,15 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
     if (fallo) throw { message: fallo };
   }, [cargarMe]);
 
+  const refrescarPerfil = useCallback(async () => {
+    try {
+      const me = await resellerService.me();
+      setEstado((s) => (s.me ? { ...s, me } : s));
+    } catch {
+      /* Se queda lo que había: el guardado ya fue bien, esto sólo refresca. */
+    }
+  }, []);
+
   const salir = useCallback(() => {
     clearAuthToken();
     /* Al salir el panel deja de ser de nadie: título, icono y color vuelven a
@@ -144,8 +158,8 @@ export function ResellerAuthProvider({ children }: { children: ReactNode }) {
   );
 
   const valor = useMemo<Contexto>(
-    () => ({ ...estado, autenticado: !!estado.me, entrar, salir, recargar: async () => { await cargarMe(); }, puede }),
-    [estado, entrar, salir, cargarMe, puede],
+    () => ({ ...estado, autenticado: !!estado.me, entrar, salir, recargar: async () => { await cargarMe(); }, refrescarPerfil, puede }),
+    [estado, entrar, salir, cargarMe, refrescarPerfil, puede],
   );
 
   return <Ctx.Provider value={valor}>{children}</Ctx.Provider>;
