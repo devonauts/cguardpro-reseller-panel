@@ -1,5 +1,5 @@
 import type { MultiPolygon, Polygon } from "geojson";
-import { del, descargarArchivo, enviarFormulario, get, patch, post, put, subirArchivo } from "@/services/api";
+import { del, descargarArchivo, enviarFormulario, get, obtenerArchivo, patch, post, put, subirArchivo } from "@/services/api";
 
 /** Lo que `/api/reseller/me` contesta. */
 export interface ResellerMe {
@@ -1151,6 +1151,8 @@ export interface CobroAEmpresas {
 export interface FacturaACliente {
   id: string;
   number: string;
+  /** El número que ve el cliente, consecutivo por socio (FAC-000124). */
+  folio: string;
   /** `inicio` (alta + primer ciclo) · `renovacion` · `asientos` (usuarios nuevos, prorrateado) */
   kind: string;
   status: "open" | "paid" | "void" | "refunded" | string;
@@ -1172,10 +1174,45 @@ export interface FacturasAClientes {
   count: number;
   rows: FacturaACliente[];
   totalsByCurrency: Record<string, { porCobrarCents: number; cobrado30Cents: number; cobradoTotalCents: number }>;
+  /** { moneda: { 'AAAA-MM': centavos cobrados } } de los últimos doce meses. */
+  monthlyByCurrency: Record<string, Record<string, number>>;
+  /** Los doce meses, del más antiguo al actual ('AAAA-MM'). */
+  months: string[];
+}
+
+/** Cómo son las facturas del socio: numeración, emisor y estilo. */
+export interface FormatoDeFacturas {
+  prefix: string;
+  nextNumber: number;
+  padding: number;
+  issuerName: string | null;
+  issuerTaxId: string | null;
+  issuerAddress: string | null;
+  issuerEmail: string | null;
+  issuerPhone: string | null;
+  issuerWebsite: string | null;
+  accentColor: string | null;
+  showLogo: boolean;
+  footerNote: string | null;
+  sendToClient: boolean;
+  /** Así saldrá la próxima factura. */
+  nextFolio: string;
+  /** El color de su marca publicada (el que se usa si no elige otro). */
+  brandColor?: string | null;
 }
 
 export const cobroAEmpresasService = {
   leer: () => get<CobroAEmpresas>("/reseller/company-billing"),
+  formato: () => get<FormatoDeFacturas>("/reseller/company-billing/formato"),
+  guardarFormato: (f: Partial<FormatoDeFacturas>) =>
+    put<FormatoDeFacturas>("/reseller/company-billing/formato", f),
+  /** PDF de muestra con lo que hay en pantalla, sin guardar. */
+  vistaPrevia: (f: Partial<FormatoDeFacturas>) =>
+    obtenerArchivo("/reseller/company-billing/formato/vista-previa", {
+      ...f, showLogo: f.showLogo ? "1" : "0", sendToClient: undefined, nextFolio: undefined, brandColor: undefined,
+    }),
+  descargarFactura: (id: string, folio: string) =>
+    descargarArchivo(`/reseller/company-billing/invoices/${encodeURIComponent(id)}/pdf`, `${folio}.pdf`),
   /** Las facturas a SUS clientes: pagadas y por cobrar. */
   facturas: (q: { status?: string; tenantId?: string; limit?: number; offset?: number } = {}) =>
     get<FacturasAClientes>("/reseller/company-billing/invoices", q),

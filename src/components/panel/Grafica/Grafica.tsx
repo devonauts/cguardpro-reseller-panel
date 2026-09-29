@@ -14,11 +14,14 @@ import "./Grafica.scss";
  * lista con los valores reales para quien no ve las barras.
  */
 export function Grafica({
-  datos, etiquetaAccesible,
+  datos, etiquetaAccesible, formato,
 }: {
   datos: Array<{ etiqueta: string; valor: number }>;
   etiquetaAccesible: string;
+  /** Cómo escribir un valor (p. ej. dinero). Sin él, el número tal cual. */
+  formato?: (n: number) => string;
 }) {
+  const escribir = formato ?? ((n: number) => String(n));
   const maximo = Math.max(1, ...datos.map((d) => d.valor));
   /* La escala se redondea hacia arriba a un múltiplo de 4 para que las cuatro
      marcas caigan en enteros distintos. Con un tope de 2 salían «2 2 1 1 0»:
@@ -29,18 +32,19 @@ export function Grafica({
   return (
     <div className="grafica">
       <div className="grafica__eje" aria-hidden="true">
-        {marcas.map((m) => <span key={m}>{m}</span>)}
+        {marcas.map((m) => <span key={m}>{escribir(m)}</span>)}
       </div>
 
       <div
         className="grafica__lienzo"
         role="img"
-        aria-label={`${etiquetaAccesible}: ${datos.map((d) => `${d.etiqueta} ${d.valor}`).join(", ")}`}
+        aria-label={`${etiquetaAccesible}: ${datos.map((d) => `${d.etiqueta} ${escribir(d.valor)}`).join(", ")}`}
       >
         {datos.map((d) => (
           <div key={d.etiqueta} className="grafica__columna">
             <div className="grafica__barra-hueco">
               <div
+                title={`${d.etiqueta}: ${escribir(d.valor)}`}
                 className="grafica__barra"
                 /* `Math.max(2, …)`: un valor de cero deja una barra de 0 px y
                    la columna parece que falta. Dos píxeles dicen «aquí hay un

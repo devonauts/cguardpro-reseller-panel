@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   EstadoDeDatos, Icono, Pildora, TodaviaNo, type Tono,
 } from "@/components/cristal";
@@ -19,7 +19,6 @@ import type { Clave } from "@/i18n/idioma";
    un vistazo («$1,500»); `dinero` la exacta, para las líneas de factura. */
 import { dinero, fechaCorta, mesDelPeriodo, precio } from "@/lib/dinero";
 import { TuPlan, EsteMes, EsteCiclo, ComoFunciona } from "./ComoTeCobramos";
-import { FacturasAClientes } from "./FacturasAClientes";
 import "./Billing.scss";
 
 /**
@@ -67,62 +66,7 @@ const MOTIVO: Record<string, Clave> = {
   policy: "facturacion.motivoPolicy",
 };
 
-/* ── LAS DOS PESTAÑAS ───────────────────────────────────────────────────────
-   El socio FACTURA a sus clientes (con su pasarela) y a la vez le paga a
-   CGuard Pro. Son dos cuentas distintas y van en dos pestañas: «Tu cuenta con
-   CGuard Pro» (lo de siempre) y «Facturas a tus clientes». La pestaña va en la
-   URL (`?tab=clientes`) para poder enlazarla y para que sobreviva a recargar. */
-type Pestana = "plataforma" | "clientes";
-
 export function Billing() {
-  const t = useT();
-  const [params, setParams] = useSearchParams();
-  const pestana: Pestana = params.get("tab") === "clientes" ? "clientes" : "plataforma";
-  const elegir = (p: Pestana) => {
-    const siguiente = new URLSearchParams(params);
-    if (p === "plataforma") siguiente.delete("tab"); else siguiente.set("tab", p);
-    setParams(siguiente, { replace: true });
-  };
-
-  return (
-    <>
-      <header className="cabecera">
-        <div>
-          <h1 className="cabecera__titulo">{t("facturacion.titulo")}</h1>
-          <p className="cabecera__sub">
-            {t(pestana === "clientes" ? "facturasClientes.sub" : "facturacion.sub")}
-          </p>
-        </div>
-      </header>
-
-      <div className="pestanas" role="tablist" aria-label={t("facturacion.titulo")}>
-        {([
-          ["plataforma", "facturasClientes.pestanaPlataforma"],
-          ["clientes", "facturasClientes.pestanaClientes"],
-        ] as const).map(([id, texto]) => (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            id={`pestana-${id}`}
-            aria-selected={pestana === id}
-            aria-controls={`panel-${id}`}
-            className={`pestanas__boton${pestana === id ? " pestanas__boton--activa" : ""}`}
-            onClick={() => elegir(id)}
-          >
-            {t(texto)}
-          </button>
-        ))}
-      </div>
-
-      <div role="tabpanel" id={`panel-${pestana}`} aria-labelledby={`pestana-${pestana}`}>
-        {pestana === "clientes" ? <FacturasAClientes /> : <TuCuentaConLaPlataforma />}
-      </div>
-    </>
-  );
-}
-
-function TuCuentaConLaPlataforma() {
   const t = useT();
   const { puede } = useResellerAuth();
   const [facturas, setFacturas] = useState<FacturaEnLista[]>([]);
@@ -192,6 +136,13 @@ function TuCuentaConLaPlataforma() {
 
   return (
     <>
+      <header className="cabecera">
+        <div>
+          <h1 className="cabecera__titulo">{t("facturacion.titulo")}</h1>
+          <p className="cabecera__sub">{t("facturacion.sub")}</p>
+        </div>
+      </header>
+
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={cargar}>
         <div className="facturacion">
           {/* ── 1. EL RESUMEN ─────────────────────────────────────────── */}

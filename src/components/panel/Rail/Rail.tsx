@@ -57,28 +57,30 @@ interface Entrada {
 const NAV: Entrada[] = [
   { a: "/dashboard", icono: "casa", texto: "nav.tablero" },
   { a: "/companies", icono: "edificio", texto: "nav.empresas" },
-  { a: "/company-billing", icono: "moneda", texto: "nav.cobros" },
+  /* INGRESOS: lo que el socio gana con sus clientes, y nada más (decisión del
+     dueño 2026-09-28). Cómo se cobra va en Ajustes › Cobros y facturas. */
+  { a: "/revenue", icono: "moneda", texto: "nav.ingresos" },
   // Las apps con su marca: es lo que el socio vende a sus empresas, no un ajuste.
   { a: "/apps", icono: "movil", texto: "nav.apps" },
   { a: "/team", icono: "personas", texto: "nav.equipo" },
-  { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
 ];
 
 /**
- * ── POR QUÉ MARCA Y DOMINIOS BAJAN A AJUSTES ──────────────────────────────
- * Las dos son CONFIGURACIÓN de la cuenta: se tocan al montar el negocio y
- * luego casi nunca. Arriba competían a diario con las cuatro que sí se usan
- * —tablero, empresas, equipo, facturación— y alargaban la lista principal a
- * seis entradas de peso desigual.
+ * ── LA RELACIÓN CON LA PLATAFORMA, Y LOS AJUSTES ─────────────────────────
+ * «Facturación» es lo que el socio le PAGA a CGuard Pro: baja aquí, junto a
+ * consumo, contrato y plan, que es de lo que sale esa cifra. Así el dinero que
+ * entra (Ingresos, arriba) y el que sale (Facturación) no se mezclan.
  *
- * El grupo conserva `/account` como destino de su propia pantalla; lo que
- * cuelga son las otras tres.
+ * En Ajustes, «Cobros y facturas»: la pasarela, los precios, la prueba y el
+ * formato y la numeración de las facturas a sus clientes. Es CONFIGURACIÓN:
+ * se toca al montar el negocio y luego casi nunca.
  */
 const NAV_SECUNDARIA: Entrada[] = [
+  { a: "/billing", icono: "tarjeta", texto: "nav.facturacion" },
   { a: "/usage", icono: "grafico", texto: "nav.consumo" },
-  { a: "/activity", icono: "libro", texto: "nav.actividad" },
-  { a: "/contract", icono: "escudo", texto: "nav.contrato" },
   { a: "/entitlements", icono: "corona", texto: "nav.derechos", dorado: true },
+  { a: "/contract", icono: "escudo", texto: "nav.contrato" },
+  { a: "/activity", icono: "libro", texto: "nav.actividad" },
   { a: "/support", icono: "auriculares", texto: "nav.soporte" },
   {
     a: "/account",
@@ -86,9 +88,10 @@ const NAV_SECUNDARIA: Entrada[] = [
     texto: "nav.ajustesCorto",
     hijos: [
       { a: "/account", icono: "engranaje", texto: "nav.cuenta" },
+      { a: "/company-billing", icono: "moneda", texto: "nav.cobrosYFacturas" },
       { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
-      { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
       { a: "/domains", icono: "globo", texto: "nav.dominios" },
+      { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
       { a: "/analytics", icono: "grafico", texto: "nav.analitica" },
     ],
   },

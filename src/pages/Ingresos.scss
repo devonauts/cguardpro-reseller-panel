@@ -1,0 +1,58 @@
+@use "../design/medios" as r;
+
+/* Ingresos: la página de lo que el socio gana. Reutiliza las piezas de
+   Facturación (fichas, tabla, líneas, totales y el control segmentado). */
+
+.ingresos__ajustes { display: inline-flex; align-items: center; gap: var(--s-2); white-space: nowrap; }
+
+.ingresos__resumen { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+
+.ingresos__grafica-esqueleto {
+  height: 180px;
+  border-radius: var(--r-sm);
+  background: var(--glass-interactive);
+  animation: ingresos-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes ingresos-latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ingresos__grafica-esqueleto { animation: none; }
+}
+
+.ingresos__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.ingresos__filtros { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+.ingresos__tabla .facturas__fila {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 0.9fr);
+}
+
+.ingresos__cliente { color: var(--text-primary); overflow-wrap: anywhere; }
+
+.ingresos__fallo { margin: 0 0 var(--s-3); font-size: 12.5px; color: var(--warn); }
+
+.ingresos__mas { display: flex; justify-content: center; padding-top: var(--s-4); }
+
+.ingresos__vacio { display: flex; flex-direction: column; gap: var(--s-2); align-items: flex-start; }
+
+@include r.hasta(movil) {
+  .ingresos__tabla .facturas__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .ingresos__tabla .facturas__fila > :nth-child(2),
+  .ingresos__tabla .facturas__fila > :nth-child(3),
+  .ingresos__tabla .facturas__fila > :nth-child(4),
+  .ingresos__tabla .facturas__fila > :nth-child(5) { display: none; }
+}
+
+/* Las cifras en pesos son largas («$ 4.522.189,16 COP»): un punto menos para
+   que quepan en una línea en las cuatro fichas. */
+.ingresos__resumen .saldo-ficha__valor { font-size: clamp(20px, 2vw, 26px); white-space: nowrap; }

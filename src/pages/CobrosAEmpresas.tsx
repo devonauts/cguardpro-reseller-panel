@@ -14,6 +14,7 @@ import { useT } from "@/i18n/IdiomaProvider";
 import type { Clave } from "@/i18n/idioma";
 import { etiquetaIntl } from "@/i18n/idioma";
 import { tOr } from "@/i18n/idioma";
+import { FormatoDeFacturas } from "@/components/cobros/FormatoDeFacturas";
 import "./CobrosAEmpresas.scss";
 
 /**
@@ -99,10 +100,6 @@ export function CobrosAEmpresas() {
   const moneda = datos ? monedaDe(datos) : "USD";
   const activo = datos?.gateway?.status === "connected" && !!datos?.pricing;
   const enPrueba = activo && datos?.gateway?.mode !== "live";
-  /* Invoices in a currency other than today's pricing one are listed apart,
-     never added to it. */
-  const otrasMonedas = (datos?.totalsByCurrency ?? []).filter((x) => x.currency !== moneda
-    && (x.collectedLast30Cents || x.outstandingCents));
 
   return (
     <>
@@ -116,25 +113,26 @@ export function CobrosAEmpresas() {
       <EstadoDeDatos cargando={cargando} error={error} onReintentar={() => cargar()}>
         {datos && (
           <div className="cobros">
-            <div className="cobros__resumen">
-              <Ficha etiqueta={t("cobros.cobrado30")} valor={precio(datos.collectedLast30Cents, moneda)} />
-              <Ficha etiqueta={t("cobros.pendiente")} valor={precio(datos.outstandingCents, moneda)} />
+            {/* Aquí sólo se CONFIGURA. Lo que el socio gana —cobrado, por cobrar y
+                cada factura— vive en «Ingresos» (decisión del dueño 2026-09-28:
+                «deja netamente ingresos para la página de lo que van generando»). */}
+            <div className="cobros__resumen cobros__resumen--estado">
               <Ficha
                 etiqueta={t("cobros.estado")}
                 valor={activo ? t(enPrueba ? "cobros.activoPrueba" : "cobros.activo") : t("cobros.inactivo")}
                 nota={activo ? t(enPrueba ? "cobros.activoPruebaNota" : "cobros.activoNota") : t("cobros.inactivoNota")}
               />
+              <Link to="/revenue" className="cobros-ficha cobros-ficha--enlace">
+                <span className="cobros-ficha__etiqueta">{t("nav.ingresos")}</span>
+                <span className="cobros-ficha__valor cobros-ficha__valor--enlace">
+                  {t("cobros.verIngresos")} <Icono nombre="flecha" tamano={16} />
+                </span>
+              </Link>
             </div>
-            {otrasMonedas.length > 0 && (
-              <p className="bloque__nota">
-                {t("cobros.otrasMonedas", {
-                  l: otrasMonedas.map((x) => `${precio(x.collectedLast30Cents, x.currency, true)} / ${precio(x.outstandingCents, x.currency, true)}`).join(" · "),
-                })}
-              </p>
-            )}
 
             <Pasarela datos={datos} gestiona={gestiona} onCambio={refrescar} />
             <Precios datos={datos} gestiona={gestiona} onCambio={refrescar} />
+            <FormatoDeFacturas gestiona={gestiona} />
             <Empresas datos={datos} gestiona={gestiona} onCambio={refrescar} />
 
             <p className="cobros__legal">

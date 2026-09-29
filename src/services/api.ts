@@ -200,6 +200,30 @@ export default api;
  * not a cookie — so the route answered 403. The file is fetched here, with the
  * header, and handed to the browser as a download.
  */
+/** Un archivo (PDF) como `Blob`, con el mismo trato de errores que la descarga.
+ *  Para enseñarlo dentro de la página (vista previa) en vez de bajarlo. */
+export async function obtenerArchivo(url: string, params?: Record<string, unknown>): Promise<Blob> {
+  const r = await api.get(url, {
+    params,
+    responseType: "blob",
+    headers: { Accept: "application/pdf, application/json" },
+    validateStatus: () => true,
+  });
+  if (r.status >= 400) {
+    let message = t("comun.noSePudo");
+    try {
+      const cuerpo = JSON.parse(await (r.data as Blob).text());
+      if (r.status !== 500 && (cuerpo?.message || cuerpo?.error)) message = cuerpo.message || cuerpo.error;
+    } catch { /* no es JSON: el mensaje genérico */ }
+    if (r.status === 401) {
+      clearAuthToken();
+      alPerderLaSesion?.();
+    }
+    throw { status: r.status, message } as ApiError;
+  }
+  return r.data as Blob;
+}
+
 export async function descargarArchivo(url: string, nombrePorDefecto: string): Promise<void> {
   const r = await api.get(url, {
     responseType: "blob",
