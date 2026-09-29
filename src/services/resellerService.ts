@@ -1226,6 +1226,8 @@ export const cobroAEmpresasService = {
     put<PreciosAEmpresas>("/reseller/company-billing/pricing", precios),
   ajustarEmpresa: (tenantId: string, datos: Partial<{
     setupFeeCents: number | null; monthlyFeeCents: number | null; perUserCents: number | null; exempt: boolean;
+    /** Nueva fecha de fin de la prueba (ISO). Si queda en el futuro, una empresa pausada vuelve a «en prueba». */
+    trialEndsAt: string;
   }>) => patch<unknown>(`/reseller/company-billing/companies/${tenantId}`, datos),
 };
 

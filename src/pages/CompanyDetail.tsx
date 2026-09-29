@@ -3,13 +3,30 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDireccionDeClientes } from "@/components/panel/Enlace";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, Icono,
+  Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, Icono, type Tono,
 } from "@/components/cristal";
-import { companiesService, type Empresa } from "@/services/resellerService";
+import { Avatar } from "@/components/panel";
+import {
+  cobroAEmpresasService, companiesService,
+  type CobroAEmpresas, type Empresa, type FacturasAClientes,
+} from "@/services/resellerService";
 import { useT } from "@/i18n/IdiomaProvider";
-import { fecha } from "@/lib/dinero";
+import type { Clave } from "@/i18n/idioma";
+import { fecha, fechaCorta, precio } from "@/lib/dinero";
 import { ModulosDeLaEmpresa } from "@/components/empresas/ModulosDeLaEmpresa";
+import PersonasDeLaEmpresa from "@/components/empresas/PersonasDeLaEmpresa";
+import { FacturasDeLaEmpresa } from "@/components/empresas/FacturasDeLaEmpresa";
+import { CobroDeLaEmpresa } from "@/components/empresas/CobroDeLaEmpresa";
+import "./Billing.scss";
 import "./CompanyForm.scss";
+
+const ESTADO_DE_COBRO: Record<string, { tono: Tono; texto: Clave }> = {
+  trialing: { tono: "neutro", texto: "cobros.estadoPrueba" },
+  active: { tono: "ok", texto: "cobros.estadoAlDia" },
+  past_due: { tono: "aviso", texto: "cobros.estadoMora" },
+  paused: { tono: "peligro", texto: "cobros.estadoPausada" },
+  exempt: { tono: "neutro", texto: "cobros.estadoExenta" },
+};
 
 /**
  * La ficha de una empresa.
@@ -28,6 +45,14 @@ import "./CompanyForm.scss";
  *
  * La suspensión se MUESTRA porque el socio necesita saber si su cliente está
  * parado; pero es una palanca de la plataforma y se opera desde allí.
+ *
+ * ── LO QUE EL SOCIO VIENE A VER (rediseño 2026-09-29) ─────────────────────
+ * Arriba, cuatro cifras: cómo va su cobro (en prueba / al día / pausada, con la
+ * fecha que toca), lo facturado, lo que debe y si tiene tarjeta. Debajo, a la
+ * izquierda lo que se mira a menudo —sus FACTURAS con PDF y las PERSONAS que
+ * entran a su CRM— y a la derecha la ficha: datos, COBRO (con «extender
+ * prueba») y módulos. Antes eran dos tarjetas de datos sueltos y el correo se
+ * partía a mitad de palabra.
  */
 
 export function CompanyDetail() {
@@ -44,6 +69,8 @@ export function CompanyDetail() {
   const [guardando, setGuardando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [borrador, setBorrador] = useState<Partial<Empresa>>({});
+  const [cobro, setCobro] = useState<CobroAEmpresas | null>(null);
+  const [facturas, setFacturas] = useState<FacturasAClientes | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -63,6 +90,20 @@ export function CompanyDetail() {
   }, [tenantId, t]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  const veCobro = puede("reseller.billing.view");
+  /* El cobro y las facturas de ESTA empresa. Silencioso: si falla, la ficha
+     se ve igual, sin esas tarjetas. */
+  const cargarCobro = useCallback(async () => {
+    if (!veCobro) return;
+    const [c, f] = await Promise.all([
+      cobroAEmpresasService.leer().catch(() => null),
+      cobroAEmpresasService.facturas({ tenantId, limit: 6 }).catch(() => null),
+    ]);
+    setCobro(c);
+    setFacturas(f);
+  }, [tenantId, veCobro]);
+  useEffect(() => { void cargarCobro(); }, [cargarCobro]);
 
   const puedeEditar = puede("reseller.company.update");
   const location = useLocation();
@@ -117,6 +158,13 @@ export function CompanyDetail() {
   const campo = (k: keyof Empresa) =>
     (borrador[k] as string) ?? (empresa?.[k] as string) ?? "";
 
+  const estadoCobro = cobro?.companies?.find((c) => c.tenantId === tenantId) ?? null;
+  const moneda = cobro?.pricing?.currency ?? cobro?.currency ?? Object.keys(facturas?.totalsByCurrency ?? {})[0] ?? "USD";
+  const totales = facturas?.totalsByCurrency?.[moneda] ?? null;
+  const notaDelCobro = !estadoCobro ? null
+    : estadoCobro.anchorAt ? t("cobros.renuevaDia", { d: Number(estadoCobro.anchorAt.slice(8, 10)) })
+      : estadoCobro.trialEndsAt ? t("cobros.pruebaHasta", { f: fechaCorta(estadoCobro.trialEndsAt) }) : null;
+
   return (
     <div>
       {/* La vuelta, arriba a la IZQUIERDA y con su destino escrito: es donde
@@ -131,15 +179,23 @@ export function CompanyDetail() {
           {t("fichaEmpresa.recienCreada")}
         </p>
       )}
-      <header className="cabecera">
-        <div>
-          <h1 className="cabecera__titulo">{empresa?.name || t("fichaEmpresa.titulo")}</h1>
-          <p className="cabecera__sub">
-            {empresa?.businessTitle || t("fichaEmpresa.sub")}
-          </p>
+      <header className="cabecera ficha__cabecera">
+        <div className="ficha__identidad">
+          <Avatar nombre={empresa?.name || "?"} tamano={52} />
+          <div>
+            <h1 className="cabecera__titulo">{empresa?.name || t("fichaEmpresa.titulo")}</h1>
+            <p className="cabecera__sub ficha__sub">
+              {empresa?.businessTitle || t("fichaEmpresa.sub")}
+              {estadoCobro && (
+                <Pildora tono={ESTADO_DE_COBRO[estadoCobro.status]?.tono ?? "neutro"}>
+                  {ESTADO_DE_COBRO[estadoCobro.status] ? t(ESTADO_DE_COBRO[estadoCobro.status].texto) : estadoCobro.status}
+                </Pildora>
+              )}
+              {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
+            </p>
+          </div>
         </div>
         <div className="cabecera__acciones">
-          {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
           {puedeEntrar && empresa && (
             <button type="button" className="btn btn--fantasma ficha__crm" onClick={entrarAlCrm} disabled={entrando}>
               {entrando ? t("fichaEmpresa.entrando") : t("fichaEmpresa.abrirCrm")}
@@ -162,44 +218,90 @@ export function CompanyDetail() {
 
       <EstadoDeDatos cargando={cargando} error={!empresa ? error : null} onReintentar={cargar}>
         {empresa && !editando && (
-          <div className="ficha">
-            <div className="ficha__columna">
-              <Tarjeta>
-                <TarjetaCabecera titulo={t("fichaEmpresa.identidad")} />
-                <dl className="ficha__datos">
-                  <Dato etiqueta={t("altaEmpresa.nombre")} valor={empresa.name} />
-                  <Dato etiqueta={t("altaEmpresa.razonSocial")} valor={empresa.businessTitle} />
-                  <Dato etiqueta={t("altaEmpresa.ruc")} valor={empresa.taxNumber} />
-                  <Dato etiqueta={t("fichaEmpresa.alta")} valor={fecha(empresa.createdAt)} />
-                </dl>
-              </Tarjeta>
-            </div>
+          <>
+            {veCobro && estadoCobro && (
+              <div className="resumen ficha__resumen">
+                <section className="saldo-ficha">
+                  <span className="saldo-ficha__etiqueta">{t("fichaEmpresa.estadoDelCobro")}</span>
+                  <span className="saldo-ficha__valor ficha__valor-texto">
+                    {ESTADO_DE_COBRO[estadoCobro.status] ? t(ESTADO_DE_COBRO[estadoCobro.status].texto) : estadoCobro.status}
+                  </span>
+                  {notaDelCobro && <span className="saldo-ficha__nota">{notaDelCobro}</span>}
+                </section>
+                <section className="saldo-ficha">
+                  <span className="saldo-ficha__etiqueta">{t("fichaEmpresa.facturado")}</span>
+                  <span className="saldo-ficha__valor">{precio(totales?.cobradoTotalCents ?? 0, moneda)}</span>
+                  <span className="saldo-ficha__nota">{t("fichaEmpresa.facturadoNota", { n: facturas?.count ?? 0 })}</span>
+                </section>
+                <section className={`saldo-ficha${(totales?.porCobrarCents ?? 0) > 0 ? " saldo-ficha--aviso" : ""}`}>
+                  <span className="saldo-ficha__etiqueta">{t("ingresos.porCobrar")}</span>
+                  <span className="saldo-ficha__valor">{precio(totales?.porCobrarCents ?? 0, moneda)}</span>
+                </section>
+                <section className="saldo-ficha">
+                  <span className="saldo-ficha__etiqueta">{t("fichaEmpresa.tarjeta")}</span>
+                  <span className="saldo-ficha__valor ficha__valor-texto">
+                    {t(estadoCobro.hasCard ? "fichaEmpresa.tarjetaGuardada" : "cobros.sinTarjeta")}
+                  </span>
+                  {!estadoCobro.hasCard && <span className="saldo-ficha__nota">{t("fichaEmpresa.sinTarjetaNota")}</span>}
+                </section>
+              </div>
+            )}
 
-            <div className="ficha__columna">
-              <Tarjeta>
-                <TarjetaCabecera titulo={t("fichaEmpresa.contacto")} />
-                <dl className="ficha__datos">
-                  <Dato etiqueta={t("altaEmpresa.correo")} valor={empresa.email} />
-                  <Dato etiqueta={t("altaEmpresa.telefono")} valor={empresa.phone} />
-                  <Dato etiqueta={t("altaEmpresa.pais")} valor={empresa.country} />
-                  <Dato etiqueta={t("altaEmpresa.ciudad")} valor={empresa.city} />
-                  <Dato etiqueta={t("altaEmpresa.direccion")} valor={empresa.address} />
-                  <Dato etiqueta={t("fichaEmpresa.zonaHoraria")} valor={empresa.timezone} />
-                </dl>
-              </Tarjeta>
+            <div className="ficha ficha--detalle">
+              <div className="ficha__columna">
+                {veCobro && (
+                  <FacturasDeLaEmpresa tenantId={tenantId} filas={facturas ? facturas.rows : null} total={facturas?.count ?? 0} />
+                )}
+                {puede("reseller.company.users.view") && (
+                  <Tarjeta>
+                    <TarjetaCabecera titulo={t("fichaEmpresa.personas")} nota={t("fichaEmpresa.personasNota")} />
+                    <PersonasDeLaEmpresa
+                      tenantId={tenantId}
+                      puedeGestionar={puede("reseller.company.users.manage") && !empresa.suspendedAt}
+                    />
+                  </Tarjeta>
+                )}
+              </div>
 
-              {empresa.suspendedAt && (
+              <div className="ficha__columna">
                 <Tarjeta>
-                  <TarjetaCabecera titulo={t("fichaEmpresa.suspendidaTitulo")} />
-                  <p className="ficha__nota">
-                    {t("fichaEmpresa.suspendidaNota", { f: fecha(empresa.suspendedAt) })}
-                  </p>
+                  <TarjetaCabecera titulo={t("fichaEmpresa.datos")} />
+                  <dl className="ficha__datos ficha__datos--lista">
+                    <Dato etiqueta={t("altaEmpresa.razonSocial")} valor={empresa.businessTitle} />
+                    <Dato etiqueta={t("altaEmpresa.ruc")} valor={empresa.taxNumber} />
+                    <Dato etiqueta={t("altaEmpresa.correo")} valor={empresa.email} />
+                    <Dato etiqueta={t("altaEmpresa.telefono")} valor={empresa.phone} />
+                    <Dato
+                      etiqueta={t("altaEmpresa.direccion")}
+                      valor={[empresa.address, empresa.city, empresa.country].filter(Boolean).join(", ") || null}
+                    />
+                    <Dato etiqueta={t("fichaEmpresa.zonaHoraria")} valor={empresa.timezone} />
+                    <Dato etiqueta={t("fichaEmpresa.alta")} valor={fecha(empresa.createdAt)} />
+                  </dl>
                 </Tarjeta>
-              )}
 
-              {!empresa.suspendedAt && <ModulosDeLaEmpresa tenantId={tenantId} />}
+                {veCobro && estadoCobro && cobro && (
+                  <CobroDeLaEmpresa
+                    empresa={estadoCobro}
+                    datos={cobro}
+                    gestiona={puede("reseller.billing.manage")}
+                    onCambio={() => { void cargarCobro(); }}
+                  />
+                )}
+
+                {empresa.suspendedAt && (
+                  <Tarjeta>
+                    <TarjetaCabecera titulo={t("fichaEmpresa.suspendidaTitulo")} />
+                    <p className="ficha__nota">
+                      {t("fichaEmpresa.suspendidaNota", { f: fecha(empresa.suspendedAt) })}
+                    </p>
+                  </Tarjeta>
+                )}
+
+                {!empresa.suspendedAt && <ModulosDeLaEmpresa tenantId={tenantId} />}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {empresa && editando && (

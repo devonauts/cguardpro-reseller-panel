@@ -120,3 +120,115 @@
 }
 
 .ficha__crm { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+
+/* ── La ficha de una empresa (rediseño 2026-09-29) ──────────────────────── */
+.ficha__cabecera { align-items: center; }
+.ficha__identidad { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }
+.ficha__sub { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+
+.ficha__resumen {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  margin-bottom: clamp(var(--s-4), 2.4vw, var(--s-6));
+}
+.ficha__resumen .saldo-ficha__valor { font-size: clamp(20px, 2vw, 26px); white-space: nowrap; }
+.ficha__valor-texto { font-size: 20px !important; }
+
+/* Lo que se mira a menudo, más ancho; la ficha, al lado. */
+.ficha--detalle { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
+
+.ficha__cabecera-con-accion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+}
+
+/* Datos en LISTA: etiqueta a la izquierda, valor a la derecha. Un correo largo
+   ya no se parte a mitad de palabra en una columna estrecha. */
+.ficha__datos--lista {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+
+  .dato {
+    display: grid;
+    grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.4fr);
+    align-items: baseline;
+    gap: var(--s-3);
+    padding: var(--s-3) 0;
+    border-bottom: 1px solid var(--glass-border);
+  }
+  .dato:last-child { border-bottom: 0; }
+  .dato__valor { overflow-wrap: break-word; word-break: normal; text-align: right; }
+}
+
+.ficha__ok { margin-top: var(--s-3); font-size: 13px; color: var(--ok); }
+
+.ficha__esqueleto {
+  height: 160px;
+  border-radius: var(--r-sm);
+  background: var(--glass-interactive);
+  animation: ficha-latido 1.2s ease-in-out infinite;
+}
+@keyframes ficha-latido { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .ficha__esqueleto { animation: none; } }
+
+/* Las facturas de la empresa: número y concepto, importe, estado y PDF. */
+.ficha-facturas { list-style: none; margin: 0; padding: 0; }
+.ficha-facturas__fila {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--glass-border);
+
+  &:last-child { border-bottom: 0; }
+}
+.ficha-facturas__principal { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ficha-facturas__folio { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.ficha-facturas__meta { font-size: 12px; color: var(--text-muted); }
+.ficha-facturas__importe { font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ficha-facturas__pdf {
+  border: 1px solid var(--glass-border-highlight);
+  background: none;
+  border-radius: var(--r-sm);
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover:not(:disabled) { color: var(--text-primary); background: var(--glass-interactive); }
+  &:disabled { cursor: default; opacity: 0.6; }
+}
+
+/* Extender la prueba. */
+.ficha-prueba {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-top: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--glass-border);
+}
+.ficha-prueba__titulo { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+.ficha-prueba__botones, .ficha-prueba__fecha { display: flex; flex-wrap: wrap; gap: var(--s-2); align-items: center; }
+.ficha-prueba__fecha input[type="date"] {
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--glass-border-highlight);
+  border-radius: var(--r-sm);
+  background: var(--glass-interactive);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+@include r.hasta(tableta) {
+  .ficha--detalle { grid-template-columns: minmax(0, 1fr); }
+}
+@include r.hasta(movil) {
+  .ficha-facturas__fila { grid-template-columns: minmax(0, 1fr) auto; }
+  .ficha-facturas__fila > :nth-child(3) { display: none; }
+}

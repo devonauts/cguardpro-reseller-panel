@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { Boton, EstadoDeDatos, Icono, Pildora, Selector, type Tono } from "@/components/cristal";
 import { Grafica } from "@/components/panel/Grafica";
@@ -55,7 +55,9 @@ const POR_PAGINA = 50;
 export function Ingresos() {
   const { t, idioma } = useIdioma();
   const [filtro, setFiltro] = useState<Filtro>("");
-  const [empresa, setEmpresa] = useState("");
+  /* Desde la ficha de una empresa se llega ya filtrado (`?empresa=<id>`). */
+  const [params] = useSearchParams();
+  const [empresa, setEmpresa] = useState(params.get("empresa") || "");
   const [datos, setDatos] = useState<Respuesta | null>(null);
   const [empresas, setEmpresas] = useState<Array<{ id: string; name: string | null }>>([]);
   /** La moneda en que cobra el socio (la de su país): manda en los totales. */
@@ -202,7 +204,7 @@ export function Ingresos() {
                   </button>
                 ))}
               </div>
-              {empresas.length > 1 && (
+              {(empresas.length > 1 || !!empresa) && (
                 <Selector
                   compacto
                   etiquetaOculta={t("ingresos.filtroEmpresa")}
