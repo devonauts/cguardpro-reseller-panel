@@ -58,6 +58,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
         abierto={menuAbierto}
         nombreDelSocio={nombreDelSocio}
         codigo={me?.reseller.publicId}
+        marca={me?.branding ?? null}
+        conAtribucion={me?.reseller.showPlatformAttribution !== false}
       />
 
       {/* La cortina del móvil. `aria-hidden`: es decoración, no un control. */}

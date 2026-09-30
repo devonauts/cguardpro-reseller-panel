@@ -80,6 +80,7 @@ export const es: Record<Clave, string> = {
   "nav.informes": "Informes",
   "nav.ajustes": "Ajustes",
   "rail.pieLema": "Construyendo un mundo más seguro.",
+  "rail.conTecnologia": "Con la tecnología de C-Guard Pro",
   "rail.socio": "Socio",
   "tablero.saludoManana": "Buenos días, {nombre}",
   "tablero.saludoTarde": "Buenas tardes, {nombre}",

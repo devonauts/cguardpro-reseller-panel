@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
-import { Icono, Marca, type NombreDeIcono } from "@/components/cristal";
+import { Icono, type NombreDeIcono } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
+import type { MarcaParaPintar } from "@/services/resellerService";
+import { MarcaDelPanel } from "../MarcaDelPanel/MarcaDelPanel";
 import type { Clave } from "@/i18n/idioma";
 import "./Rail.scss";
 
@@ -187,13 +189,22 @@ function Grupo({ entrada }: { entrada: Entrada }) {
 }
 
 export function Rail({
-  abierto, nombreDelSocio, codigo,
+  abierto, nombreDelSocio, codigo, marca, conAtribucion = true,
 }: {
   abierto: boolean;
   nombreDelSocio: string;
   codigo?: string | null;
+  /** La marca PUBLICADA del socio (de `/me`). */
+  marca?: MarcaParaPintar | null;
+  /** `showPlatformAttribution`: si el socio puede nombrar la plataforma. */
+  conAtribucion?: boolean;
 }) {
   const t = useT();
+  /* Con marca propia, el panel es SUYO: arriba su logo, y abajo nuestra firma
+     pasa a un discreto «con la tecnología de», o desaparece si su contrato
+     es sin atribución. Sin marca todavía, el emblema del producto. */
+  const conMarca = !!(marca?.platformName?.trim()
+    || marca?.assets?.fullDark || marca?.assets?.fullLight);
 
   return (
     <aside
@@ -201,7 +212,7 @@ export function Rail({
       className={`rail${abierto ? " rail--abierto" : ""}`}
       aria-label={t("armazon.secciones")}
     >
-      <div className="rail__marca"><Marca /></div>
+      <div className="rail__marca"><MarcaDelPanel marca={marca} /></div>
 
       <nav className="rail__nav">
         {/* Dos grupos CON NOMBRE: lo que se hace a diario con el negocio, y la
@@ -229,10 +240,16 @@ export function Rail({
         </span>
       </div>
 
-      <div className="rail__pie">
-        <span className="rail__pie-nombre">C-GUARD PRO</span>
-        <span className="rail__pie-lema">{t("rail.pieLema")}</span>
-      </div>
+      {!conMarca ? (
+        <div className="rail__pie">
+          <span className="rail__pie-nombre">C-GUARD PRO</span>
+          <span className="rail__pie-lema">{t("rail.pieLema")}</span>
+        </div>
+      ) : conAtribucion ? (
+        <div className="rail__pie">
+          <span className="rail__pie-lema">{t("rail.conTecnologia")}</span>
+        </div>
+      ) : null}
     </aside>
   );
 }

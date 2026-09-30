@@ -90,6 +90,7 @@ export const en = {
   "nav.informes": "Reports",
   "nav.ajustes": "Settings",
   "rail.pieLema": "Build a safer world.",
+  "rail.conTecnologia": "Powered by C-Guard Pro",
   "rail.socio": "Reseller",
   "tablero.saludoManana": "Good morning, {nombre}",
   "tablero.saludoTarde": "Good afternoon, {nombre}",
