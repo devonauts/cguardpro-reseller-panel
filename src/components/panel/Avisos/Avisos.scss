@@ -49,141 +49,347 @@
   place-items: center;
   border-radius: var(--r-full);
   background: var(--danger);
-  color: var(--text-primary);
+  /* Blanco fijo: con --text-primary el número se volvía azul marino en claro. */
+  color: var(--ok-ink);
   font-size: 10.5px;
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 0 0 2px var(--canvas);
 }
 
-.avisos__cabecera {
+/* ════════════════════════════════════════════════════════════════════════
+   EL CAJÓN DE LA DERECHA
+   ════════════════════════════════════════════════════════════════════════ */
+.cajon-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  @include m.cortina;
+  position: fixed;
+  animation: cajon-velo 160ms var(--ease);
+}
+
+.cajon {
+  position: absolute;
+  top: var(--s-3);
+  right: var(--s-3);
+  bottom: var(--s-3);
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  width: min(420px, calc(100vw - var(--s-3) * 2));
+  border-radius: var(--r-xl);
+  @include m.cristal(elevado);
+  @include m.sin-cristal;
+  position: absolute;
+  overflow: hidden;
+  touch-action: pan-y;
+  transition: transform 220ms var(--ease);
+  animation: cajon-entra 240ms var(--ease);
+
+  &:focus { outline: none; }
+}
+
+.cajon--arrastrando { transition: none; user-select: none; }
+
+/* El asa: dice que la lámina se puede arrastrar (a la derecha, para cerrar). */
+.cajon__asa {
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 4px;
+  height: 44px;
+  border-radius: var(--r-full);
+  background: var(--line-strong);
+  opacity: 0.55;
+  transform: translateY(-50%);
+}
+
+@keyframes cajon-entra { from { transform: translateX(104%); } to { transform: none; } }
+@keyframes cajon-velo { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cajon, .cajon-fondo { animation: none; transition: none; }
+}
+
+.cajon__cabecera {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: var(--s-1) var(--s-2) var(--s-3);
-  min-width: 300px;
+  padding: var(--s-5) var(--s-5) var(--s-2);
 }
 
-.avisos__titulo {
-  margin: 0;
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-}
+.cajon__titulos { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cajon__titulo { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
+.cajon__cuenta { font-size: 12.5px; color: var(--text-muted); }
 
-.avisos__marcar {
+.cajon__cerrar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   border: 0;
-  background: none;
-  padding: 0;
-  font-size: 12px;
+  border-radius: var(--r-full);
+  background: var(--glass-sunken);
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); background: var(--glass-interactive); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.cajon__x { transform: rotate(45deg); }
+
+.cajon__marcar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  margin: 0 var(--s-5) var(--s-3);
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--glass-sunken);
+  font: inherit;
+  font-size: 12.5px;
   color: var(--text-secondary);
   cursor: pointer;
 
   &:hover { color: var(--text-primary); }
-  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
-}
-
-.avisos__lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 360px;
-  overflow-y: auto;
-  width: min(340px, calc(100vw - 48px));
-}
-
-.avisos__item {
-  display: flex;
-  gap: var(--s-3);
-  width: 100%;
-  padding: var(--s-2);
-  border: 0;
-  border-radius: var(--r-sm);
-  background: none;
-  text-align: left;
-  color: inherit;
-  cursor: pointer;
-
-  &:hover { background: var(--glass-interactive); }
   &:focus-visible { outline: none; box-shadow: var(--focus); }
 }
 
-/* El punto de «no leído»; en los leídos queda el hueco para que todo alinee. */
-.avisos__marca {
-  flex: none;
-  width: 7px;
-  height: 7px;
-  margin-top: 6px;
-  border-radius: var(--r-full);
+/* La lista se desplaza DENTRO: la cabecera y el pie se quedan quietos. */
+.cajon__lista {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 var(--s-3) var(--s-3);
 }
-.avisos__item--nuevo .avisos__marca { background: var(--danger); }
 
-.avisos__cuerpo { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cajon__seccion + .cajon__seccion { margin-top: var(--s-3); }
 
-.avisos__accion {
+.cajon__dia {
+  margin: var(--s-2) var(--s-2) var(--s-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cajon__pista { margin: var(--s-4) var(--s-2) 0; font-size: 11.5px; color: var(--text-muted); text-align: center; }
+
+.cajon__vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-3);
+  margin: 0;
+  padding: var(--s-7) var(--s-5);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.cajon__pie {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-top: 1px solid var(--glass-border);
   font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  &:hover { color: var(--text-primary); text-decoration: none; background: var(--glass-interactive); }
+}
+
+/* ── Una notificación: tarjeta propia, como las de iOS ──────────────────── */
+.deslizar {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-lg);
+  margin-bottom: var(--s-2);
+}
+
+.deslizar__fondo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  padding-right: var(--s-5);
+  background: var(--danger);
+  color: var(--ok-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: opacity 120ms var(--ease);
+}
+
+.deslizar__frente {
+  position: relative;
+  touch-action: pan-y;
+  transition: transform 180ms var(--ease);
+
+  &--arrastrando { transition: none; user-select: none; }
+}
+
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  width: 100%;
+  padding: var(--s-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-lg);
+  /* Opaca: debajo espera el rojo de «Borrar» y no puede transparentarse. */
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover { background: var(--surface-hover); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.aviso__icono {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: var(--r-md);
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+/* El cuerpo NO se sale: `min-width: 0` para que el flex deje encogerlo y
+   `overflow-wrap: anywhere` para las palabras largas (correos, enlaces).
+   Era el fallo del desplegable anterior. */
+.aviso__cuerpo { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+
+.aviso__linea { display: flex; align-items: baseline; justify-content: space-between; gap: var(--s-2); min-width: 0; }
+
+.aviso__titulo {
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
   color: var(--text-secondary);
   overflow-wrap: anywhere;
 }
-.avisos__item--nuevo .avisos__accion { color: var(--text-primary); font-weight: 600; }
 
-.avisos__detalle { font-size: 12.5px; color: var(--text-primary); overflow-wrap: anywhere; }
+.aviso--nuevo .aviso__titulo { color: var(--text-primary); font-weight: 650; }
 
-.avisos__respuesta {
-  font-size: 12px;
-  color: var(--text-secondary);
+.aviso__cuando { flex-shrink: 0; font-size: 11.5px; color: var(--text-muted); white-space: nowrap; }
+
+.aviso__detalle {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-.avisos__cuando { font-size: 11.5px; color: var(--text-muted); }
+.aviso__respuesta {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 
-.avisos__esqueleto {
-  height: 44px;
-  margin: 0 var(--s-2) var(--s-2);
-  border-radius: var(--r-sm);
-  background: var(--glass-interactive);
+.aviso__punto {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  margin-top: 6px;
+  border-radius: var(--r-full);
+  background: var(--brand);
+}
+
+.aviso__esqueleto {
+  height: 72px;
+  margin-bottom: var(--s-2);
+  border-radius: var(--r-lg);
+  background: var(--glass-sunken);
   animation: avisos-latido 1.2s ease-in-out infinite;
 }
 
-@keyframes avisos-latido {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
-}
+@keyframes avisos-latido { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-@media (prefers-reduced-motion: reduce) {
-  .avisos__esqueleto { animation: none; }
-}
+@media (prefers-reduced-motion: reduce) { .aviso__esqueleto { animation: none; } }
 
-.avisos__vacio {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-2);
-  padding: var(--s-5) var(--s-2);
-  font-size: 13px;
+/* ── Las pilas: cerrada asoman los cantos de las de debajo, como en iOS ─── */
+.pila { margin-bottom: var(--s-2); }
+.pila > .deslizar { margin-bottom: 0; }
+
+.pila__mas {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 10px var(--s-3) 2px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
   color: var(--text-muted);
   text-align: center;
-  width: min(340px, calc(100vw - 48px));
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); border-radius: var(--r-sm); }
 }
 
-.avisos__todo {
-  display: block;
-  margin-top: var(--s-3);
-  padding-top: var(--s-3);
-  border-top: 1px solid var(--glass-border);
-  text-align: center;
-  font-size: 13px;
+.pila__cantos {
+  position: absolute;
+  top: -2px;
+  left: 14px;
+  right: 14px;
+  height: 8px;
+  border: 1px solid var(--glass-border);
+  border-top: 0;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.pila__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  margin: 0 var(--s-2) var(--s-2);
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-secondary);
-  text-decoration: none;
-
-  &:hover { color: var(--text-primary); text-decoration: none; }
 }
+
+.pila__menos {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--glass-sunken);
+  font: inherit;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+}
+
+.pila--abierta > .deslizar { margin-bottom: var(--s-2); }

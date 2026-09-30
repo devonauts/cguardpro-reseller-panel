@@ -1887,6 +1887,17 @@ export const en = {
   "bajaEmpresa.escribeNombre": "To confirm, type “{nombre}”",
   "bajaEmpresa.eliminarDefinitivo": "Delete company",
   "tema.modoClaro": "Light mode",
+  "notificaciones.cerrar": "Close notifications",
+  "notificaciones.sinLeer": "Unread",
+  "notificaciones.sinLeerN": "{n} unread",
+  "notificaciones.nuevas": "New",
+  "notificaciones.hoy": "Today",
+  "notificaciones.ayer": "Yesterday",
+  "notificaciones.antes": "Earlier",
+  "notificaciones.borrar": "Clear",
+  "notificaciones.mostrarMas": "{n} more",
+  "notificaciones.mostrarMenos": "Show less",
+  "notificaciones.pistaDeslizar": "Swipe a notification left to clear it.",
 } as const;
 
 /** Toda clave que el panel sabe decir. */
