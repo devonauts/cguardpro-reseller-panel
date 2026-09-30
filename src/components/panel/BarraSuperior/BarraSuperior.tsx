@@ -5,6 +5,7 @@ import { Boton, Emergente, Icono } from "@/components/cristal";
 import { Avatar } from "../Avatar";
 import { Avisos } from "../Avisos";
 import { Buscador } from "../Buscador";
+import { InterruptorDeTema } from "../InterruptorDeTema/InterruptorDeTema";
 import SelectorDeIdioma from "@/i18n/SelectorDeIdioma";
 import { useT } from "@/i18n/IdiomaProvider";
 import "./BarraSuperior.scss";
@@ -113,6 +114,7 @@ export function BarraSuperior({
               <Icono nombre="personas" tamano={16} />
               {t("armazon.miPerfil")}
             </Boton>
+            <InterruptorDeTema />
             <Boton variante="fantasma" bloque role="menuitem" className="barra__opcion" onClick={onSalir}>
               <Icono nombre="flecha" tamano={16} />
               {t("armazon.cerrarSesion")}

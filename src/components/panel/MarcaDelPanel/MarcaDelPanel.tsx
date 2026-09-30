@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { Marca } from "@/components/cristal";
 import type { MarcaParaPintar } from "@/services/resellerService";
+import { useTema } from "@/tema/tema";
 import "./MarcaDelPanel.scss";
 
 /**
@@ -14,14 +15,17 @@ import "./MarcaDelPanel.scss";
  *
  * Por orden: su logotipo completo → su emblema con su nombre → su nombre solo
  * → y sólo si no ha publicado NADA, el emblema del producto (primer día, antes
- * del asistente). El panel es siempre oscuro, así que se prefiere la versión
- * del logotipo pensada para fondo oscuro; la clara es el respaldo.
+ * del asistente). Se elige la versión del logotipo que va con el tema del
+ * panel (oscuro o claro); la otra es el respaldo.
  */
 export function MarcaDelPanel({ marca }: { marca: MarcaParaPintar | null | undefined }) {
   const [rota, setRota] = useState<string | null>(null);
   const nombre = marca?.platformName?.trim() || null;
-  const completo = marca?.assets?.fullDark || marca?.assets?.fullLight || null;
-  const emblema = marca?.assets?.markDark || marca?.assets?.markLight || null;
+  /* En oscuro, la versión para fondo oscuro primero; en claro, al revés. */
+  const [tema] = useTema();
+  const a = marca?.assets;
+  const completo = (tema === "claro" ? a?.fullLight || a?.fullDark : a?.fullDark || a?.fullLight) || null;
+  const emblema = (tema === "claro" ? a?.markLight || a?.markDark : a?.markDark || a?.markLight) || null;
 
   // Una imagen que no carga no deja un hueco: se cae al siguiente escalón.
   if (completo && rota !== completo) {

@@ -139,3 +139,7 @@ a:hover { text-decoration-color: var(--text-primary); }
    del socio en el raíl. Es distinción, no estado: el oro no avisa de nada aquí,
    y por eso no se pinta con `--warn`. Ver `--gold` en tokens.css. */
 .icono--oro { color: var(--gold); }
+
+
+/* Modo claro: la selección y los subrayados, en el color de la marca. */
+:root[data-tema="claro"] ::selection { background: var(--brand-soft); color: var(--ink); }

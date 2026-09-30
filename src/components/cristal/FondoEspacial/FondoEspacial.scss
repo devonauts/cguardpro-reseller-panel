@@ -120,3 +120,35 @@
 /* Quien pide menos movimiento no pide menos imagen, así que el planeta se
    queda. Lo que nunca hubo aquí es animación: una rotación continua mantiene
    la GPU despierta en una pantalla donde sólo se teclean dos campos. */
+
+
+/* ── MODO CLARO · el cielo ────────────────────────────────────────────────
+   Todo lo nocturno se retira (estrellas, arco, planeta, viñeta) y queda el
+   cielo a sangre, anclado a la derecha: ahí está la Tierra, y a la izquierda
+   la luz — que es donde van el menú y los títulos. */
+:root[data-tema="claro"] {
+  .espacio { background: var(--ambiente); }
+  .espacio__estrellas,
+  .espacio__arco,
+  .espacio__planeta,
+  .espacio__vineta { display: none; }
+}
+
+.espacio__cielo {
+  position: absolute;
+  inset: 0;
+  display: block;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 78% 30%;
+    user-select: none;
+  }
+}
+
+@include r.hasta(tableta) {
+  /* En vertical la Tierra no cabe entera: se deja asomar por la derecha. */
+  .espacio__cielo img { object-position: 88% 40%; }
+}

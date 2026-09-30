@@ -1876,4 +1876,5 @@ export const es: Record<Clave, string> = {
   "bajaEmpresa.mejorArchivar": "¿Sólo quieres pausarla? Archívala: se puede restaurar con un clic.",
   "bajaEmpresa.escribeNombre": "Para confirmar, escribe «{nombre}»",
   "bajaEmpresa.eliminarDefinitivo": "Eliminar empresa",
+  "tema.modoClaro": "Modo claro",
 };

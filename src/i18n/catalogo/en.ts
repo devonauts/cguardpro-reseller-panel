@@ -1886,6 +1886,7 @@ export const en = {
   "bajaEmpresa.mejorArchivar": "Just want to pause it? Archive it instead: it can be restored in one click.",
   "bajaEmpresa.escribeNombre": "To confirm, type “{nombre}”",
   "bajaEmpresa.eliminarDefinitivo": "Delete company",
+  "tema.modoClaro": "Light mode",
 } as const;
 
 /** Toda clave que el panel sabe decir. */

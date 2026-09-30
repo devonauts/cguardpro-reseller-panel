@@ -106,7 +106,9 @@ describe("las fichas de diseño", () => {
        sombras— va con croma 0. El color queda para el acento (que es del
        socio) y para verde/ámbar/rojo, que significan algo. Si mañana alguien
        tiñe una superficie «un poquito», esto se pone rojo. */
-    const tokens = soloCodigo(fs.readFileSync(TOKENS, "utf8"));
+    /* El bloque del MODO CLARO se mira aparte (prueba de abajo): allí el
+       entorno es el cielo y lleva su azul a propósito. */
+    const tokens = soloCodigo(fs.readFileSync(TOKENS, "utf8")).split(':root[data-tema="claro"]')[0];
 
     /* Los únicos tonos con color permitidos, y qué son. */
     const SEMANTICOS = [155, 80, 25];
@@ -122,6 +124,28 @@ describe("las fichas de diseño", () => {
       }
     }
     expect(teñidos, "hay color fuera del acento y de los tres estados").toEqual([]);
+  });
+
+  it("el modo CLARO sólo añade el azul del cielo, y su cristal sigue siendo cristal", () => {
+    /* 2026-09-30 · «estar en una nube». El entorno puede llevar el tono del
+       cielo (235–260) y nada más: ni otro color, ni cristal opaco. */
+    const todo = soloCodigo(fs.readFileSync(TOKENS, "utf8"));
+    const partes = todo.split(':root[data-tema="claro"]');
+    expect(partes.length, "falta el bloque del modo claro").toBe(2);
+    const claro = partes[1].slice(0, partes[1].indexOf("}"));
+
+    const fuera: string[] = [];
+    for (const m of claro.matchAll(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/g)) {
+      const croma = Number(m[2]);
+      const tono = Number(m[3]);
+      if (croma === 0 || [155, 80, 25].includes(tono) || (tono >= 235 && tono <= 260)) continue;
+      fuera.push(m[0]);
+    }
+    expect(fuera, "en claro sólo cabe el azul del cielo").toEqual([]);
+    for (const ficha of ["--glass-standard", "--glass-interactive", "--glass-subtle", "--glass-elevated", "--glass-sunken"]) {
+      const valor = new RegExp(`${ficha}\\s*:\\s*([^;]+);`).exec(claro)?.[1] ?? "";
+      expect(valor, `${ficha} en claro es opaco`).toMatch(/\//);
+    }
   });
 
   it("el cristal es cristal: translúcido Y con desenfoque", () => {

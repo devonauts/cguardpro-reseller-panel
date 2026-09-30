@@ -6,6 +6,7 @@ import { ResellerAuthProvider } from "./auth/ResellerAuthContext";
 import { IdiomaProvider } from "./i18n/IdiomaProvider";
 import "./styles/global.css";
 import { iniciarCentinela } from "./lib/centinela";
+import { aplicarTema, leerTema } from "./tema/tema";
 
 /**
  * El panel vive en la RAÍZ de su propio anfitrión (`partners.cguardpro.com`),
@@ -20,6 +21,9 @@ import { iniciarCentinela } from "./lib/centinela";
    del superadmin. Antes del render y fuera de React: mira el documento tal y
    como llegó. Ver `lib/centinela`. */
 iniciarCentinela();
+
+/* El tema, antes del primer render: sin esto el claro arrancaría en negro. */
+aplicarTema(leerTema());
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

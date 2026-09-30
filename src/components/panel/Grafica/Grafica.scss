@@ -81,3 +81,10 @@
      Recortarlos a «E F M» sería peor — tres iniciales no se distinguen. */
   .grafica__columna:nth-child(even) .grafica__etiqueta { visibility: hidden; }
 }
+
+
+/* MODO CLARO · barras del color de la marca, que se desvanecen hacia abajo. */
+:root[data-tema="claro"] {
+  .grafica__barra { background: linear-gradient(180deg, var(--brand) 0%, var(--brand-soft) 100%); }
+  .grafica__columna:hover .grafica__barra { background: linear-gradient(180deg, var(--brand-hover) 0%, var(--brand-ring) 100%); }
+}

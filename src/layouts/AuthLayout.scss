@@ -1,3 +1,4 @@
+@use "../design/material" as m;
 @use "../design/medios" as r;
 
 /**
@@ -125,4 +126,23 @@
   /* A 320 px el respiro exterior baja al mínimo: cada píxel de ancho que se
      le quita al marco se lo gana el campo de dentro. */
   .entrada { padding: var(--s-3); }
+}
+
+
+/* MODO CLARO · lo de abajo cae a caballo entre el cielo (claro) y la Tierra
+   (oscura): ni texto oscuro ni blanco se leen en los dos. Va sobre una lámina
+   pequeña del mismo cristal blanco del panel, y el velo oscuro se retira. */
+:root[data-tema="claro"] {
+  .entrada__legal::before,
+  .entrada__valores::before { display: none; }
+
+  .entrada__legal,
+  .entrada__valores {
+    @include m.cristal(sutil);
+    @include m.sin-cristal;
+    padding: var(--s-2) var(--s-4);
+    border-radius: var(--r-md);
+    color: var(--text-secondary);
+  }
+  .entrada__legal { justify-self: center; width: fit-content; margin-inline: auto; }
 }

@@ -107,3 +107,19 @@
 }
 
 @keyframes btn-giro { to { transform: rotate(360deg); } }
+
+
+/* MODO CLARO · el principal toma la MARCA (como en la maqueta): degradado del
+   propio acento, filo blanco arriba y sombra de nube. La plata de arriba sobre
+   un cielo blanco no se distinguiría del fondo. */
+:root[data-tema="claro"] .btn--primario {
+  background: linear-gradient(180deg, var(--brand-hover) 0%, var(--brand) 100%);
+  color: var(--brand-ink);
+  box-shadow: var(--inner-highlight), 0 0 0 1px var(--brand-ring), var(--shadow-contact);
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, var(--brand-hover) 0%, var(--brand-hover) 100%);
+    box-shadow: var(--inner-highlight), 0 0 0 1px var(--brand-ring), var(--shadow-elevated);
+  }
+  &[aria-busy="true"] { background: var(--brand); }
+}

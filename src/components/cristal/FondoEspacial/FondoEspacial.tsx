@@ -2,6 +2,11 @@ import planetaAvif from "@/assets/planeta.avif";
 import planetaAvif720 from "@/assets/planeta-720.avif";
 import planetaWebp from "@/assets/planeta.webp";
 import planetaWebp720 from "@/assets/planeta-720.webp";
+import cieloAvif from "@/assets/cielo.avif";
+import cieloAvif900 from "@/assets/cielo-900.avif";
+import cieloWebp from "@/assets/cielo.webp";
+import cieloWebp900 from "@/assets/cielo-900.webp";
+import { useTema } from "@/tema/tema";
 import "./FondoEspacial.scss";
 
 /**
@@ -37,10 +42,20 @@ import "./FondoEspacial.scss";
  * ════════════════════════════════════════════════════════════════════════════
  */
 export function FondoEspacial() {
+  const [tema] = useTema();
   return (
     /* `aria-hidden`: es paisaje. Anunciarlo a un lector de pantalla sólo
        retrasa el primer campo del formulario. */
     <div className="espacio" aria-hidden="true">
+      {/* Modo claro: el cielo, a sangre. Sólo se monta en claro, para que el
+          oscuro no descargue una imagen que no enseña. */}
+      {tema === "claro" && (
+        <picture className="espacio__cielo">
+          <source type="image/avif" srcSet={`${cieloAvif900} 900w, ${cieloAvif} 1536w`} sizes="100vw" />
+          <source type="image/webp" srcSet={`${cieloWebp900} 900w, ${cieloWebp} 1536w`} sizes="100vw" />
+          <img src={cieloWebp} alt="" decoding="async" draggable={false} />
+        </picture>
+      )}
       <div className="espacio__estrellas" />
       <div className="espacio__arco" />
 

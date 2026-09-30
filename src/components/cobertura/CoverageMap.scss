@@ -177,3 +177,9 @@
   &:focus-visible { outline: none; box-shadow: var(--focus); }
 }
 .cobertura__punto--activo { width: 22px; background: var(--brand); }
+
+/* MODO CLARO · el mapa claro de siempre, suavizado hacia el cielo: menos
+   saturación y un punto más de luz, para que no grite al lado del cristal. */
+:root[data-tema="claro"] {
+  .leaflet-tile-pane { filter: grayscale(0.35) saturate(0.85) brightness(1.04) contrast(0.96); }
+}

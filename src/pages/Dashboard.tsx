@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
-import useModoOscuro from "@/branding/useModoOscuro";
+import { useTema } from "@/tema/tema";
 import { logoDeCabecera } from "@/branding/marcaDelSocio";
 import { etiquetaDeEstado } from "@/components/StatusPill";
 import {
@@ -71,7 +71,9 @@ interface Paso {
 export function Dashboard() {
   const { me, puede } = useResellerAuth();
   const t = useT();
-  const oscuro = useModoOscuro();
+  /* El logotipo que toca según el tema del PANEL, no el del sistema. */
+  const [tema] = useTema();
+  const oscuro = tema === "oscuro";
 
   const [datos, setDatos] = useState<ResellerDashboard | null>(null);
   const [empresas, setEmpresas] = useState<Empresa[]>([]);

@@ -29,7 +29,7 @@ import "./CoverageMap.scss";
  * (same rule as the rest of the partner panel). Cities are the partner's
  * contract: shown, not edited here.
  *
- * Base map: OpenStreetMap's tiles toned dark (the panel is always dark).
+ * Base map: OpenStreetMap tiles, toned dark in dark mode and softened in light.
  * ════════════════════════════════════════════════════════════════════════════
  */
 
