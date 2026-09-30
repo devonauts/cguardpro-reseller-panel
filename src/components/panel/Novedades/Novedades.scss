@@ -1,0 +1,157 @@
+@use "../../../design/material" as m;
+@use "../../../design/medios" as r;
+
+/* El anillo: late despacio en el color de la marca alrededor de la pieza. */
+.novedad-anillo {
+  position: fixed;
+  z-index: 1150;
+  border-radius: var(--r-full);
+  box-shadow: 0 0 0 2px var(--brand), 0 0 0 6px var(--brand-soft);
+  pointer-events: none;
+  animation: novedad-late 1.8s ease-in-out infinite;
+}
+
+@keyframes novedad-late {
+  0%, 100% { box-shadow: 0 0 0 2px var(--brand), 0 0 0 6px var(--brand-soft); }
+  50% { box-shadow: 0 0 0 2px var(--brand), 0 0 0 14px transparent; }
+}
+
+.novedad {
+  /* Dónde cae la flecha; el componente la reescribe en línea según la pieza. */
+  --novedad-flecha: 40px;
+  position: fixed;
+  z-index: 1160;
+  width: min(360px, calc(100vw - 24px));
+  border-radius: var(--r-xl);
+  @include m.cristal(elevado);
+  @include m.sin-cristal;
+  position: fixed;
+  animation: novedad-entra 260ms var(--ease);
+
+  /* La flecha que apunta a la pieza. En `::after`: el `::before` es el canto
+     de luz del cristal (mixin), y pisarlo lo convertía en un punto suelto. */
+  &::after {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: calc(var(--novedad-flecha) - 7px);
+    width: 14px;
+    height: 14px;
+    border-top: 1px solid var(--glass-border-highlight);
+    border-left: 1px solid var(--glass-border-highlight);
+    background: var(--glass-elevated);
+    transform: rotate(45deg);
+  }
+}
+
+@keyframes novedad-entra {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .novedad, .novedad-anillo { animation: none; }
+}
+
+.novedad__cerrar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--r-full);
+  background: var(--glass-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.novedad__x { transform: rotate(45deg); }
+
+/* Antes/después: dos imágenes, la del cielo recortada en diagonal. Al probarlo,
+   el cielo avanza y ocupa toda la vista. */
+.novedad__previa {
+  position: relative;
+  height: 150px;
+  margin: var(--s-2) var(--s-2) 0;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.novedad__noche { object-position: 70% 60%; }
+
+/* La portada que se sube desde el superadmin. */
+.novedad__portada { object-position: center; }
+
+/* Sin pieza que señalar (el superadmin eligió «Nada»): sin flecha. */
+.novedad--sin-flecha::after { display: none; }
+
+.novedad__cielo {
+  object-position: 75% 35%;
+  clip-path: polygon(58% 0, 100% 0, 100% 100%, 38% 100%);
+  transition: clip-path 700ms var(--ease);
+}
+
+.novedad__previa--listo .novedad__cielo { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+
+.novedad__chip {
+  position: absolute;
+  bottom: 10px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-full);
+  @include m.cristal(estandar);
+  @include m.sin-cristal(var(--surface-raised));
+  position: absolute;
+  color: var(--text-primary);
+}
+
+.novedad__chip--noche { left: 10px; }
+.novedad__chip--dia { right: 10px; color: var(--warn); }
+
+.novedad__cuerpo { display: flex; flex-direction: column; gap: var(--s-2); padding: var(--s-4) var(--s-5) var(--s-5); }
+
+.novedad__etiqueta {
+  align-self: flex-start;
+  padding: 3px 9px;
+  border-radius: var(--r-full);
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.novedad__titulo { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
+.novedad__texto { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--text-secondary); white-space: pre-line; overflow-wrap: anywhere; }
+
+.novedad__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; }
+}
+
+/* En el teléfono la tarjeta ocupa el ancho, bajo la barra. */
+@include r.hasta(movil) {
+  .novedad { right: 12px !important; left: 12px; width: auto; }
+}

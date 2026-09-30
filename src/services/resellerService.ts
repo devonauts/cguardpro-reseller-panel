@@ -618,6 +618,28 @@ export const notificacionesService = {
     post<{ marcados: number }>("/reseller/notificaciones/leidas", ids ? { ids } : {}),
 };
 
+/** Una novedad del panel publicada desde el superadmin (audiencia «Panel de socios»). */
+export interface NovedadDelServidor {
+  id: string;
+  title: string;
+  body: string;
+  level: string;
+  dismissible: boolean;
+  design: {
+    imageUrl: string | null;
+    ctaLabel: string | null;
+    ctaUrl: string | null;
+    anchor?: "perfil" | "campana" | "ninguna" | null;
+    action?: "tema-claro" | null;
+  } | null;
+}
+
+export const novedadesService = {
+  lista: () => get<{ rows: NovedadDelServidor[] }>("/reseller/notificaciones/novedades"),
+  acuse: (id: string, event: "shown" | "seen" | "dismissed" | "cta") =>
+    post<{ ok: boolean }>(`/reseller/notificaciones/novedades/${id}/acuse`, { event }),
+};
+
 export const soporteService = {
   lista: () => get<{ rows: TicketDeSoporte[] }>("/reseller/support/tickets"),
   crear: (datos: TicketNuevo) => post<TicketDeSoporte>("/reseller/support/tickets", datos),

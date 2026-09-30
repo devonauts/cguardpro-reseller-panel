@@ -1898,6 +1898,15 @@ export const en = {
   "notificaciones.mostrarMas": "{n} more",
   "notificaciones.mostrarMenos": "Show less",
   "notificaciones.pistaDeslizar": "Swipe a notification left to clear it.",
+  "novedades.etiqueta": "New",
+  "novedades.cerrar": "Close",
+  "novedades.ahoraNo": "Not now",
+  "novedades.entendido": "Got it",
+  "novedades.modoClaro.titulo": "Light mode: your panel, in the sky",
+  "novedades.modoClaro.texto": "White glass, daylight and the Earth in the background. Turn it on or off anytime from your profile, up here.",
+  "novedades.modoClaro.probar": "Try it now",
+  "novedades.modoClaro.listoTitulo": "Done! You're in light mode",
+  "novedades.modoClaro.listoTexto": "To go back to dark, open your profile and turn off the sun switch.",
 } as const;
 
 /** Toda clave que el panel sabe decir. */

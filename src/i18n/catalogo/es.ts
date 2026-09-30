@@ -1888,4 +1888,13 @@ export const es: Record<Clave, string> = {
   "notificaciones.mostrarMas": "{n} más",
   "notificaciones.mostrarMenos": "Mostrar menos",
   "notificaciones.pistaDeslizar": "Desliza una notificación a la izquierda para quitarla.",
+  "novedades.etiqueta": "Nuevo",
+  "novedades.cerrar": "Cerrar",
+  "novedades.ahoraNo": "Ahora no",
+  "novedades.entendido": "Entendido",
+  "novedades.modoClaro.titulo": "Modo claro: tu panel, en el cielo",
+  "novedades.modoClaro.texto": "Cristal blanco, luz de día y la Tierra de fondo. Lo enciendes y lo apagas cuando quieras desde tu perfil, aquí arriba.",
+  "novedades.modoClaro.probar": "Probarlo ahora",
+  "novedades.modoClaro.listoTitulo": "¡Listo! Ya estás en modo claro",
+  "novedades.modoClaro.listoTexto": "Para volver al oscuro, abre tu perfil y apaga el interruptor del sol.",
 };

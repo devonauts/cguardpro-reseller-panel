@@ -5,6 +5,7 @@ import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import StatusPill from "@/components/StatusPill";
 import { FondoEspacial } from "@/components/cristal";
 import { BarraSuperior, Rail } from "@/components/panel";
+import { Novedades } from "@/components/panel/Novedades/Novedades";
 import { AvisoDePago } from "@/components/panel/Pago";
 import { nombreDeRol } from "@/lib/rolDeSocio";
 import { useT } from "@/i18n/IdiomaProvider";
@@ -51,6 +52,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="marco">
       <FondoEspacial />
+      {/* «Qué hay de nuevo»: una tarjeta, una vez por persona. */}
+      <Novedades />
 
       <a className="skip-link" href="#contenido">{t("armazon.saltar")}</a>
 
