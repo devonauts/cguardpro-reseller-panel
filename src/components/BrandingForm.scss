@@ -21,6 +21,7 @@
   color: var(--text-secondary);
 }
 .marca-form__ayuda { font-size: 12px; line-height: 1.55; color: var(--text-muted); }
+.marca-form__ayuda--aviso { margin-top: var(--s-2); color: var(--warn); }
 
 /* ── Deslizador ──────────────────────────────────────────────────────────── */
 .desl { display: flex; flex-direction: column; gap: var(--s-3); }

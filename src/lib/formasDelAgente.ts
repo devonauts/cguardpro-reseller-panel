@@ -9,6 +9,9 @@
 export const FORMAS_DEL_AGENTE = [
   "orbe", "cuadrado", "triangulo", "rombo", "pentagono", "hexagono", "octagono",
   "burbuja", "chispa", "robot",
+  /* Sin forma: sólo la imagen del asistente, tal cual (también un GIF). Sin
+     imagen subida, el CRM pinta el orbe. */
+  "ninguna",
 ] as const;
 export type FormaDelAgente = (typeof FORMAS_DEL_AGENTE)[number];
 
@@ -30,6 +33,8 @@ export const SILUETAS: Record<FormaDelAgente, { d: string; cy: number }> = {
   hexagono: { d: "M24 4 42 14.5v21L24 46 6 35.5v-21z", cy: 25 },
   rombo: { d: "M24 3 45 25 24 47 3 25z", cy: 25 },
   chispa: { d: "M24 3c2 10 8 16 20 22-12 6-18 12-20 22-2-10-8-16-20-22 12-6 18-12 20-22z", cy: 25 },
+  /* Sin silueta: en las vistas previas se dibuja un marco punteado. */
+  ninguna: { d: "", cy: 25 },
   robot: {
     d: "M24 3a3 3 0 0 1 1.5 5.6V12H36a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8h10.5V8.6A3 3 0 0 1 24 3z",
     cy: 28,

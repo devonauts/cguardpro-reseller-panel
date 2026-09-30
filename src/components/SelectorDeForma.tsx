@@ -14,6 +14,19 @@ export function FormaSvg({ forma, color, sigla, tamano = 40, icono }: {
 }) {
   const s = SILUETAS[forma];
   const glifo = esIcono(icono) ? ICONOS_DEL_AGENTE[icono] : null;
+  if (forma === "ninguna") {
+    // «Sólo imagen»: un marco punteado con el dibujo de una imagen dentro.
+    return (
+      <svg aria-hidden width={tamano} height={tamano * 54 / 48} viewBox="0 0 48 54">
+        <rect x="5" y="6" width="38" height="38" rx="8" fill="none" stroke={color} strokeWidth="2.4" strokeDasharray="5 4" />
+        <g fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="14" y="16" width="20" height="18" rx="3" />
+          <circle cx="20" cy="22" r="2" />
+          <path d="m15 32 6-6 4 4 3-3 5 5" />
+        </g>
+      </svg>
+    );
+  }
   return (
     <svg aria-hidden width={tamano} height={tamano * 54 / 48} viewBox="0 0 48 54">
       <path d={s.d} fill={color} />

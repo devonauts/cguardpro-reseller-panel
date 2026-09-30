@@ -108,8 +108,15 @@ export function Asistente() {
                       </div>
                     </div>
                     <div className="asist-previa__burbuja">
-                      <FormaSvg forma={forma} color={color} sigla={cara ? "" : siglaDelAgente(nombre)} tamano={64} icono={cara ? null : borrador.agentIcon} />
-                      {cara && <img className="asist-previa__cara asist-previa__cara--grande" src={cara} alt="" />}
+                      {forma === "ninguna" && cara ? (
+                        /* Sin forma: la imagen sola, tal cual (un GIF, animado). */
+                        <img className="asist-previa__cara--libre" src={cara} alt="" />
+                      ) : (
+                        <>
+                          <FormaSvg forma={forma === "ninguna" ? FORMA_POR_DEFECTO : forma} color={color} sigla={cara ? "" : siglaDelAgente(nombre)} tamano={64} icono={cara ? null : borrador.agentIcon} />
+                          {cara && <img className="asist-previa__cara asist-previa__cara--grande" src={cara} alt="" />}
+                        </>
+                      )}
                     </div>
                   </div>
                 </Tarjeta>

@@ -42,6 +42,8 @@
 
 .asist-previa__burbuja { position: relative; }
 .asist-previa__cara { width: 22px; height: 22px; border-radius: 999px; object-fit: cover; }
+/* «Ninguna»: la imagen del socio sin silueta ni recorte, del tamaño de la burbuja. */
+.asist-previa__cara--libre { width: 64px; height: 64px; object-fit: contain; }
 .asist-previa__cara--grande {
   position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
   width: 34px; height: 34px;

@@ -28,6 +28,9 @@ import "./BrandingForm.scss";
 
 /** Los formatos que el servidor acepta. `accept` orienta; decide el servidor. */
 const ACEPTADOS = "image/png,image/jpeg,image/webp";
+/* La imagen del asistente admite además GIF (animado): el servidor sólo lo
+   acepta en esa ranura. */
+const ACEPTADOS_ASISTENTE = `${ACEPTADOS},image/gif`;
 
 interface Props {
   marca: Marca;
@@ -228,6 +231,9 @@ export function BrandingForm({
             deshabilitado={deshabilitado}
             icono={marca.agentIcon}
           />
+          {marca.agentShape === "ninguna" && !(marca as any).agentAvatarFileId && (
+            <p className="marca-form__ayuda marca-form__ayuda--aviso">{t("marca.formaNingunaSinImagen")}</p>
+          )}
         </fieldset>
       )}
 
@@ -406,7 +412,7 @@ function SubidaDeImagen({
       <input
         ref={entrada}
         type="file"
-        accept={ACEPTADOS}
+        accept={ranura === "agentAvatar" ? ACEPTADOS_ASISTENTE : ACEPTADOS}
         className="sr-only"
         // La etiqueta va en el input porque el botón de arriba es quien lo
         // dispara: sin esto, un lector de pantalla encuentra un campo sin nombre.
