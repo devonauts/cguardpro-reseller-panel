@@ -19,7 +19,8 @@ export type NombreDeIcono =
   | "globo" | "galon" | "flecha" | "grafico"
   | "casa" | "edificio" | "paleta" | "personas" | "tarjeta" | "engranaje"
   | "lupa" | "corona" | "libro" | "auriculares" | "bocadillo" | "mas"
-  | "sol" | "puntos" | "visto" | "moneda" | "copiar" | "movil" | "campana";
+  | "sol" | "puntos" | "visto" | "moneda" | "copiar" | "movil" | "campana"
+  | "archivo" | "papelera" | "restaurar" | "lapiz";
 
 const TRAZOS: Record<NombreDeIcono, JSX.Element> = {
   campana: (
@@ -151,6 +152,20 @@ const TRAZOS: Record<NombreDeIcono, JSX.Element> = {
       <circle cx="18.5" cy="12" r="1.3" />
     </>
   ),
+  archivo: (
+    <>
+      <path d="M3.5 5.5h17v4h-17z" />
+      <path d="M5 9.5v9a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5v-9M10 13h4" />
+    </>
+  ),
+  papelera: (
+    <>
+      <path d="M4.5 6.5h15M9.5 6.5V4.5h5v2M6.5 6.5l.9 12.1a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-12.1" />
+      <path d="M10.2 10.5v6M13.8 10.5v6" />
+    </>
+  ),
+  restaurar: <path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v3.5H8" />,
+  lapiz: <path d="m14.5 5.5 4 4M4.5 19.5l1-4.2L16 4.8a1.4 1.4 0 0 1 2 0l1.2 1.2a1.4 1.4 0 0 1 0 2L8.7 18.5l-4.2 1Z" />,
 };
 
 export function Icono({

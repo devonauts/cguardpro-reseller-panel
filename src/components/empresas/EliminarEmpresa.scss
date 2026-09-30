@@ -1,0 +1,84 @@
+@use "../../design/material" as m;
+
+.dialogo-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: var(--s-4);
+  @include m.cortina;
+  /* `cortina` no posiciona; lo fijo va después para que nada lo pise. */
+  position: fixed;
+  animation: dialogo-fondo 140ms var(--ease);
+}
+
+.dialogo {
+  width: min(460px, 100%);
+  max-height: calc(100dvh - var(--s-4) * 2);
+  overflow: auto;
+  padding: var(--s-5);
+  border-radius: var(--r-xl);
+  @include m.cristal(elevado);
+  @include m.sin-cristal;
+  animation: dialogo-entra 160ms var(--ease);
+}
+
+.dialogo__titulo { margin: 0 0 var(--s-3); font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }
+.dialogo__texto { margin: 0 0 var(--s-2); font-size: 14px; color: var(--text-secondary); }
+
+.dialogo__lista {
+  margin: 0 0 var(--s-3);
+  padding-left: 1.2em;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+
+  li + li { margin-top: 4px; }
+}
+
+.dialogo__sugerencia {
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--glass-sunken);
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.dialogo__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+
+  input {
+    height: 42px;
+    padding: 0 var(--s-3);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    font: inherit;
+    font-size: 15px;
+    color: var(--text-primary);
+
+    &:focus-visible { outline: none; box-shadow: var(--focus); }
+  }
+}
+
+.dialogo__error { margin: var(--s-3) 0 0; font-size: 13px; color: var(--danger); }
+
+.dialogo__acciones {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+@keyframes dialogo-fondo { from { opacity: 0; } to { opacity: 1; } }
+@keyframes dialogo-entra { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dialogo-fondo, .dialogo { animation: none; }
+}

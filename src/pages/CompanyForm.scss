@@ -121,6 +121,25 @@
 
 .ficha__crm { text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
 
+/* Archivada: aviso neutro bajo la cabecera, con la fecha y cómo volver. */
+.ficha__archivada {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  margin: 0 0 var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-md);
+  background: var(--glass-sunken);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+/* Los botones de la cabecera llevan icono: que no se peguen al texto y que,
+   en un teléfono, bajen a otra línea en vez de salirse. */
+.ficha__cabecera .cabecera__acciones { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+.ficha__cabecera .cabecera__acciones .btn { display: inline-flex; align-items: center; gap: 6px; }
+
 /* ── La ficha de una empresa (rediseño 2026-09-29) ──────────────────────── */
 .ficha__cabecera { align-items: center; }
 .ficha__identidad { display: flex; align-items: center; gap: var(--s-4); min-width: 0; }

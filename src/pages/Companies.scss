@@ -1,3 +1,5 @@
+@use "../design/material" as m;
+
 /**
  * El ritmo de la página.
  *
@@ -36,7 +38,7 @@
   /* El filete lo pone la fila, no el `<li>`: si lo pusiera el `<li>`, la línea
      quedaría DEBAJO de lo desplegado y separaría la empresa de su propia
      gente. */
-  &:last-child .empresa { border-bottom: 0; }
+  &:last-child .empresa-fila { border-bottom: 0; }
 }
 
 .empresa-acordeon__pie {
@@ -119,7 +121,88 @@ button.empresa--abrible {
   span { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
 }
 
-.empresas__herramientas { display: flex; justify-content: flex-end; margin-bottom: var(--s-2); }
+.empresas__herramientas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+/* Activas · Archivadas: un segmentado, como el de Mis apps. */
+.empresas__vistas {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--r-full);
+  background: var(--glass-sunken);
+}
+
+.empresas__vista {
+  padding: 6px var(--s-4);
+  border: 0;
+  border-radius: var(--r-full);
+  background: transparent;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+}
+
+.empresas__vista--activa { background: var(--surface-raised); color: var(--text-primary); font-weight: 600; }
+
+/* La fila = el botón que abre el acordeón + los tres puntos. El filete pasa
+   del botón a la fila entera, para que cruce también por debajo del menú. */
+.empresa-fila {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--glass-border);
+
+  > .empresa { flex: 1; min-width: 0; border-bottom: 0; }
+}
+
+.empresa-fila__menu { flex-shrink: 0; padding-right: var(--s-2); }
+
+/* El aviso de abajo («Archivada · Deshacer»), como el de iOS. */
+.aviso-inferior {
+  position: fixed;
+  left: 50%;
+  bottom: max(var(--s-5), env(safe-area-inset-bottom));
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  max-width: calc(100vw - var(--s-4) * 2);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-lg);
+  @include m.cristal(elevado);
+  @include m.sin-cristal;
+  position: fixed;
+  color: var(--text-primary);
+  font-size: 14px;
+  transform: translateX(-50%);
+  animation: aviso-inferior-entra 180ms var(--ease);
+}
+
+.aviso-inferior__accion {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  color: var(--brand);
+  cursor: pointer;
+}
+
+@keyframes aviso-inferior-entra {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) { .aviso-inferior { animation: none; } }
 
 .empresas__buscar {
   width: min(100%, 320px);
@@ -139,7 +222,8 @@ button.empresa--abrible {
 .empresa--cabecera {
   /* El mismo relleno lateral que la fila, para que cada título caiga encima de su columna. */
   padding-left: clamp(var(--s-3), 2.2vw, var(--s-4));
-  padding-right: calc(clamp(var(--s-3), 2.2vw, var(--s-4)) + 24px);
+  /* + el galón (24) + los tres puntos (36 + su margen). */
+  padding-right: calc(clamp(var(--s-3), 2.2vw, var(--s-4)) + 24px + 44px);
   padding-top: 0;
   padding-bottom: var(--s-2);
   font-size: 11.5px;

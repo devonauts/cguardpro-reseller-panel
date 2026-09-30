@@ -1,0 +1,50 @@
+/* La fila deslizable: los botones esperan DETRÁS y el frente se aparta. */
+.deslizable {
+  position: relative;
+  overflow: hidden;
+}
+
+.deslizable__acciones {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.deslizable__boton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 84px;
+  flex-shrink: 0;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-ink);
+  cursor: pointer;
+  transition: flex-grow 160ms var(--ease), width 160ms var(--ease);
+
+  &:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+}
+
+.deslizable__boton--neutro { background: var(--ink-subtle); color: var(--accent-ink); }
+.deslizable__boton--aviso { background: var(--warn); color: var(--accent-ink); }
+.deslizable__boton--peligro { background: var(--danger); }
+
+.deslizable__frente {
+  position: relative;
+  /* Opaco: sin fondo propio, los botones se verían a través del cristal. */
+  background: var(--surface, var(--glass-elevated));
+  touch-action: pan-y;
+  transition: transform 220ms var(--ease);
+  will-change: transform;
+}
+
+.deslizable--arrastrando .deslizable__frente { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .deslizable__frente, .deslizable__boton { transition: none; }
+}

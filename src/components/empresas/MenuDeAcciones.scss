@@ -1,0 +1,61 @@
+@use "../../design/material" as m;
+
+.menu-acciones__disparador {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover { background: var(--glass-interactive); color: var(--text-primary); }
+  &:focus-visible { outline: none; box-shadow: var(--focus); }
+  &[aria-expanded="true"] { background: var(--glass-interactive); color: var(--text-primary); }
+}
+
+.menu-acciones {
+  position: fixed;
+  z-index: 1000;
+  width: 220px;
+  padding: var(--s-2);
+  border-radius: var(--r-lg);
+  @include m.cristal(elevado);
+  @include m.sin-cristal;
+  /* `cristal` pone `position: relative`: el menú flota, así que se devuelve. */
+  position: fixed;
+  animation: menu-acciones-entra 120ms var(--ease);
+}
+
+@keyframes menu-acciones-entra {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+
+.menu-acciones__opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--s-3);
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+
+  &:hover, &:focus-visible { background: var(--glass-interactive); outline: none; }
+}
+
+.menu-acciones__opcion--peligro { color: var(--danger); }
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-acciones { animation: none; }
+}

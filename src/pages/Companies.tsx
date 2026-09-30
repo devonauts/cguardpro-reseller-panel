@@ -10,6 +10,9 @@ import {
   cobroAEmpresasService, companiesService, type Cupo, type Empresa,
 } from "@/services/resellerService";
 import PersonasDeLaEmpresa from "@/components/empresas/PersonasDeLaEmpresa";
+import { FilaDeslizable, type AccionDeFila } from "@/components/empresas/FilaDeslizable";
+import { MenuDeAcciones, type OpcionDeMenu } from "@/components/empresas/MenuDeAcciones";
+import { EliminarEmpresa } from "@/components/empresas/EliminarEmpresa";
 import { useT } from "@/i18n/IdiomaProvider";
 import { fechaCorta } from "@/lib/dinero";
 import "./Companies.scss";
@@ -55,6 +58,13 @@ export function Companies() {
   /* El estado de COBRO de cada empresa, si el socio cobra por la plataforma.
      Es lo que más pregunta quien opera el negocio: ¿me paga o no? */
   const [cobro, setCobro] = useState<Record<string, string> | null>(null);
+  /* Activas o archivadas: dos listas, como Mail y su «Archivo». Archivar saca
+     a la empresa de la de todos los días sin perderla. */
+  const [vista, setVista] = useState<"activas" | "archivadas">("activas");
+  const [aEliminar, setAEliminar] = useState<Empresa | null>(null);
+  /* El aviso de abajo, con su «Deshacer»: archivar es instantáneo (también al
+     deslizar del todo), así que tiene que poder volverse atrás al momento. */
+  const [aviso, setAviso] = useState<{ texto: string; deshacer?: () => void } | null>(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -62,7 +72,7 @@ export function Companies() {
     setBloqueadoPorEstado(null);
     try {
       const [r, c] = await Promise.all([
-        companiesService.list({ limit: 100 }),
+        companiesService.list({ limit: 100, archived: vista === "archivadas" }),
         cobroAEmpresasService.leer().catch(() => null),
       ]);
       setFilas(r.rows ?? []);
@@ -76,9 +86,47 @@ export function Companies() {
     } finally {
       setCargando(false);
     }
-  }, [t]);
+  }, [t, vista]);
 
   useEffect(() => { cargar(); }, [cargar]);
+
+  useEffect(() => {
+    if (!aviso) return undefined;
+    const reloj = window.setTimeout(() => setAviso(null), 6000);
+    return () => window.clearTimeout(reloj);
+  }, [aviso]);
+
+  const nombreDe = (e: Empresa) => e.name || t("empresas.sinNombre");
+
+  const archivar = async (e: Empresa) => {
+    // Se quita de la vista YA; si el servidor falla, vuelve y se dice.
+    setFilas((xs) => xs.filter((x) => x.id !== e.id));
+    if (abierta === e.id) setAbierta(null);
+    try {
+      await companiesService.archive(e.id);
+      setAviso({
+        texto: t("bajaEmpresa.archivada", { nombre: nombreDe(e) }),
+        deshacer: async () => {
+          setAviso(null);
+          try { await companiesService.restore(e.id); } finally { cargar(); }
+        },
+      });
+    } catch (err: any) {
+      setAviso({ texto: err?.message || t("bajaEmpresa.noSeArchivo") });
+      cargar();
+    }
+  };
+
+  const restaurar = async (e: Empresa) => {
+    setFilas((xs) => xs.filter((x) => x.id !== e.id));
+    try {
+      await companiesService.restore(e.id);
+      setAviso({ texto: t("bajaEmpresa.restaurada", { nombre: nombreDe(e) }) });
+    } catch (err: any) {
+      setAviso({ texto: err?.message || t("bajaEmpresa.noSeRestauro") });
+      cargar();
+    }
+  };
 
   /* El permiso Y el estado. Los dos son AVISOS: el servidor vuelve a
      comprobarlos y contesta 409 si se le fuerza. Aquí sólo se evita ofrecer un
@@ -90,6 +138,28 @@ export function Companies() {
      vacío — un panel en blanco se lee como un fallo. */
   const puedeVerPersonas = puede("reseller.company.users.view");
   const puedeGestionarPersonas = puede("reseller.company.users.manage") && activo;
+  const puedeEditar = puede("reseller.company.update");
+  const puedeDarDeBaja = puede("reseller.company.suspend");
+
+  const accionesDeFila = (e: Empresa): AccionDeFila[] => (puedeDarDeBaja ? [
+    vista === "activas"
+      ? { clave: "archivar", etiqueta: t("bajaEmpresa.archivar"), icono: "archivo", tono: "neutro", onAccion: () => archivar(e) }
+      : { clave: "restaurar", etiqueta: t("bajaEmpresa.restaurar"), icono: "restaurar", tono: "aviso", onAccion: () => restaurar(e) },
+    { clave: "eliminar", etiqueta: t("bajaEmpresa.eliminar"), icono: "papelera", tono: "peligro", onAccion: () => setAEliminar(e) },
+  ] : []);
+
+  const opcionesDeMenu = (e: Empresa): OpcionDeMenu[] => [
+    { clave: "ficha", etiqueta: t("bajaEmpresa.verDetalle"), icono: "edificio", onElegir: () => navigate(`/companies/${e.id}`) },
+    ...(puedeEditar && vista === "activas"
+      ? [{ clave: "editar", etiqueta: t("bajaEmpresa.editar"), icono: "lapiz" as const, onElegir: () => navigate(`/companies/${e.id}?editar=1`) }]
+      : []),
+    ...(puedeDarDeBaja ? [
+      vista === "activas"
+        ? { clave: "archivar", etiqueta: t("bajaEmpresa.archivar"), icono: "archivo" as const, onElegir: () => archivar(e) }
+        : { clave: "restaurar", etiqueta: t("bajaEmpresa.restaurar"), icono: "restaurar" as const, onElegir: () => restaurar(e) },
+      { clave: "eliminar", etiqueta: t("bajaEmpresa.eliminar"), icono: "papelera" as const, peligro: true, onElegir: () => setAEliminar(e) },
+    ] : []),
+  ];
 
   const q = buscar.trim().toLowerCase();
   const visibles = q
@@ -157,26 +227,41 @@ export function Companies() {
           <div className="empresas__aviso">{t("empresas.noActiva")}</div>
         )}
 
+        <div className="empresas__herramientas">
+          <div className="empresas__vistas" role="tablist" aria-label={t("bajaEmpresa.vistas")}>
+            {(["activas", "archivadas"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={vista === v}
+                className={`empresas__vista${vista === v ? " empresas__vista--activa" : ""}`}
+                onClick={() => { setVista(v); setAbierta(null); }}
+              >
+                {t(v === "activas" ? "bajaEmpresa.activas" : "bajaEmpresa.archivadas")}
+              </button>
+            ))}
+          </div>
+          <input
+            type="search"
+            className="empresas__buscar"
+            placeholder={t("empresas.buscar")}
+            aria-label={t("empresas.buscar")}
+            value={buscar}
+            onChange={(ev) => setBuscar(ev.target.value)}
+          />
+        </div>
+
         <EstadoDeDatos
           cargando={cargando}
           error={error}
           vacio={!cargando && filas.length === 0}
-          etiquetaVacio={t("empresas.vacio")}
+          etiquetaVacio={t(vista === "archivadas" ? "bajaEmpresa.sinArchivadas" : "empresas.vacio")}
           onReintentar={cargar}
         >
           {/* `como="ul"`: ahora cada empresa es un `<li>` que contiene su fila
               Y lo desplegado, y un `<li>` suelto dentro de un `<div>` no es
               marcado válido. La hoja ya venía preparada (`list-style: none`). */}
-          <div className="empresas__herramientas">
-            <input
-              type="search"
-              className="empresas__buscar"
-              placeholder={t("empresas.buscar")}
-              aria-label={t("empresas.buscar")}
-              value={buscar}
-              onChange={(ev) => setBuscar(ev.target.value)}
-            />
-          </div>
           <div className="empresa empresa--cabecera" aria-hidden="true">
             <span>{t("empresas.colEmpresa")}</span>
             <span>{t("empresas.colUbicacion")}</span>
@@ -188,6 +273,8 @@ export function Companies() {
               const desplegada = abierta === e.id;
               return (
                 <li key={e.id} className="empresa-acordeon">
+                  <FilaDeslizable acciones={accionesDeFila(e)}>
+                  <div className="empresa-fila">
                   {/* La fila ABRE, no navega. La ficha de la empresa sigue a un
                       clic —el enlace de dentro—, pero lo que se viene a hacer a
                       esta pantalla es ver quién hay en cada una: pedir dos
@@ -224,6 +311,16 @@ export function Companies() {
                       />
                     </div>
                   </button>
+                  {/* Los tres puntos: ratón y teclado. En el teléfono, además,
+                      se desliza la fila (ver FilaDeslizable). */}
+                  <div className="empresa-fila__menu">
+                    <MenuDeAcciones
+                      etiqueta={t("bajaEmpresa.acciones", { nombre: nombreDe(e) })}
+                      opciones={opcionesDeMenu(e)}
+                    />
+                  </div>
+                  </div>
+                  </FilaDeslizable>
 
                   {/* Sólo se monta lo desplegado: montar las cuarenta y
                       esconderlas con CSS haría cuarenta peticiones. */}
@@ -245,6 +342,32 @@ export function Companies() {
           </Lista>
         </EstadoDeDatos>
       </div>
+
+      <EliminarEmpresa
+        empresa={aEliminar}
+        abierto={!!aEliminar}
+        onCerrar={() => setAEliminar(null)}
+        onEliminada={() => {
+          const e = aEliminar;
+          setAEliminar(null);
+          if (e) {
+            setFilas((xs) => xs.filter((x) => x.id !== e.id));
+            setAviso({ texto: t("bajaEmpresa.eliminada", { nombre: nombreDe(e) }) });
+          }
+          cargar();
+        }}
+      />
+
+      {aviso && (
+        <div className="aviso-inferior" role="status">
+          <span>{aviso.texto}</span>
+          {aviso.deshacer && (
+            <button type="button" className="aviso-inferior__accion" onClick={aviso.deshacer}>
+              {t("bajaEmpresa.deshacer")}
+            </button>
+          )}
+        </div>
+      )}
     </>
   );
 }

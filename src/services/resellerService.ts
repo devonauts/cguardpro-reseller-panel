@@ -656,6 +656,8 @@ export interface Empresa {
   suspendedAt: string | null;
   onboardingCompleted: boolean;
   createdAt: string | null;
+  /** Archivada por el socio: no opera ni se cobra; se puede restaurar. */
+  archivedAt?: string | null;
 }
 
 export interface Cupo {
@@ -684,7 +686,7 @@ export interface AltaDeEmpresa {
 export type FichaDeEmpresa = Omit<AltaDeEmpresa, "owner" | "name"> & { name?: string };
 
 export const companiesService = {
-  list: (params: { page?: number; limit?: number; search?: string } = {}) =>
+  list: (params: { page?: number; limit?: number; search?: string; archived?: boolean } = {}) =>
     get<{ rows: Empresa[]; count: number; quota: Cupo }>("/reseller/companies", params),
   detail: (tenantId: string) => get<Empresa>(`/reseller/companies/${tenantId}`),
   /** Single-use URL that signs our support into the company's CRM (30 min). */
@@ -699,6 +701,14 @@ export const companiesService = {
     patch<{ company: Empresa; changed: string[]; ignoredFields: string[] }>(
       `/reseller/companies/${tenantId}`, data,
     ),
+  /** Deja de operar y de cobrarse; sale de la lista. Se deshace con `restore`. */
+  archive: (tenantId: string) =>
+    post<{ company: Empresa; sessionsClosed: number }>(`/reseller/companies/${tenantId}/archive`, {}),
+  restore: (tenantId: string) =>
+    post<{ company: Empresa }>(`/reseller/companies/${tenantId}/unarchive`, {}),
+  /** Borrado definitivo para el socio. Exige el nombre exacto de la empresa. */
+  remove: (tenantId: string, confirmName: string) =>
+    del<{ deleted: true; invoicesVoided: number }>(`/reseller/companies/${tenantId}`, { confirmName }),
 };
 
 /* ══════════════════════════════════════════════════════════════════════════

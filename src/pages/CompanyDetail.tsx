@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useDireccionDeClientes } from "@/components/panel/Enlace";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
 import {
-  Boton, Campo, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, Icono, type Tono,
+  Boton, Campo, Confirmar, Dato, EstadoDeDatos, Pildora, Tarjeta, TarjetaCabecera, Icono, type Tono,
 } from "@/components/cristal";
+import { EliminarEmpresa } from "@/components/empresas/EliminarEmpresa";
 import { Avatar } from "@/components/panel";
 import {
   cobroAEmpresasService, companiesService,
@@ -106,7 +107,49 @@ export function CompanyDetail() {
   useEffect(() => { void cargarCobro(); }, [cargarCobro]);
 
   const puedeEditar = puede("reseller.company.update");
+  const puedeDarDeBaja = puede("reseller.company.suspend");
   const location = useLocation();
+  const archivada = !!empresa?.archivedAt;
+  const [cambiandoBaja, setCambiandoBaja] = useState(false);
+  const [eliminarAbierto, setEliminarAbierto] = useState(false);
+
+  /* «Editar» desde los tres puntos de la lista llega con `?editar=1`: se abre
+     el formulario en cuanto la ficha está cargada, y se limpia la dirección
+     para que recargar no lo vuelva a abrir. */
+  useEffect(() => {
+    if (!empresa || !new URLSearchParams(location.search).has("editar")) return;
+    if (puedeEditar && !empresa.archivedAt) setEditando(true);
+    navigate(location.pathname, { replace: true, state: location.state });
+  }, [empresa]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const archivar = async () => {
+    setCambiandoBaja(true);
+    setError(null);
+    try {
+      const r = await companiesService.archive(tenantId);
+      setEmpresa(r.company);
+      setEditando(false);
+      setAviso(t("bajaEmpresa.archivadaFicha"));
+    } catch (e: any) {
+      setError(e?.message || t("bajaEmpresa.noSeArchivo"));
+    } finally {
+      setCambiandoBaja(false);
+    }
+  };
+
+  const restaurar = async () => {
+    setCambiandoBaja(true);
+    setError(null);
+    try {
+      const r = await companiesService.restore(tenantId);
+      setEmpresa(r.company);
+      setAviso(t("bajaEmpresa.restauradaFicha"));
+    } catch (e: any) {
+      setError(e?.message || t("bajaEmpresa.noSeRestauro"));
+    } finally {
+      setCambiandoBaja(false);
+    }
+  };
   /* La dirección por la que su gente entra a su CRM: la del socio. */
   const { host } = useDireccionDeClientes();
   const puedeEntrar = puede("reseller.company.support_access");
@@ -191,7 +234,9 @@ export function CompanyDetail() {
                   {ESTADO_DE_COBRO[estadoCobro.status] ? t(ESTADO_DE_COBRO[estadoCobro.status].texto) : estadoCobro.status}
                 </Pildora>
               )}
-              {empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
+              {archivada
+                ? <Pildora tono="neutro">{t("bajaEmpresa.pildoraArchivada")}</Pildora>
+                : empresa?.suspendedAt && <Pildora tono="peligro">{t("empresas.suspendida")}</Pildora>}
             </p>
           </div>
         </div>
@@ -208,13 +253,51 @@ export function CompanyDetail() {
               <Icono nombre="flecha" tamano={14} />
             </a>
           )}
-          {puedeEditar && !editando && empresa && (
+          {puedeEditar && !editando && empresa && !archivada && (
             <Boton variante="suave" onClick={() => setEditando(true)}>
+              <Icono nombre="lapiz" tamano={16} />
               {t("fichaEmpresa.corregir")}
+            </Boton>
+          )}
+          {puedeDarDeBaja && empresa && !editando && (archivada ? (
+            <Boton variante="suave" onClick={restaurar} cargando={cambiandoBaja}>
+              <Icono nombre="restaurar" tamano={16} />
+              {t("bajaEmpresa.restaurar")}
+            </Boton>
+          ) : (
+            <Confirmar
+              variante="suave"
+              pregunta={t("bajaEmpresa.preguntaArchivar")}
+              textoConfirmar={t("bajaEmpresa.archivar")}
+              onConfirmar={archivar}
+              cargando={cambiandoBaja}
+            >
+              <Icono nombre="archivo" tamano={16} />
+              {t("bajaEmpresa.archivar")}
+            </Confirmar>
+          ))}
+          {puedeDarDeBaja && empresa && !editando && (
+            <Boton variante="peligro" onClick={() => setEliminarAbierto(true)}>
+              <Icono nombre="papelera" tamano={16} />
+              {t("bajaEmpresa.eliminar")}
             </Boton>
           )}
         </div>
       </header>
+
+      {archivada && (
+        <p role="status" className="ficha__archivada">
+          <Icono nombre="archivo" tamano={16} />
+          {t("bajaEmpresa.bannerArchivada", { f: fechaCorta(empresa!.archivedAt!) })}
+        </p>
+      )}
+
+      <EliminarEmpresa
+        empresa={empresa}
+        abierto={eliminarAbierto}
+        onCerrar={() => setEliminarAbierto(false)}
+        onEliminada={() => navigate("/companies", { replace: true })}
+      />
 
       <EstadoDeDatos cargando={cargando} error={!empresa ? error : null} onReintentar={cargar}>
         {empresa && !editando && (
