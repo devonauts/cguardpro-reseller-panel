@@ -108,8 +108,9 @@ export function Asistente() {
                       </div>
                     </div>
                     <div className="asist-previa__burbuja">
-                      {forma === "ninguna" && cara ? (
-                        /* Sin forma: la imagen sola, tal cual (un GIF, animado). */
+                      {cara ? (
+                        /* Con imagen, la burbuja ES la imagen, sin forma (como en
+                           el CRM): la forma sólo se dibuja cuando no hay imagen. */
                         <img className="asist-previa__cara--libre" src={cara} alt="" />
                       ) : (
                         <>

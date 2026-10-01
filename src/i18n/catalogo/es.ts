@@ -502,6 +502,7 @@ export const es: Record<Clave, string> = {
   "marca.forma.robot": "Robot",
   "marca.forma.ninguna": "Ninguna (sólo imagen)",
   "marca.formaNingunaSinImagen": "Sube abajo la imagen del asistente: sin ella se mostrará el orbe.",
+  "marca.formaConImagen": "Como subiste una imagen, la burbuja del asistente es tu imagen a tamaño completo, sin forma. La forma sólo se usa si quitas la imagen.",
   "marca.tonoLeyenda": "Cómo habla",
   "marca.tonoAyuda": "Cambia el trato y la forma de las respuestas. Si no eliges ninguno, habla como viene de fábrica. Nunca cambia lo que el asistente puede hacer ni a qué datos llega: eso lo deciden los permisos de cada persona.",
   "marca.tono.cercano": "Cercano",

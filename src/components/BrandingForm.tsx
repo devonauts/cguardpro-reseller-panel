@@ -234,6 +234,9 @@ export function BrandingForm({
           {marca.agentShape === "ninguna" && !(marca as any).agentAvatarFileId && (
             <p className="marca-form__ayuda marca-form__ayuda--aviso">{t("marca.formaNingunaSinImagen")}</p>
           )}
+          {(marca as any).agentAvatarFileId && (
+            <p className="marca-form__ayuda">{t("marca.formaConImagen")}</p>
+          )}
         </fieldset>
       )}
 

@@ -512,6 +512,7 @@ export const en = {
   "marca.forma.robot": "Robot",
   "marca.forma.ninguna": "None (image only)",
   "marca.formaNingunaSinImagen": "Upload the assistant image below: without it, the orb is shown.",
+  "marca.formaConImagen": "Since you uploaded an image, the assistant bubble is your image at full size, with no shape. The shape is only used if you remove the image.",
   "marca.tonoLeyenda": "How it speaks",
   "marca.tonoAyuda": "Changes the register and the shape of the answers. Pick none and it speaks the way it always has. It never changes what the assistant can do or what data it reaches: each person's permissions decide that.",
   "marca.tono.cercano": "Warm",
