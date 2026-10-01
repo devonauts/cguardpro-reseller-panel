@@ -93,6 +93,7 @@ const NAV_SECUNDARIA: Entrada[] = [
       { a: "/company-billing", icono: "moneda", texto: "nav.cobrosYFacturas" },
       { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
       { a: "/domains", icono: "globo", texto: "nav.dominios" },
+      { a: "/correo", icono: "correo", texto: "nav.correo" },
       { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
       { a: "/analytics", icono: "grafico", texto: "nav.analitica" },
     ],

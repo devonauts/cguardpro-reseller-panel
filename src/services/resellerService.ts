@@ -1111,6 +1111,39 @@ export const domainsService = {
   quitar: (id: string) => del<{ removed: boolean; hostname: string }>(`/reseller/domains/${id}`),
 };
 
+/* ── Correo: el dominio desde el que salen los correos a sus clientes ──── */
+
+export type EstadoDelCorreo = "pending" | "verified" | "failed";
+
+export interface RegistroDeCorreo {
+  clave: string;
+  tipo: "CNAME" | string;
+  host: string;
+  valor: string;
+  /** null = todavía no se ha comprobado. */
+  valido: boolean | null;
+}
+
+export interface CorreoDelSocio {
+  dominio: string | null;
+  estado: EstadoDelCorreo | null;
+  registros: RegistroDeCorreo[];
+  comprobadoEn: string | null;
+  verificadoEn: string | null;
+  motivo: string | null;
+  /** El remitente que reciben hoy sus clientes. */
+  remitenteActual: string;
+  /** El que usarán en cuanto su dominio quede verificado. */
+  remitenteConDominioPropio: string | null;
+}
+
+export const correoService = {
+  ver: () => get<CorreoDelSocio>("/reseller/correo"),
+  usarDominio: (dominio: string) => post<CorreoDelSocio>("/reseller/correo", { dominio }),
+  verificar: () => post<CorreoDelSocio>("/reseller/correo/verificar", {}),
+  quitar: () => del<CorreoDelSocio>("/reseller/correo"),
+};
+
 /* ══════════════════════════════════════════════════════════════════════════
    FASE D — EL SOCIO COBRA A SUS EMPRESAS CON SU PROPIA PASARELA
    ══════════════════════════════════════════════════════════════════════════ */

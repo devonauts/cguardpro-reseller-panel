@@ -41,6 +41,7 @@ const SECCIONES: Seccion[] = [
   { a: "/revenue", icono: "moneda", texto: "nav.ingresos" },
   { a: "/company-billing", icono: "moneda", texto: "nav.cobrosYFacturas" },
   { a: "/domains", icono: "globo", texto: "nav.dominios" },
+  { a: "/correo", icono: "correo", texto: "nav.correo" },
   { a: "/apps", icono: "movil", texto: "nav.apps" },
   { a: "/branding", icono: "paleta", texto: "nav.marcaCorto" },
   { a: "/assistant", icono: "bocadillo", texto: "nav.asistente" },
