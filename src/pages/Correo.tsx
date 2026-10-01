@@ -17,8 +17,9 @@ import "./Correo.scss";
  *
  * Sin dominio propio salen de `notificaciones@<socio>.mainconnector.com`, que ya
  * está autenticado y no nombra a la plataforma. Con el suyo, tras pegar tres
- * CNAME en su DNS, salen de `notificaciones@<su dominio>`. El servidor vuelve a
- * comprobar los pendientes cada 20 minutos: el socio puede pegar y marcharse.
+ * CNAME en su DNS, salen de `notificaciones@<su dominio>`. Se comprueba una vez
+ * al añadirlo y, después, sólo cuando el socio pulsa «Verificar ahora»: no hay
+ * comprobación automática, así que el botón manda mientras no esté verificado.
  */
 
 /** El dominio neutro, por si el socio quita el suyo ya verificado. */
@@ -207,7 +208,7 @@ export function Correo() {
                 {gestiona && (
                   <div className="correo__acciones">
                     <Boton
-                      variante="suave"
+                      variante={verificado ? "suave" : "primario"}
                       type="button"
                       disabled={enviando}
                       onClick={() => accion(() => correoService.verificar())}
