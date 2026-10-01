@@ -6,6 +6,7 @@ import AuthLayout from "@/layouts/AuthLayout";
 import { Boton } from "@/components/cristal";
 import { useT } from "@/i18n/IdiomaProvider";
 import api from "@/services/api";
+import { leerSesionDeSoporte } from "@/lib/sesionDeSoporte";
 
 /**
  * La puerta de las rutas del panel.
@@ -32,7 +33,8 @@ export function ProtectedRoute({
      (dónde entra, dónde se atasca). Sólo la RUTA, sin consulta; el servidor
      la cuenta una vez cada 10 minutos. Nunca frena ni avisa de nada. */
   useEffect(() => {
-    if (!autenticado) return;
+    // Las pantallas que abre el SOPORTE no son del socio: no cuentan en su historial.
+    if (!autenticado || leerSesionDeSoporte()) return;
     api.post("/reseller/journey/page", { path: location.pathname }).catch(() => undefined);
   }, [autenticado, location.pathname]);
 

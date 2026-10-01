@@ -1,0 +1,61 @@
+/* ── Soporte en vivo ─────────────────────────────────────────────────────────
+   El marco rodea la ventana entera y no recibe el ratón: avisa sin tapar ni
+   desplazar nada. La barra (el soporte) va abajo; el aviso (el socio), arriba. */
+.soporte-marco {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  border: 4px solid var(--warn);
+}
+
+.soporte-barra,
+.soporte-aviso {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483001;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2) var(--s-3);
+  max-width: calc(100vw - var(--s-6));
+  padding: var(--s-2) var(--s-4);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--r-full);
+  background: var(--warn-soft);
+  box-shadow: var(--shadow-elevated);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.soporte-barra { bottom: var(--s-4); }
+.soporte-aviso { top: var(--s-3); }
+
+.soporte-barra__texto { font-weight: 600; }
+.soporte-barra__ticket { margin-left: var(--s-2); font-weight: 400; color: var(--text-secondary); }
+.soporte-barra__minutos { color: var(--text-secondary); }
+
+.soporte-barra__salir {
+  padding: 4px var(--s-3);
+  border: 1px solid var(--warn-line);
+  border-radius: var(--r-full);
+  background: var(--warn);
+  color: var(--canvas);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+
+.soporte-aviso__punto {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--warn);
+}

@@ -6,6 +6,7 @@ import StatusPill from "@/components/StatusPill";
 import { FondoEspacial } from "@/components/cristal";
 import { BarraSuperior, Rail } from "@/components/panel";
 import { Novedades } from "@/components/panel/Novedades/Novedades";
+import { SoporteEnVivo } from "@/components/panel/SoporteEnVivo";
 import { AvisoDePago } from "@/components/panel/Pago";
 import { nombreDeRol } from "@/lib/rolDeSocio";
 import { useT } from "@/i18n/IdiomaProvider";
@@ -54,6 +55,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <FondoEspacial />
       {/* «Qué hay de nuevo»: una tarjeta, una vez por persona. */}
       <Novedades />
+      {/* Soporte en vivo: el marco y el aviso (o la barra, si quien mira es el soporte). */}
+      <SoporteEnVivo />
 
       <a className="skip-link" href="#contenido">{t("armazon.saltar")}</a>
 

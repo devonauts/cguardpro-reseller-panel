@@ -28,6 +28,7 @@ import CompanyDetail from "@/pages/CompanyDetail";
 import Wizard from "@/pages/onboarding/Wizard";
 import CobrosAEmpresas from "@/pages/CobrosAEmpresas";
 import NotFound from "@/pages/NotFound";
+import AccesoSoporte from "@/pages/AccesoSoporte";
 
 /**
  * Las rutas del panel.
@@ -77,6 +78,9 @@ export default function App() {
           navegador, y mandarlo a su panel le ocultaría que ese enlace no era
           para él. */}
       <Route path="/invitacion" element={<AuthLayout><Invitacion /></AuthLayout>} />
+      {/* Donde aterriza «Entrar al panel del socio» del SuperAdmin: canjea un
+          pase de un solo uso. Sin sesión por fuerza, como las dos de arriba. */}
+      <Route path="/acceso-soporte" element={<AuthLayout><AccesoSoporte /></AuthLayout>} />
       <Route
         path="/auth/password-reset"
         element={<AuthLayout><RestablecerContrasena /></AuthLayout>}
