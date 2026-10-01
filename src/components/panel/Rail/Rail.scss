@@ -162,12 +162,17 @@
 
 @include r.hasta(tableta) {
   .rail {
-    transform: translateX(calc(-100% - var(--s-5)));
-    transition: transform 220ms var(--ease);
     /* Abierto flota SOBRE el contenido, así que sube al cristal más opaco: en
-       el sutil se leería el texto de debajo a través del menú. */
+       el sutil se leería el texto de debajo a través del menú.
+       El material va PRIMERO y el `position: fixed` DESPUÉS: el mixin trae
+       `position: relative` y, puesto detrás, devolvía el raíl al flujo — en el
+       teléfono un bloque de 860 px vacío encima del tablero, y el socio tenía
+       que bajar para ver algo (2026-10-01). */
     @include m.cristal(elevado);
     @include m.sin-cristal(var(--surface-raised));
+    position: fixed;
+    transform: translateX(calc(-100% - var(--s-5)));
+    transition: transform 220ms var(--ease);
   }
 
   .rail--abierto { transform: translateX(0); }
