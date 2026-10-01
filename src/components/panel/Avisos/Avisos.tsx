@@ -47,10 +47,12 @@ const TITULO: Record<string, Clave> = {
   "ticket.resuelto": "notificaciones.ticketResuelto",
   "ticket.reabierto": "notificaciones.ticketReabierto",
   "cobro.pasarela": "notificaciones.pasarelaRota",
+  "correo.dominio_caido": "notificaciones.dominioDeCorreoCaido",
 };
 
 const iconoDe = (tipo: string): NombreDeIcono =>
-  tipo.startsWith("ticket.") ? "auriculares" : tipo.startsWith("cobro.") ? "tarjeta" : "campana";
+  tipo.startsWith("ticket.") ? "auriculares" : tipo.startsWith("cobro.") ? "tarjeta"
+    : tipo.startsWith("correo.") ? "correo" : "campana";
 
 const CLAVE_QUITADOS = "cguard_reseller_avisos_quitados";
 function leerQuitados(): Set<string> {

@@ -953,6 +953,7 @@ export const en = {
   "fallo.pasarelaNoConectada": "Your gateway isn't connected: enter your keys again to charge.",
   "fallo.revisarPasarela": "Check my gateway",
   "notificaciones.pasarelaRota": "Your payment gateway rejected your keys: your companies aren't being charged",
+  "notificaciones.dominioDeCorreoCaido": "Your email domain stopped working: your emails go out from mainconnector.com until you press “Verify now” in Email",
   "facturaCliente.titulo": "Invoice {n}",
   "facturaCliente.noCargo": "Couldn't load the invoice.",
   "facturaCliente.emitida": "Issued {f}",

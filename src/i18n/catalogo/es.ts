@@ -943,6 +943,7 @@ export const es: Record<Clave, string> = {
   "fallo.pasarelaNoConectada": "Tu pasarela no está conectada: vuelve a poner tus claves para cobrar.",
   "fallo.revisarPasarela": "Revisar mi pasarela",
   "notificaciones.pasarelaRota": "Tu pasarela de pago rechazó tus claves: no se está cobrando a tus empresas",
+  "notificaciones.dominioDeCorreoCaido": "Tu dominio de correo dejó de funcionar: tus correos salen desde mainconnector.com hasta que pulses «Verificar ahora» en Correo",
   "facturaCliente.titulo": "Factura {n}",
   "facturaCliente.noCargo": "No se pudo cargar la factura.",
   "facturaCliente.emitida": "Emitida el {f}",
