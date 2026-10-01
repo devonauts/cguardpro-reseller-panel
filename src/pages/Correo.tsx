@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
-import { Boton, Campo, CampoCopiable, Confirmar, Estado, EstadoDeDatos, Panel, Pildora } from "@/components/cristal";
+import { Boton, CampoCopiable, Confirmar, Estado, EstadoDeDatos, Panel, Pildora } from "@/components/cristal";
 import { Pagina, Tabla, TablaCelda, TablaFila } from "@/components/panel";
 import { GuiaDns } from "@/components/dominios/GuiaDns";
 import { useResellerAuth } from "@/auth/ResellerAuthContext";
@@ -82,7 +83,6 @@ export function Correo() {
   const [datos, setDatos] = useState<CorreoDelSocio | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nuevo, setNuevo] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -116,12 +116,8 @@ export function Correo() {
     }
   };
 
-  const usar = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const dominio = nuevo.trim();
-    if (!dominio) return;
-    if (await accion(() => correoService.usarDominio(dominio), t("correo.anadido"))) setNuevo("");
-  };
+  /* El dominio no se escribe: sale de los que ya conectó en Dominios. */
+  const usar = (d: string) => accion(() => correoService.usarDominio(d), t("correo.anadido"));
 
   const dominio = datos?.dominio ?? null;
   const verificado = datos?.estado === "verified";
@@ -142,20 +138,21 @@ export function Correo() {
               {t("correo.remitenteDespues")}
             </p>
 
-            {!dominio && gestiona && (
-              <form className="correo__alta" onSubmit={usar}>
-                <Campo
-                  id="dominio-de-correo"
-                  etiqueta={t("correo.campoDominio")}
-                  placeholder={t("correo.ejemplo")}
-                  value={nuevo}
-                  onChange={(e) => setNuevo(e.target.value)}
-                  disabled={enviando}
-                />
-                <Boton type="submit" disabled={enviando || !nuevo.trim()}>
-                  {t("correo.usar")}
-                </Boton>
-              </form>
+            {!dominio && gestiona && (datos.disponibles?.length ?? 0) > 0 && (
+              <div className="correo__alta">
+                <p className="correo__intro">{t("correo.disponiblesIntro")}</p>
+                {datos.disponibles.map((d, i) => (
+                  <Boton key={d} type="button" variante={i === 0 ? "primario" : "suave"} disabled={enviando} onClick={() => usar(d)}>
+                    {t("correo.enviarDesde", { dominio: d })}
+                  </Boton>
+                ))}
+              </div>
+            )}
+
+            {!dominio && gestiona && !(datos.disponibles?.length) && (
+              <p className="correo__vacio">
+                {t("correo.sinDominioWeb")} <Link to="/domains">{t("correo.irADominios")}</Link>
+              </p>
             )}
 
             {!dominio && !gestiona && <p className="correo__vacio">{t("correo.sinDominio")}</p>}

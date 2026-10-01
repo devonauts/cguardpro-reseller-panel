@@ -1125,6 +1125,8 @@ export interface RegistroDeCorreo {
 }
 
 export interface CorreoDelSocio {
+  /** Sus dominios web verificados (Ajustes › Dominios): de aquí sale el del correo. */
+  disponibles: string[];
   dominio: string | null;
   estado: EstadoDelCorreo | null;
   registros: RegistroDeCorreo[];

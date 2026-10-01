@@ -35,7 +35,7 @@
   gap: var(--s-3);
   flex-wrap: wrap;
 }
-.correo__alta .campo { flex: 1 1 260px; }
+.correo__alta .correo__intro { flex: 1 1 100%; margin: 0; }
 
 .correo__dominio {
   padding: var(--s-4);
